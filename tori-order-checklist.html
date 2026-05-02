@@ -1827,12 +1827,23 @@ async function pollApiStatus() {
         _apiOrderStatus[rk] = { status: 'preparing', order: data[rk] };
       }
     });
-    // Check history for dispatched (in_delivery) orders
+    // Check history for dispatched (in_delivery) and delivered orders
+    // Process in order so most recent status wins
     (data.history || []).forEach(h => {
-      if (h.status === 'dispatched') {
-        _apiOrderStatus[h.restaurant] = {
+      const rk = h.restaurant;
+      if (h.status === 'dispatched' && !_apiOrderStatus[rk]) {
+        _apiOrderStatus[rk] = {
           status: 'in_delivery', order: h,
           dispatchedAt: h.dispatched_at, dispatchedBy: h.dispatched_by
+        };
+      }
+      if (h.status === 'delivered' && !_apiOrderStatus[rk]) {
+        _apiOrderStatus[rk] = {
+          status: 'delivered', order: h,
+          dispatchedAt: h.dispatched_at, dispatchedBy: h.dispatched_by,
+          deliveredAt: h.delivered_at, deliveredBy: h.delivered_by,
+          missingItems: h.missing_items || {},
+          notDispatched: h.not_dispatched || {}
         };
       }
     });
