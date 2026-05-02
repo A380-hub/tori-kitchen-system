@@ -605,6 +605,7 @@ body {
   </div>
 
   <div class="nav-right">
+    <button onclick="fetchAll(false)" style="background:var(--panel3);border:1px solid var(--line2);color:var(--ink3);font-family:var(--font);font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;" title="Sync now">↻ Sync</button>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
       <div class="clock" id="clock">00:00:00</div>
       <div id="kitchen-date" style="font-family:var(--body);font-size:11px;font-weight:400;color:var(--ink4);letter-spacing:0.04em;"></div>
@@ -1843,7 +1844,7 @@ function fmtDT(iso) {
 
 // ── BOOT ──
 fetchAll(false);
-setInterval(() => fetchAll(true), 15000);
+setInterval(() => fetchAll(true), 3000);
 
 
 </script>

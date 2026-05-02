@@ -870,6 +870,7 @@ body {
       </button>
       <button class="topbar-tab" id="tab-history" onclick="switchTab('history')">History</button>
     </div>
+    <button class="settings-icon-btn" onclick="if(API_BASE){pollApiStatus();showToast('Synced')}" title="Sync" style="font-size:16px;">↻</button>
     <button class="settings-icon-btn" onclick="go('s-settings')" title="Settings">⚙</button>
   </div>
 
@@ -1851,7 +1852,7 @@ async function pollApiStatus() {
     updateDeliveryTabDots();
   } catch(e) {}
 }
-if (API_BASE) { pollApiStatus(); setInterval(pollApiStatus, 10000); }
+if (API_BASE) { pollApiStatus(); setInterval(pollApiStatus, 3000); }
 
 function updateWelcomeStatusBadge() {
   const st = getMyDeliveryStatus();
@@ -1882,13 +1883,14 @@ function updateViewPendingBtn() {
   if (!btn) return;
   const lbl = document.getElementById('vpb-label');
   btn.classList.remove('pulsing');
+  btn.style.background=''; btn.style.color=''; btn.style.borderColor='';
   if (!st || !st.status || st.status === 'none' || st.status === 'accepted') {
     if (lbl) lbl.textContent = 'View Pending Delivery';
     return;
   }
   if (st.status === 'preparing')   { if(lbl) lbl.textContent = 'View Order — Preparing'; }
   if (st.status === 'in_delivery') { if(lbl) lbl.textContent = 'View Order — In Delivery'; btn.classList.add('pulsing'); }
-  if (st.status === 'delivered')   { if(lbl) lbl.textContent = 'Delivery Arrived — Accept Now'; btn.classList.add('pulsing'); }
+  if (st.status === 'delivered')   { if(lbl) lbl.textContent = 'Delivery Arrived — Accept Now'; btn.classList.add('pulsing'); btn.style.background='#388E3C'; btn.style.color='#fff'; btn.style.borderColor='#388E3C'; }
 }
 
 setInterval(() => {
@@ -2029,12 +2031,23 @@ function confirmAcceptDelivery() {
   if (!name) return;
   closeAcceptModal();
 
-  // Write accepted status to localStorage
+  const rk = selectedLocation;
+
+  // ── API MODE ──
+  if (API_BASE) {
+    if (_apiOrderStatus[rk]) delete _apiOrderStatus[rk];
+    showToast('Delivery accepted by ' + name);
+    updateWelcomeStatusBadge();
+    updateDeliveryTabDots();
+    refreshAllDeliveryViews();
+    setTimeout(() => { go('s-welcome'); }, 1200);
+    return;
+  }
+
+  // ── FALLBACK: localStorage ──
   try {
     const raw = localStorage.getItem('TORI_STATUS') || '{}';
     const data = JSON.parse(raw);
-    const rk = selectedLocation;
-    // Create entry if missing (e.g. status was set via TORI_DISPATCH not TORI_STATUS)
     if (!data[rk]) {
       const dispatch = lsGet('TORI_DISPATCH', {});
       data[rk] = {
@@ -2051,7 +2064,6 @@ function confirmAcceptDelivery() {
     localStorage.setItem('TORI_STATUS', JSON.stringify(data));
   } catch(e){ console.error('confirmAcceptDelivery error:', e); }
 
-  // Save to local history log so this device has its own record
   try {
     const st = lsGet('TORI_STATUS', {});
     const rk2 = selectedLocation;
@@ -2075,10 +2087,10 @@ function confirmAcceptDelivery() {
 
   missingItems = {};
   showToast('Delivery accepted by ' + name);
-  // Stay on STATUS tab — refresh to show accepted state, then user can navigate freely
   updateWelcomeStatusBadge();
   updateDeliveryTabDots();
   refreshAllDeliveryViews();
+  setTimeout(() => { go('s-welcome'); }, 1200);
 }
 
 /* ═══════════════════════════════════════
