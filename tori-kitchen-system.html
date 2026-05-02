@@ -1,0 +1,1916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TORI Central Kitchen Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0F1314;
+  --bg2:       #1D2429;
+  --panel:     #242C30;
+  --panel2:    #2B2B2B;
+  --panel3:    #3C3D3C;
+  --panel4:    #525252;
+  --line:      #545454;
+  --line2:     #707172;
+  --ink:       #FFFFFF;
+  --ink2:      #E1E1E1;
+  --ink3:      #BCC0C2;
+  --ink4:      #7A7E80;
+  --red:       #DE0000;
+  --red2:      #B50000;
+  --green:     #4CAF50;
+  --green2:    #388E3C;
+  --amber:     #F59E0B;
+  --amber2:    #8A6000;
+  --font:      'Barlow Condensed', sans-serif;
+  --body:      'Barlow', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ══════════════════════════════
+   TOP NAV
+══════════════════════════════ */
+.topnav {
+  display: flex;
+  align-items: stretch;
+  background: rgba(18,22,25,0.98);
+  border-bottom: 1px solid var(--line2);
+  padding: 0 18px 0 0;
+  flex-shrink: 0;
+  z-index: 20;
+  box-shadow: 0 3px 20px rgba(0,0,0,0.4);
+  height: 54px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 22px 0 18px;
+  border-right: 1px solid var(--line);
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+.brand-logo { font-size: 26px; font-weight: 900; letter-spacing: -0.04em; }
+.brand-dot {
+  width: 9px; height: 9px;
+  background: var(--red); border-radius: 50%;
+  box-shadow: 0 0 9px var(--red);
+  animation: pulse 2s ease-in-out infinite; flex-shrink: 0;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+.brand-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--ink4); line-height: 1.3;
+}
+
+.tabs { display: flex; align-items: stretch; gap: 2px; }
+.tab {
+  background: transparent; border: none; color: var(--ink4);
+  font-family: var(--font); font-size: 13px; font-weight: 800;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0 16px; cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.15s; display: flex; align-items: center; gap: 8px; white-space: nowrap;
+}
+.tab:hover { color: var(--ink3); background: rgba(255,255,255,0.03); }
+.tab.active { color: var(--ink); border-bottom-color: var(--red); background: linear-gradient(180deg,rgba(222,0,0,0.07),transparent); }
+.tab-badge {
+  font-size: 11px; font-weight: 900; background: var(--panel3);
+  color: var(--ink3); padding: 1px 6px; min-width: 20px; text-align: center;
+}
+.tab-badge.live { background: var(--red2); color: var(--ink); animation: pulse 2s ease-in-out infinite; }
+
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 16px; padding-left: 16px; }
+.api-status { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink4); }
+.api-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink4); }
+.api-dot.on  { background: var(--green); box-shadow: 0 0 6px rgba(76,175,80,0.7); }
+.api-dot.off { background: var(--red);   box-shadow: 0 0 6px rgba(222,0,0,0.7); }
+.clock { font-size: 16px; font-weight: 700; color: var(--ink3); letter-spacing: 0.12em; font-variant-numeric: tabular-nums; }
+
+/* ══════════════════════════════
+   SCREEN SYSTEM
+══════════════════════════════ */
+.screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.screen.active { display: flex; }
+
+/* ══════════════════════════════
+   CENTRAL KITCHEN SCREEN
+══════════════════════════════ */
+
+
+/* ── 3-COLUMN BODY ── */
+.central-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  overflow: hidden;
+}
+
+/* ── Column base ── */
+.col {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid var(--line);
+}
+.col:last-child { border-right: none; }
+
+/* Prep column — distinct greyish background */
+.col.prep-col { background: rgba(55,58,60,0.6); border-right-color: #5A5E61; }
+
+/* Column header */
+.col-head {
+  padding: 0 20px;
+  height: 56px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+/* Prep column header — greyish accent */
+.col-head.prep-head { background: rgba(70,74,77,0.8); border-bottom-color: #5A5E61; }
+/* R1/R2 headers */
+.col-head.r1-head { background: var(--panel3); }
+.col-head.r2-head { background: var(--panel3); }
+
+.col-title { font-size: 17px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }
+.col-title.prep { color: #D4D6D8; }
+.col-title.r1   { color: var(--ink); }
+.col-title.r2   { color: var(--ink2); }
+
+.col-head-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.col-head-stat {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink4);
+  display: flex; align-items: center; gap: 5px;
+}
+.col-head-stat .v { font-size: 14px; font-weight: 900; color: var(--ink); }
+.col-head-stat .v.g { color: var(--ink); }
+.col-head-stat .v.a { color: var(--ink); }
+
+.col-meta { font-size: 12px; font-weight: 700; color: var(--ink4); line-height: 1.4; }
+.col-meta .time { color: var(--ink3); font-size: 14px; font-weight: 800; }
+.col-meta .who  { color: var(--ink4); font-size: 11px; margin-top: 1px; }
+
+/* Column body */
+.col-body { flex: 1; overflow-y: auto; }
+
+/* Category label */
+.cat-label {
+  padding: 7px 18px 5px;
+  font-size: 10px; font-weight: 900; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--ink4);
+  background: var(--bg2); border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 4;
+}
+
+/* ── PREP COLUMN: checkbox rows ── */
+.prep-row {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  min-height: 58px;
+  border-bottom: 1px solid rgba(84,84,84,0.4);
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.prep-row:last-child { border-bottom: none; }
+.prep-row:active { background: rgba(255,255,255,0.03); }
+.prep-row.done { background: rgba(76,175,80,0.06); opacity: 0.65; }
+
+.prep-cb {
+  width: 32px; height: 32px;
+  border: 2px solid var(--line2);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.prep-cb::after {
+  content: '✓'; font-size: 16px; font-weight: 900;
+  color: var(--green); opacity: 0; transform: scale(0.3); transition: all 0.15s;
+}
+.prep-row.done .prep-cb { border-color: var(--green); background: rgba(76,175,80,0.14); }
+.prep-clear-wrap {
+  padding: 24px 16px; display: flex; justify-content: center;
+}
+.prep-clear-btn {
+  background: var(--green); color: #fff; border: none;
+  font-family: var(--font); font-size: 14px; font-weight: 900;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 14px 32px; cursor: pointer; width: 100%;
+  transition: background 0.15s;
+}
+.prep-clear-btn:hover { background: var(--green2); }
+.prep-row.done .prep-cb::after { opacity:1; transform:scale(1); }
+
+.prep-name {
+  flex: 1; min-width: 0;
+  font-size: 17px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.02em; color: var(--ink2); line-height: 1.15;
+  transition: color 0.15s;
+}
+.prep-row.done .prep-name { color: var(--ink4); text-decoration: line-through; text-decoration-color: var(--green2); }
+
+.prep-qty-wrap { flex-shrink: 0; text-align: right; display: flex; align-items: baseline; gap: 5px; }
+.prep-qty  { font-size: 24px; font-weight: 900; color: var(--ink); transition: color 0.15s; }
+.prep-row.done .prep-qty { color: var(--ink4); }
+.prep-unit { font-size: 13px; font-weight: 700; color: var(--ink4); letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ── ORDER COLUMNS: R1/R2 item rows ── */
+.order-row {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  min-height: 54px;
+  border-bottom: 1px solid rgba(84,84,84,0.35);
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.order-row:last-child { border-bottom: none; }
+.order-row:active { background: rgba(255,255,255,0.03); }
+.order-row.dispatched { background: rgba(76,175,80,0.05); }
+
+/* dispatch tick */
+.dispatch-cb {
+  width: 28px; height: 28px;
+  border: 2px solid var(--line2);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.dispatch-cb::after {
+  content: '✓'; font-size: 14px; font-weight: 900;
+  color: var(--green); opacity: 0; transform: scale(0.3); transition: all 0.15s;
+}
+.order-row.dispatched .dispatch-cb { border-color: var(--green); background: rgba(76,175,80,0.12); }
+.order-row.dispatched .dispatch-cb::after { opacity:1; transform:scale(1); }
+
+.order-name {
+  flex: 1; min-width: 0;
+  font-size: 17px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.02em; color: var(--ink2);
+}
+.order-row.dispatched .order-name { color: var(--ink4); }
+
+.order-qty-wrap { flex-shrink: 0; display: flex; align-items: baseline; gap: 5px; }
+.order-qty  { font-size: 22px; font-weight: 900; color: var(--ink); }
+.order-row.dispatched .order-qty { color: var(--ink4); }
+.order-unit { font-size: 12px; font-weight: 700; color: var(--ink4); letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* Empty states */
+.col-empty {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: var(--ink4); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  text-align: center; padding: 20px; gap: 10px;
+}
+.col-empty-icon { font-size: 32px; opacity: 0.12; }
+.col-empty-sub  { font-size: 11px; color: var(--ink4); letter-spacing: 0.12em; margin-top: 4px; opacity: 0.7; }
+
+/* ── FOOTER ── */
+.central-footer {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  min-height: 58px;
+  background: rgba(29,36,41,0.98);
+  border-top: 1px solid var(--line2);
+  overflow: hidden;
+}
+
+.footer-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 22px;
+  overflow: hidden;
+}
+.footer-stat {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink4); white-space: nowrap;
+}
+.footer-label { color: var(--ink4); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; white-space: nowrap; }
+.fv-active { font-size: 16px; font-weight: 900; color: var(--ink); }
+.fv-done   { font-size: 16px; font-weight: 900; color: var(--ink); }
+.fv-sep    { font-size: 14px; font-weight: 700; color: var(--line2); }
+.fv-total  { font-size: 16px; font-weight: 900; color: var(--ink); }
+/* Keep old .fv classes for any remaining references */
+.footer-stat .fv { font-size: 16px; font-weight: 900; color: var(--ink); }
+.footer-stat .fv.g { color: #2E8B3A; }
+.footer-stat .fv.a { color: var(--amber); }
+
+/* Dispatch buttons group */
+.dispatch-btns {
+  display: flex;
+  gap: 0;
+  flex-shrink: 0;
+}
+.dispatch-btns:empty { display: none; }
+
+.disp-single-btn {
+  background: var(--panel3);
+  border: none; border-left: 1px solid var(--line2);
+  color: var(--ink4);
+  font-family: var(--font);
+  font-size: 13px; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 14px 22px;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  flex-shrink: 0;
+}
+.disp-single-btn:hover:not(:disabled) { background: var(--panel4); color: var(--ink); }
+.disp-single-btn:disabled { display: none; }
+.disp-single-btn .dsb-label { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; }
+.disp-single-btn .dsb-name  { font-size: 14px; font-weight: 900; color: var(--ink); }
+.disp-single-btn:disabled .dsb-name { color: var(--ink4); }
+
+.dispatch-all-btn {
+  background: var(--green2);
+  border: none; border-left: 1px solid rgba(255,255,255,0.08);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px; font-weight: 900;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 18px 36px;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
+}
+.dispatch-all-btn:hover:not(:disabled) { background: var(--green); }
+.dispatch-all-btn:disabled { display: none; }
+.ready-dot {
+  width: 9px; height: 9px; background: var(--green); border-radius: 50%;
+  box-shadow: 0 0 8px var(--green); animation: pulse 1s ease-in-out infinite;
+  display: none; flex-shrink: 0;
+}
+
+
+/* ══════════════════════════════
+   HISTORY SCREEN
+══════════════════════════════ */
+.history-screen { overflow-y: auto; padding: 24px 24px 40px; }
+.hist-view-header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line);
+}
+.hist-view-title { font-size: 30px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; }
+.hist-view-sub   { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink4); margin-top: 4px; }
+.hist-count-lbl  { font-size: 13px; font-weight: 700; color: var(--ink4); text-align: right; }
+.hist-count-lbl strong { color: var(--ink); font-size: 22px; font-weight: 900; display: block; }
+
+.hist-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.hist-table th {
+  text-align: left; padding: 11px 14px;
+  background: var(--panel3); border-bottom: 1px solid var(--line2);
+  font-size: 11px; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink3);
+}
+.hist-table td {
+  padding: 12px 14px; border-bottom: 1px solid rgba(84,84,84,0.4);
+  font-family: var(--body); font-size: 13px; color: var(--ink3); vertical-align: top;
+}
+.hist-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+.pill {
+  display: inline-block; padding: 3px 8px;
+  font-family: var(--font); font-size: 12px; font-weight: 900;
+  letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid var(--line2);
+}
+.pill.r1         { color: var(--ink);  background: rgba(255,255,255,0.07); }
+.pill.r2         { color: var(--ink2); background: rgba(255,255,255,0.04); }
+.pill.dispatched { color: #7BC97E; background: rgba(76,175,80,0.10); border-color: rgba(76,175,80,0.35); }
+.pill.cancelled  { color: #E07070; background: rgba(222,0,0,0.08);   border-color: rgba(222,0,0,0.35); }
+
+.hist-empty {
+  padding: 80px 20px; text-align: center;
+  color: var(--ink4); font-size: 13px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+}
+.clear-hist-btn {
+  background: transparent; border: 1px solid var(--line2);
+  color: var(--ink4); font-family: var(--font); font-size: 11px;
+  font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 7px 14px; cursor: pointer; white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+.clear-hist-btn:hover { color: var(--red); border-color: var(--red); }
+
+/* ── SHARED HISTORY ROW (Prep + Delivery) ── */
+.hist-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 24px; border-bottom: 1px solid var(--line);
+  cursor: pointer; transition: background 0.12s; gap: 16px;
+}
+.hist-row:hover { background: var(--panel); }
+.hist-row-left { flex: 1; min-width: 0; }
+.hist-row-title {
+  font-size: 18px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--ink); line-height: 1.1;
+}
+.hist-row-meta {
+  font-family: var(--font-body); font-size: 12px; color: var(--ink4);
+  font-weight: 500; margin-top: 4px; line-height: 1.4;
+}
+.hist-row-meta strong { color: var(--ink3); font-weight: 700; }
+.hist-row-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.hist-row-count { font-size: 26px; font-weight: 900; color: var(--ink); letter-spacing: -0.02em; line-height: 1; }
+.hist-row-count-lbl { font-size: 11px; font-weight: 700; color: var(--ink4); text-transform: uppercase; letter-spacing: 0.1em; margin-right: 8px; }
+.hist-row-arrow { font-size: 22px; color: var(--ink4); font-weight: 300; line-height: 1; }
+.prep-log-new-badge {
+  display: inline-block; padding: 1px 7px;
+  background: var(--red); color: var(--ink);
+  font-size: 10px; font-weight: 900; letter-spacing: 0.14em;
+  text-transform: uppercase; margin-left: 8px; vertical-align: middle;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+
+/* ══════════════════════════════
+   SKIP REASON MODAL
+══════════════════════════════ */
+.modal-back {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8); z-index: 200;
+  align-items: center; justify-content: center; padding: 24px;
+}
+.modal-back.open { display: flex; }
+.modal {
+  background: var(--panel); border: 1px solid var(--line2);
+  border-top: 4px solid var(--amber); padding: 28px 24px 22px;
+  width: 100%; max-width: 480px;
+}
+.modal-title { font-size: 22px; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
+.modal-sub   { font-family: var(--body); font-size: 13px; color: var(--ink4); margin-bottom: 20px; line-height: 1.5; }
+
+.modal-warn {
+  font-size: 13px; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--amber);
+  margin-bottom: 14px;
+}
+.unprepared-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px;
+}
+.unprepared-chip {
+  background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3);
+  color: var(--ink2); font-family: var(--font); font-size: 13px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 10px;
+}
+
+.skip-label {
+  font-size: 11px; font-weight: 900; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--amber); margin-bottom: 10px;
+}
+.skip-options { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.skip-option {
+  background: var(--panel2); border: 1px solid var(--line2); color: var(--ink3);
+  font-family: var(--font); font-size: 14px; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 8px 16px; cursor: pointer; transition: all 0.15s; user-select: none;
+}
+.skip-option:hover { border-color: var(--amber); color: var(--ink); }
+.skip-option.selected { background: rgba(245,158,11,0.15); border-color: var(--amber); color: var(--amber); }
+.skip-other-input {
+  display: none; width: 100%; background: var(--panel2);
+  border: 1px solid var(--line2); border-left: 3px solid var(--amber);
+  color: var(--ink); font-family: var(--font); font-size: 16px; font-weight: 600;
+  padding: 10px 14px; border-radius: 0; -webkit-appearance: none;
+}
+.skip-other-input.visible { display: block; }
+.skip-other-input:focus { outline: none; }
+.skip-other-input::placeholder { color: var(--ink4); }
+
+.modal-acts { display: flex; gap: 10px; margin-top: 20px; }
+.modal-ok {
+  flex: 2; background: var(--green2); border: none; color: var(--ink);
+  font-family: var(--font); font-size: 15px; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; transition: background 0.15s;
+}
+.modal-ok:hover:not(:disabled) { background: var(--green); }
+.modal-ok:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+.modal-no {
+  flex: 1; background: transparent; border: 1px solid var(--line2); color: var(--ink3);
+  font-family: var(--font); font-size: 14px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; transition: all 0.15s;
+}
+.modal-no:hover { color: var(--ink); background: var(--panel3); }
+
+/* Name entry modal */
+.name-modal {
+  background: var(--panel); border: 1px solid var(--line2);
+  border-top: 4px solid var(--green2); padding: 28px 24px 22px;
+  width: 100%; max-width: 420px;
+}
+.name-modal-title { font-size: 22px; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
+.name-modal-sub   { font-family: var(--body); font-size: 13px; color: var(--ink4); margin-bottom: 20px; line-height: 1.5; }
+.name-field-label {
+  font-size: 11px; font-weight: 900; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink4); margin-bottom: 8px;
+}
+.name-field-input {
+  width: 100%; background: var(--panel2);
+  border: 1px solid var(--line2); border-left: 3px solid var(--green2);
+  color: var(--ink); font-family: var(--font); font-size: 20px; font-weight: 700;
+  padding: 13px 15px; border-radius: 0; -webkit-appearance: none; margin-bottom: 20px;
+}
+.name-field-input:focus { outline: none; border-left-color: var(--green); }
+.name-field-input::placeholder { color: var(--ink4); font-weight: 600; }
+.name-modal-acts { display: flex; gap: 10px; }
+.name-modal-ok {
+  flex: 2; background: var(--green2); border: none; color: var(--ink);
+  font-family: var(--font); font-size: 15px; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; transition: background 0.15s;
+}
+.name-modal-ok:hover:not(:disabled) { background: var(--green); }
+.name-modal-ok:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+.name-modal-no {
+  flex: 1; background: transparent; border: 1px solid var(--line2); color: var(--ink3);
+  font-family: var(--font); font-size: 14px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; transition: all 0.15s;
+}
+.name-modal-no:hover { color: var(--ink); background: var(--panel3); }
+
+/* toast */
+.toast {
+  position: fixed; bottom: 80px; left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--panel4); color: var(--ink);
+  border: 1px solid var(--line2); padding: 10px 22px;
+  font-family: var(--font); font-size: 13px; font-weight: 900;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 999; pointer-events: none; white-space: nowrap;
+  opacity: 0;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line); }
+::-webkit-scrollbar-thumb:hover { background: var(--line2); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ TOP NAV ══════════════ -->
+<nav class="topnav">
+  <div class="brand">
+    <div class="brand-logo">TORI</div>
+    <div class="brand-dot"></div>
+    <div class="brand-label">Kitchen<br>Live</div>
+    
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-screen="s-central">
+      Central Kitchen
+      <span class="tab-badge" id="badge-central" style="display:none;">0</span>
+    </button>
+    <button class="tab" data-screen="s-prep">
+      Preparation History
+    </button>
+    <button class="tab" data-screen="s-history">
+      Delivery History
+    </button>
+  </div>
+
+  <div class="nav-right">
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+      <div class="clock" id="clock">00:00:00</div>
+      <div id="kitchen-date" style="font-family:var(--body);font-size:11px;font-weight:400;color:var(--ink4);letter-spacing:0.04em;"></div>
+    </div>
+    
+  </div>
+</nav>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN: CENTRAL KITCHEN
+══════════════════════════════════════ -->
+<div class="screen active" id="s-central">
+
+  <!-- ── 3-COLUMN BODY ── -->
+  <div class="central-body">
+
+    <!-- LEFT: Preparation List -->
+    <div class="col prep-col">
+      <div class="col-head prep-head">
+        <div>
+          <div class="col-title prep">Preparation List</div>
+        </div>
+        <div class="col-head-right">
+          <div class="col-head-stat">
+            <span class="v g" id="prep-done-hd">0</span>
+            <span>done</span>
+            <span style="margin:0 4px;color:var(--line2)">·</span>
+            <span class="v a" id="prep-left-hd">—</span>
+            <span>left</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-body" id="prep-body"></div>
+    </div>
+
+    <!-- CENTRE: Tori 1 Order -->
+    <div class="col">
+      <div class="col-head r1-head">
+        <div>
+          <div class="col-title r1">Tori 1</div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink4);margin-top:2px;">Špansko</div>
+        </div>
+        <div class="col-meta" id="r1-meta">no orders</div>
+      </div>
+      <div class="col-body" id="r1-body"></div>
+    </div>
+
+    <!-- RIGHT: Tori 2 Order -->
+    <div class="col">
+      <div class="col-head r2-head">
+        <div>
+          <div class="col-title r2">Tori 2</div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink4);margin-top:2px;">Trnje</div>
+        </div>
+        <div class="col-meta" id="r2-meta">no orders</div>
+      </div>
+      <div class="col-body" id="r2-body"></div>
+    </div>
+
+  </div><!-- /central-body -->
+
+  <!-- FOOTER -->
+  <div class="central-footer">
+    <div class="footer-info">
+      <div class="footer-stat">
+        <span class="footer-label">Active Orders:</span>
+        <span class="fv-active" id="ft-orders">0</span>
+      </div>
+      <div class="footer-stat">
+        <span class="footer-label">Preparation:</span>
+        <span class="fv-done" id="ft-prep-done">0</span>
+        <span class="fv-sep">/</span>
+        <span class="fv-total" id="ft-prep-total">—</span>
+      </div>
+      <div class="footer-stat">
+        <span class="footer-label">Dispatch Ready:</span>
+        <span class="fv-done" id="ft-disp-done">0</span>
+        <span class="fv-sep">/</span>
+        <span class="fv-total" id="ft-disp-total">—</span>
+      </div>
+    </div>
+    <div class="dispatch-btns">
+      <button class="disp-single-btn" id="btn-r1" onclick="triggerDispatch('r1')" disabled style="display:none;">
+        <span class="dsb-label">Dispatch Only</span>
+        <span class="dsb-name">Tori 1 — Špansko</span>
+      </button>
+      <button class="disp-single-btn" id="btn-r2" onclick="triggerDispatch('r2')" disabled style="display:none;">
+        <span class="dsb-label">Dispatch Only</span>
+        <span class="dsb-name">Tori 2 — Trnje</span>
+      </button>
+      <button class="dispatch-all-btn" id="btn-dispatch-all" onclick="triggerDispatch('all')" disabled style="display:none;">
+        Dispatch All →
+      </button>
+    </div>
+  </div>
+
+</div><!-- /s-central -->
+
+
+<!-- ══════════════════════════════════════
+     SCREEN: PREP HISTORY
+══════════════════════════════════════ -->
+<div class="screen history-screen" id="s-prep">
+  <div class="hist-view-header">
+    <div>
+      <div class="hist-view-title">Preparation History</div>
+      <div class="hist-view-sub">Checklists submitted by the head chef</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="hist-count-lbl">
+        <strong id="prep-log-total">0</strong>
+        Submissions
+      </div>
+      <button class="clear-hist-btn" onclick="clearPrepHistory()">Clear History</button>
+    </div>
+  </div>
+  <div id="prep-log-body"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN: HISTORY
+══════════════════════════════════════ -->
+<div class="screen history-screen" id="s-history">
+  <div class="hist-view-header">
+    <div>
+      <div class="hist-view-title">Delivery History</div>
+      <div class="hist-view-sub">Archive of dispatched orders</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="hist-count-lbl">
+        <strong id="hist-total">0</strong>
+        Total Orders
+      </div>
+      <button class="clear-hist-btn" onclick="clearDeliveryHistory()">Clear History</button>
+    </div>
+  </div>
+  <div id="hist-body"></div>
+</div>
+
+
+<!-- NAME ENTRY MODAL -->
+<div class="modal-back" id="name-modal">
+  <div class="name-modal">
+    <div class="name-modal-title" id="nm-title">Confirm Dispatch</div>
+    <div class="name-modal-sub" id="nm-sub">Enter the name of the person dispatching this delivery.</div>
+    <div class="name-field-label">Dispatched by (name &amp; surname)</div>
+    <input class="name-field-input" id="nm-input" type="text"
+      placeholder="e.g. Ivan Horvat" autocomplete="off" autocorrect="off"
+      oninput="document.getElementById('nm-ok').disabled = !this.value.trim()" />
+    <div class="name-modal-acts">
+      <button class="name-modal-no" onclick="closeNameModal()">Cancel</button>
+      <button class="name-modal-ok" id="nm-ok" disabled onclick="onNameConfirmed()">Proceed →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SKIP REASON MODAL (only shown when dispatching with unprepared items) -->
+<div class="modal-back" id="modal">
+  <div class="modal">
+    <div class="modal-title">Dispatch — Items Not Ticked</div>
+    <div class="modal-sub">Some ordered items have not been ticked for dispatch. Select a reason to continue.</div>
+    <div class="modal-warn" id="modal-warn"></div>
+    <div class="unprepared-chips" id="modal-chips"></div>
+    <div class="skip-label">Reason for skipping unprepared items</div>
+    <div class="skip-options">
+      <div class="skip-option" onclick="selectSkip(this,'Unavailable')">Unavailable</div>
+      <div class="skip-option" onclick="selectSkip(this,'No longer needed')">No Longer Needed</div>
+      <div class="skip-option" onclick="selectSkip(this,'other')">Other</div>
+    </div>
+    <input class="skip-other-input" id="skip-other" type="text"
+      placeholder="Describe the reason…" oninput="onSkipOther()" />
+    <div class="modal-acts">
+      <button class="modal-no" onclick="closeModal()">Cancel</button>
+      <button class="modal-ok" id="modal-ok" disabled onclick="confirmDispatch()">Confirm Dispatch →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+/* ═══════════════════════════════════════
+   TORI Central Kitchen Display — v3
+   Layout: [Prep List | R1 Orders | R2 Orders]
+   ═══════════════════════════════════════ */
+
+const API_BASE = 'https://tori-kitchen-system-tv6b.vercel.app'; // ← set to your backend URL
+
+// ── ITEM & CATEGORY DEFINITIONS (orders) ──
+const ORDER_CATS = [
+  { id:'sauces', label:'Sauces', items:[
+    {id:'kungpao',         name:'Kungpao Sauce',        unit:'L'},
+    {id:'katsu',           name:'Katsu Sauce',          unit:'L'},
+    {id:'teriyaki',        name:'Teriyaki',             unit:'L'},
+    {id:'dan',             name:'Dan Sauce',            unit:'L'},
+    {id:'poke',            name:'Poke Sauce',           unit:'L'},
+    {id:'gyoza',           name:'Gyoza Sauce',          unit:'L'},
+    {id:'coriander_wasabi',name:'Coriander Wasabi Mayo',unit:'L'},
+    {id:'sriracha',        name:'Sriracha',             unit:'L'},
+    {id:'soup',            name:'Soup',                 unit:'L'},
+    {id:'vinegar',         name:'Vinegar',              unit:'L'},
+    {id:'sushi_vinegar',   name:'Sushi Vinegar',        unit:'L'},
+    {id:'soy',             name:'Soy Sauce',            unit:'L'},
+    {id:'soy_less_salt',   name:'Soy — Less Salt',      unit:'L'},
+    {id:'tan_tan',         name:'Tan-Tan Men Ramen',    unit:'L'},
+    {id:'laksa',           name:'Laksa',                unit:'L'},
+    {id:'oil',             name:'Oil',                  unit:'L'},
+    {id:'sunflower_oil',   name:'Sunflower Oil',        unit:'L'},
+    {id:'garlic_oil',      name:'Garlic Oil',           unit:'L'},
+    {id:'chili_oil',       name:'Chili Oil',            unit:'L'},
+    {id:'sesame_oil',      name:'Sesame Oil',           unit:'L'},
+  ]},
+  { id:'foods', label:'Foods', items:[
+    {id:'chicken',        name:'Chicken',             unit:'kg'},
+    {id:'beef',           name:'Beef',                unit:'kg'},
+    {id:'karaage',        name:'Karaage',             unit:'kg'},
+    {id:'baked_pork',     name:'Baked Pork',          unit:'kg'},
+    {id:'miso',           name:'Miso',                unit:'kg'},
+    {id:'meat',           name:'Meat',                unit:'kg'},
+    {id:'egg',            name:'Egg',                 unit:'pcs'},
+    {id:'bamboo',         name:'Marinated Bamboo',    unit:'kg'},
+    {id:'noodles',        name:'Noodles',             unit:'kg'},
+    {id:'shiitake',       name:'Shiitake Mushroom',   unit:'kg'},
+    {id:'thai_paste',     name:'Thai Chili Paste',    unit:'kg'},
+    {id:'sambal',         name:'Sambal',              unit:'kg'},
+    {id:'tofu',           name:'Tofu',                unit:'kg'},
+    {id:'daikon',         name:'Daikon',              unit:'kg'},
+    {id:'tempura_roll',   name:'Tempura Roll',        unit:'pcs'},
+    {id:'white_seeds',    name:'White Sesame Seeds',  unit:'kg'},
+    {id:'furikake',       name:'Furikake',            unit:'kg'},
+    {id:'togarashi',      name:'Togarashi',           unit:'kg'},
+    {id:'bonito',         name:'Bonito/Tuna Flakes',  unit:'kg'},
+    {id:'pickled_ginger', name:'Pickled Ginger',      unit:'kg'},
+    {id:'black_sesame',   name:'Black Sesame Seeds',  unit:'kg'},
+    {id:'peanuts',        name:'Kikirikii/Peanuts',   unit:'kg'},
+    {id:'cashew',         name:'Cashew',              unit:'kg'},
+    {id:'crumble',        name:'Crumble',             unit:'kg'},
+    {id:'coleslaw',       name:'Coleslaw',            unit:'kg'},
+    {id:'wakame',         name:'Wakame',              unit:'kg'},
+    {id:'lobster_surimi', name:'Lobster Surimi',      unit:'kg'},
+    {id:'kimchi',         name:'Kimchi',              unit:'kg'},
+    {id:'frozen',         name:'Frozen Items',        unit:'kg'},
+    {id:'unagi',          name:'Unagi',               unit:'pcs'},
+    {id:'edamame',        name:'Edamame',             unit:'kg'},
+    {id:'stir_fry',       name:'Stir Fry',            unit:'kg'},
+    {id:'rice',           name:'Rice',                unit:'kg'},
+    {id:'breaded',        name:'Breaded',             unit:'kg'},
+    {id:'ice_cream',      name:'Ice Cream',           unit:'pcs'},
+    {id:'leaves',         name:'Salad Leaves',        unit:'kg'},
+  ]},
+  { id:'vegetables', label:'Vegetables', items:[
+    {id:'enoki',        name:'Enoki',        unit:'kg'},
+    {id:'cucumber',     name:'Cucumber',     unit:'kg'},
+    {id:'pak_choi',     name:'Pak Choi',     unit:'kg'},
+    {id:'radish',       name:'Radish',       unit:'kg'},
+    {id:'green_beans',  name:'Green Beans',  unit:'kg'},
+    {id:'purple_onion', name:'Purple Onion', unit:'kg'},
+    {id:'spring_onion', name:'Spring Onion', unit:'kg'},
+    {id:'veg_mix',      name:'Vegetable Mix',unit:'kg'},
+  ]},
+  { id:'drinks', label:'Drinks', items:[
+    {id:'cola_regular', name:'Coca Cola Regular', unit:'bottles'},
+    {id:'cola_zero',    name:'Coca Cola Zero',    unit:'bottles'},
+    {id:'jana',         name:'Jana',              unit:'bottles'},
+    {id:'jamnica',      name:'Jamnica',           unit:'bottles'},
+    {id:'romerquelle',  name:'Römerquelle',       unit:'bottles'},
+    {id:'honey_lemon',  name:'Honey Lemon Tea',   unit:'bottles'},
+    {id:'tea_original', name:'Tea Original',      unit:'bottles'},
+    {id:'tea_no_sugar', name:'Tea No Sugar',      unit:'bottles'},
+    {id:'sapporo',      name:'Sapporo',           unit:'bottles'},
+    {id:'singha',       name:'Singha',            unit:'bottles'},
+    {id:'asahi',        name:'Asahi',             unit:'bottles'},
+    {id:'zmajsko',      name:'Zmajsko Pale Ale',  unit:'bottles'},
+    {id:'therapy',      name:'Therapy',           unit:'bottles'},
+    {id:'pils',         name:'Pils',              unit:'bottles'},
+    {id:'merlot',       name:'Merlot',            unit:'bottles'},
+    {id:'grasevina',    name:'Graševina',         unit:'bottles'},
+  ]},
+  { id:'dry', label:'Dry Items', items:[
+    {id:'gloves',          name:'Gloves',          unit:'boxes'},
+    {id:'tissue_big',      name:'Big Tissue',      unit:'boxes'},
+    {id:'tissue_small',    name:'Small Tissue',    unit:'boxes'},
+    {id:'bag_garbage_blue',name:'Garbage Bag Blue',unit:'pcs'},
+    {id:'bag_large',       name:'Bag Large',       unit:'pcs'},
+    {id:'bag_medium',      name:'Bag Medium',      unit:'pcs'},
+    {id:'bag_brown',       name:'Bag Brown',       unit:'pcs'},
+    {id:'chopsticks',      name:'Chopsticks',      unit:'pcs'},
+    {id:'paper_tray',      name:'Paper Tray',      unit:'pcs'},
+    {id:'tori_bag',        name:'Tori Bag',        unit:'pcs'},
+    {id:'cups',            name:'Cups',            unit:'pcs'},
+    {id:'bowls_lid',       name:'Bowls/Lid Big',   unit:'pcs'},
+    {id:'container',       name:'Container',       unit:'pcs'},
+    {id:'potato_starch',   name:'Potato Starch',   unit:'kg'},
+    {id:'panko',           name:'Panko',           unit:'kg'},
+    {id:'starch',          name:'Starch',          unit:'kg'},
+    {id:'wire',            name:'Wire',            unit:'pcs'},
+    {id:'film_small',      name:'Film Small',      unit:'rolls'},
+    {id:'film_large',      name:'Film Large',      unit:'rolls'},
+    {id:'envelope',        name:'Envelope',        unit:'pcs'},
+    {id:'labels',          name:'Labels',          unit:'pcs'},
+    {id:'tape',            name:'Tape',            unit:'rolls'},
+    {id:'dish_liquid',     name:'Dish Wash Liquid',unit:'bottles'},
+    {id:'detergent',       name:'Detergent Soap',  unit:'bottles'},
+    {id:'hand_soap',       name:'Hand Soap',       unit:'bottles'},
+    {id:'sponge',          name:'Sponge',          unit:'pcs'},
+    {id:'chemical',        name:'Chemical',        unit:'pcs'},
+    {id:'towel',           name:'Towel',           unit:'pcs'},
+    {id:'cloth',           name:'Cloth',           unit:'pcs'},
+    {id:'radikalin',       name:'Radikalin',       unit:'bottles'},
+    {id:'blitz',           name:'Blitz',           unit:'bottles'},
+    {id:'calc_clean',      name:'Calc Cleaner',    unit:'bottles'},
+    {id:'sanitar',         name:'Sanitizer',       unit:'bottles'},
+  ]},
+];
+
+// item meta lookup (orders)
+const orderItemMeta = {};
+ORDER_CATS.forEach(c => c.items.forEach(i => { orderItemMeta[i.id] = { ...i, catId:c.id, catLabel:c.label }; }));
+
+// ── STATE ──
+let state = {
+  // Preparation list (from tori-preparation-checklist)
+  prep: null,           // { id, staff_name, role, prep_date, items:{id:qty}, ts }
+  prepDone: {},         // { itemId: timestamp } — ticked by kitchen staff on this display
+
+  // Restaurant orders (from tori-order-checklist)
+  pending: { r1: null, r2: null },
+  dispatchTicked: { r1: {}, r2: {} }, // { itemId: true } per restaurant
+
+  history: [],
+  apiOnline: false,
+  lastRefresh: null
+};
+
+// ── FETCH ──
+// ── PRODUCTION: fetch from API, localStorage fallback if API_BASE empty ──
+async function fetchAll(quiet = true) {
+  try {
+    // ── API MODE ──
+    if (API_BASE) {
+      const res = await fetch(API_BASE + '/api/orders/active', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+
+      const newPending = { r1: null, r2: null };
+      ['r1','r2'].forEach(k => {
+        if (data[k]) {
+          const prev = state.pending[k];
+          if (!prev || String(prev.id) !== String(data[k].id)) {
+            state.dispatchTicked[k] = {};
+          }
+          newPending[k] = data[k];
+        }
+      });
+
+      state.pending     = newPending;
+      state.history     = data.history || [];
+      state.apiOnline   = true;
+      state.lastRefresh = Date.now();
+      renderAll();
+      if (!quiet) showToast('Orders refreshed');
+      return;
+    }
+    // ── FALLBACK: localStorage (for local testing only) ──
+    // Read pending orders written by tori-order-checklist
+    const rawOrders = localStorage.getItem('TORI_ORDERS');
+    const ordersData = rawOrders ? JSON.parse(rawOrders) : {};
+
+    const newPending = { r1: null, r2: null };
+    ['r1','r2'].forEach(k => {
+      const order = ordersData[k];
+      if (order && !order.dispatched) {
+        const prev = state.pending[k];
+        const next = order;
+        if (!prev || String(prev.id) !== String(next.id)) {
+          state.dispatchTicked[k] = {};
+        }
+        newPending[k] = next;
+      }
+    });
+
+    // Detect any real change before re-rendering to avoid flicker
+    const changed = ['r1','r2'].some(k => {
+      const prev = state.pending[k];
+      const next = newPending[k];
+      if (!prev && !next) return false;
+      if (!prev || !next) return true;
+      return String(prev.id) !== String(next.id) ||
+             JSON.stringify(prev.items) !== JSON.stringify(next.items);
+    });
+
+    // Read prep list written by tori-preparation-checklist
+    const rawPrep = localStorage.getItem('TORI_PREP');
+    let prepChanged = false;
+    if (rawPrep) {
+      const newPrep = JSON.parse(rawPrep);
+      if (!state.prep || String(state.prep.id) !== String(newPrep.id)) {
+        state.prepDone = {};
+        prepChanged = true;
+      }
+      state.prep = newPrep;
+    } else if (state.prep) {
+      // prep was cleared
+      state.prep = null;
+      prepChanged = true;
+    }
+
+    // Read history
+    const rawHist = localStorage.getItem('TORI_HISTORY');
+    const newHist = rawHist ? JSON.parse(rawHist) : [];
+    const histChanged = newHist.length !== state.history.length;
+
+    state.pending     = newPending;
+    state.history     = newHist;
+    state.apiOnline   = true;
+    state.lastRefresh = Date.now();
+
+    if (changed || histChanged || prepChanged || !quiet) renderAll();
+    else { renderApiStatus(); }
+
+  } catch(e) {
+    state.apiOnline   = false;
+    state.lastRefresh = Date.now();
+    renderApiStatus();
+  }
+}
+
+// ── NORMALIZE ──
+function normalizePending(raw) {
+  const out = { r1: null, r2: null };
+  if (Array.isArray(raw)) {
+    raw.forEach(o => { const k = normKey(o.restaurant||''); if(k) out[k] = normalizeOrder(o,k); });
+  } else {
+    ['r1','r2'].forEach(k => { if(raw[k]) out[k] = normalizeOrder(raw[k], k); });
+  }
+  return out;
+}
+function normKey(v) {
+  const s = String(v).toLowerCase();
+  if (s==='r1'||s.includes('spansko')||s.includes('špansko')||s.includes('restaurant 1')) return 'r1';
+  if (s==='r2'||s.includes('trnje')||s.includes('restaurant 2')) return 'r2';
+  return null;
+}
+function normalizeOrder(raw, k) {
+  const items = {};
+  const src = raw.items || {};
+  if (Array.isArray(src)) {
+    src.forEach(l => { if(l.id && Number(l.qty||l.quantity||0)>0) items[l.id]=Number(l.qty||l.quantity); });
+  } else {
+    Object.entries(src).forEach(([id,q]) => { if(Number(q)>0) items[id]=Number(q); });
+  }
+  return {
+    id:        raw.id || Date.now(),
+    restaurant: k,
+    staffName: raw.staff_name || raw.staffName || '—',
+    orderDate: raw.order_date || raw.orderDate || null,
+    ts:        toMs(raw.ts || raw.submittedAt || raw.created_at),
+    items
+  };
+}
+function normalizePrep(raw) {
+  const items = {};
+  const src = raw.items || {};
+  if (Array.isArray(src)) {
+    src.forEach(l => { if(l.id && Number(l.qty||l.quantity||0)>0) items[l.id]=Number(l.qty||l.quantity); });
+  } else {
+    Object.entries(src).forEach(([id,q]) => { if(Number(q)>0) items[id]=Number(q); });
+  }
+  return {
+    id:        raw.id || Date.now(),
+    staffName: raw.staff_name || raw.staffName || '—',
+    role:      raw.role || '—',
+    prepDate:  raw.prep_date || raw.prepDate || null,
+    ts:        toMs(raw.ts || raw.created_at),
+    items
+  };
+}
+function toMs(v) {
+  if (!v) return Date.now();
+  if (typeof v === 'number') return v > 1e12 ? v : v * 1000;
+  const p = Date.parse(v); return isNaN(p) ? Date.now() : p;
+}
+
+// ── RENDER ALL ──
+function renderAll() {
+  renderApiStatus();
+  updateStamp();
+  renderInfoStrip();
+  renderPrepColumn();
+  renderOrderColumn('r1');
+  renderOrderColumn('r2');
+  renderHistory();
+  updateFooter();
+  updateBadges();
+}
+
+function renderApiStatus() {
+  const dot = document.getElementById('api-dot');
+  const txt = document.getElementById('api-txt');
+  if (dot) dot.className = 'api-dot ' + (state.apiOnline ? 'on' : 'off');
+  if (txt) txt.textContent = state.apiOnline ? 'Demo · Live' : 'Demo · Syncing…';
+}
+
+function updateStamp() {} // info strip removed
+
+function updateBadges() {
+  const active = (state.pending.r1?1:0) + (state.pending.r2?1:0);
+  const badge = document.getElementById('badge-central');
+  badge.textContent = active;
+  badge.className = 'tab-badge' + (active > 0 ? ' live' : '');
+  // badge-hist removed
+}
+
+function renderInfoStrip() {} // info strip removed
+
+// ── PREP COLUMN ──
+function renderPrepColumn() {
+  const prep = state.prep;
+  const doneHd = document.getElementById('prep-done-hd');
+  const leftHd = document.getElementById('prep-left-hd');
+  const body   = document.getElementById('prep-body');
+
+  if (!prep || !Object.keys(prep.items).length) {
+    doneHd.textContent = '0';
+    leftHd.textContent = '—';
+    body.innerHTML = `<div class="col-empty">
+      <div class="col-empty-icon">◻</div>
+      Waiting for prep list
+      <div class="col-empty-sub">Head chef submits via<br>Prep Checklist</div>
+    </div>`;
+    return;
+  }
+
+  const entries = Object.entries(prep.items);
+  const total   = entries.length;
+  const done    = entries.filter(([id]) => state.prepDone[id]).length;
+  const left    = total - done;
+
+  doneHd.textContent = done;
+  leftHd.textContent = left;
+
+  // Separate: undone first (sorted by original order), done at bottom (newest tick last)
+  // Group by category for undone; done items append at bottom sorted by tick time asc
+  let html = '';
+
+  // Build undone items grouped by category
+  // (We only know item IDs from the prep list, not categories — use ORDER_CATS as reference,
+  //  then fall back to "Other" for prep-specific items)
+  const undoneById = {};
+  const doneById   = {};
+  entries.forEach(([id, qty]) => {
+    if (state.prepDone[id]) doneById[id] = { qty, ts: state.prepDone[id] };
+    else undoneById[id] = qty;
+  });
+
+  // Group undone by category
+  const catGroups = {}; // catLabel → [{id,qty,name,unit}]
+  const uncategorised = [];
+
+  // Check ORDER_CATS for known items
+  ORDER_CATS.forEach(cat => {
+    cat.items.forEach(item => {
+      if (undoneById[item.id] !== undefined) {
+        if (!catGroups[cat.label]) catGroups[cat.label] = [];
+        catGroups[cat.label].push({ id:item.id, qty:undoneById[item.id], name:item.name, unit:item.unit });
+      }
+    });
+  });
+
+  // Check prep-specific categories — IDs match tori-prep-checklist DEFAULT_TASKS
+  const PREP_CATS = [
+    { id:'sauces', label:'Sauces', items:[
+      {id:'dan_dan_sauce',  name:'Dan Dan Sauce',         unit:'L'},
+      {id:'goma_tare',      name:'Goma Tare',             unit:'L'},
+      {id:'gyoza_sauce',    name:'Gyoza Sauce',           unit:'L'},
+      {id:'kimchi_paste',   name:'Kimchi Paste',          unit:'kg'},
+      {id:'kungpao_sauce',  name:'Kung Pao Sauce',        unit:'L'},
+      {id:'laksa_base',     name:'Laksa Base',            unit:'L'},
+      {id:'poke_sauce',     name:'Poke Sauce',            unit:'L'},
+      {id:'pork_belly_glaze',name:'Pork Belly Glaze',     unit:'L'},
+      {id:'soy_tare',       name:'Soy Tare',              unit:'L'},
+      {id:'sunomono_sauce', name:'Sunomono Sauce',        unit:'L'},
+      {id:'sushi_vinegar',  name:'Sushi Vinegar Making',  unit:'L'},
+      {id:'teriyaki_sauce', name:'Teriyaki Sauce',        unit:'L'},
+    ]},
+    { id:'foods', label:'Foods', items:[
+      {id:'bamboo_cook',    name:'Bamboo Cook & Marinate',unit:'kg'},
+      {id:'beef_stripes',   name:'Beef Stripes Cut & Marinate',unit:'kg'},
+      {id:'chicken_miso',   name:'Chicken Miso',          unit:'kg'},
+      {id:'chicken_stock',  name:'Chicken Soup Stock',    unit:'L'},
+      {id:'chicken_thighs', name:'Chicken Thighs Cut & Marinate',unit:'kg'},
+      {id:'coleslaw',       name:'Coleslaw Making',       unit:'kg'},
+      {id:'crumble',        name:'Crumble Making',        unit:'kg'},
+      {id:'dan_dan_pork',   name:'Dan Dan Black Bean Pork',unit:'kg'},
+      {id:'egg_marinade',   name:'Egg Marinade',          unit:'pcs'},
+      {id:'gyoza_pork',     name:'Gyoza Pork (Freeze)',   unit:'kg'},
+      {id:'icecream_takeaway',name:'Ice Cream Takeaway (Freeze)',unit:'pcs'},
+      {id:'katsu_chicken',  name:'Katsu Chicken Prep',    unit:'kg'},
+      {id:'kimchi',         name:'Kimchi Making',         unit:'kg'},
+      {id:'lobster_salad',  name:'Lobster Salad',         unit:'kg'},
+      {id:'tempura_roll',   name:'Making Tempura Roll',   unit:'pcs'},
+      {id:'peanuts_grind',  name:'Peanuts Grind',         unit:'kg'},
+      {id:'pork_belly_prep',name:'Pork Belly Prep & Rub', unit:'kg'},
+      {id:'pork_belly_bake',name:'Pork Belly Bake (Freeze)',unit:'kg'},
+      {id:'pork_belly_cut', name:'Pork Belly Cutting',    unit:'kg'},
+      {id:'ramen_eggs',     name:'Ramen Eggs Cook, Peel & Marinate',unit:'pcs'},
+      {id:'ramen_noodles',  name:'Ramen Noodles (Freeze)',unit:'kg'},
+      {id:'ramen_soup',     name:'Ramen Soup Finish',     unit:'L'},
+      {id:'shiitake_soak',  name:'Shiitake Soaking & Cooking',unit:'kg'},
+      {id:'sushi_rice',     name:'Sushi Rice Cooking',    unit:'kg'},
+      {id:'tofu_cutting',   name:'Tofu Cutting',          unit:'kg'},
+      {id:'tofu_panko',     name:'Tofu Panko (Freeze)',   unit:'kg'},
+      {id:'tuna_poke',      name:'Tuna Cutting for Poke', unit:'kg'},
+      {id:'vimixa_noodles', name:'Vimixa Noodles Cooking',unit:'kg'},
+      {id:'banana_bread',   name:'Banana Bread (Freeze)', unit:'pcs'},
+    ]},
+    { id:'vegetables', label:'Vegetables', items:[
+      {id:'chilli_cutting', name:'Chilli Cutting',        unit:'kg'},
+      {id:'cucumber_marinade',name:'Cucumber Marinade',   unit:'kg'},
+      {id:'cucumbers_cut',  name:'Cucumbers Cutting',     unit:'kg'},
+      {id:'daikon_marinate',name:'Daikon Cut & Marinate', unit:'kg'},
+      {id:'green_beans',    name:'Green Beans Blanche',   unit:'kg'},
+      {id:'pak_choi',       name:'Pak Choi Blanche',      unit:'kg'},
+      {id:'purple_onion',   name:'Purple Onion Cutting',  unit:'kg'},
+      {id:'shiitake_cut',   name:'Shiitake Cutting',      unit:'kg'},
+      {id:'spring_onion',   name:'Spring Onion Cutting',  unit:'kg'},
+    ]},
+  ];
+  const allPrepMeta = {};
+  PREP_CATS.forEach(c => c.items.forEach(i => { allPrepMeta[i.id] = { ...i, catLabel: c.label }; }));
+
+  // Any item not in ORDER_CATS — check PREP_CATS
+  Object.keys(undoneById).forEach(id => {
+    // Already handled via ORDER_CATS?
+    const alreadyGrouped = Object.values(catGroups).some(arr => arr.find(x => x.id === id));
+    if (alreadyGrouped) return;
+    const m = allPrepMeta[id];
+    if (m) {
+      if (!catGroups[m.catLabel]) catGroups[m.catLabel] = [];
+      catGroups[m.catLabel].push({ id, qty:undoneById[id], name:m.name, unit:m.unit });
+    } else {
+      uncategorised.push({ id, qty:undoneById[id], name:id, unit:'' });
+    }
+  });
+
+  // Render undone groups
+  Object.entries(catGroups).forEach(([label, items]) => {
+    if (!items.length) return;
+    html += `<div class="cat-label">${label}</div>`;
+    items.forEach(item => {
+      html += buildPrepRow(item.id, item.name, item.qty, item.unit, false);
+    });
+  });
+  if (uncategorised.length) {
+    html += `<div class="cat-label">Other</div>`;
+    uncategorised.forEach(item => {
+      html += buildPrepRow(item.id, item.name, item.qty, item.unit, false);
+    });
+  }
+
+  // Done items at bottom — sorted chronologically (earliest done = most bottom)
+  const doneItems = Object.entries(doneById)
+    .sort((a,b) => a[1].ts - b[1].ts);
+
+  if (doneItems.length) {
+    html += `<div class="cat-label" style="color:var(--green2);">Prepared ✓</div>`;
+    doneItems.forEach(([id, {qty}]) => {
+      const m = allPrepMeta[id] || orderItemMeta[id] || { name:id, unit:'' };
+      html += buildPrepRow(id, m.name, qty, m.unit, true);
+    });
+  }
+
+  // Show Clear List button only when ALL items are ticked
+  if (total > 0 && done === total) {
+    html += `<div class="prep-clear-wrap">
+      <button class="prep-clear-btn" onclick="clearPrepList()">✓ Clear Prep List</button>
+    </div>`;
+  }
+
+  body.innerHTML = html;
+}
+
+function buildPrepRow(id, name, qty, unit, done) {
+  return `<div class="prep-row${done?' done':''}" onclick="togglePrep('${id}')">
+    <div class="prep-cb"></div>
+    <div class="prep-name">${name}</div>
+    <div class="prep-qty-wrap">
+      <div class="prep-qty">${qty}</div>
+      <div class="prep-unit">${unit}</div>
+    </div>
+  </div>`;
+}
+
+function togglePrep(id) {
+  if (state.prepDone[id]) {
+    delete state.prepDone[id];
+  } else {
+    state.prepDone[id] = Date.now();
+  }
+  renderPrepColumn();
+  renderInfoStrip();
+  updateFooter();
+}
+
+function clearPrepList() {
+  if (!confirm('Mark preparation complete and clear the list?\n\nThis will save it to Preparation History.')) return;
+  const prep = state.prep;
+  if (!prep) return;
+
+  // Save to TORI_PREP_LOG so it appears in Preparation History
+  try {
+    const items = Object.entries(prep.items).map(([id, qty]) => {
+      const m = buildAllItemMeta()[id] || { name: id, unit: '' };
+      return { task_id: id, name: m.name, cat: m.cat || 'other', qty, unit: m.unit || '', scheduled_today: true };
+    });
+    const logEntry = {
+      type:         'prep_log',
+      chef_name:    prep.staffName || 'Kitchen Staff',
+      prep_date:    prep.prepDate || new Date().toISOString().slice(0,10),
+      day_index:    -1,
+      day_label:    prep.prepDate ? new Date(prep.prepDate+'T12:00:00').toLocaleDateString('en-GB',{weekday:'long'}) : '—',
+      items,
+      ts:           Date.now(),
+      submitted_at: new Date().toISOString(),
+    };
+    const existing = JSON.parse(localStorage.getItem('TORI_PREP_LOG') || '[]');
+    existing.push(logEntry);
+    localStorage.setItem('TORI_PREP_LOG', JSON.stringify(existing));
+  } catch(e) { console.warn('Could not save to prep log:', e); }
+
+  // Clear TORI_PREP and reset state
+  try { localStorage.removeItem('TORI_PREP'); } catch(e) {}
+  state.prep     = null;
+  state.prepDone = {};
+  renderAll();
+  showToast('Prep list cleared — saved to Preparation History');
+}
+
+// ── ORDER COLUMNS (R1 / R2) ──
+function renderOrderColumn(k) {
+  const order  = state.pending[k];
+  const meta   = document.getElementById(k + '-meta');
+  const body   = document.getElementById(k + '-body');
+
+  if (!order || !Object.keys(order.items).length) {
+    meta.innerHTML = '<span style="color:var(--ink4)">no orders</span>';
+    body.innerHTML = `<div class="col-empty">
+      <div class="col-empty-icon">◻</div>
+      Waiting for order
+      <div class="col-empty-sub">Restaurant submits via<br>Order Checklist</div>
+    </div>`;
+    return;
+  }
+
+  meta.innerHTML = `<div class="time">${fmtTime(order.ts)}</div><div class="who">${order.staffName}${order.isAmendment ? ' <span style="color:var(--amber);font-size:10px;font-weight:900;letter-spacing:0.1em;">AMENDED</span>' : ''}</div>`;
+
+  let html = '';
+  const ticked = state.dispatchTicked[k] || {};
+
+  ORDER_CATS.forEach(cat => {
+    const catItems = cat.items.filter(i => order.items[i.id] !== undefined);
+    if (!catItems.length) return;
+
+    // Undone first, done at bottom
+    const undone = catItems.filter(i => !ticked[i.id]);
+    const done   = catItems.filter(i =>  ticked[i.id]);
+    const sorted = [...undone, ...done];
+
+    html += `<div class="cat-label">${cat.label}</div>`;
+    sorted.forEach(item => {
+      const qty     = order.items[item.id];
+      const isDone  = !!ticked[item.id];
+      html += `<div class="order-row${isDone?' dispatched':''}" onclick="toggleDispatch('${k}','${item.id}')">
+        <div class="dispatch-cb"></div>
+        <span class="order-name">${item.name}</span>
+        <div class="order-qty-wrap">
+          <span class="order-qty">${qty}</span>
+          <span class="order-unit">${item.unit}</span>
+        </div>
+      </div>`;
+    });
+  });
+
+  body.innerHTML = html;
+}
+
+function toggleDispatch(k, itemId) {
+  if (!state.dispatchTicked[k]) state.dispatchTicked[k] = {};
+  if (state.dispatchTicked[k][itemId]) {
+    delete state.dispatchTicked[k][itemId];
+  } else {
+    state.dispatchTicked[k][itemId] = true;
+  }
+  renderOrderColumn(k);
+  updateFooter();
+}
+
+// ── FOOTER ──
+function updateFooter() {
+  const r1 = state.pending.r1;
+  const r2 = state.pending.r2;
+  const activeOrders = (r1?1:0)+(r2?1:0);
+
+  // Prep stats
+  const prep = state.prep;
+  const prepTotal = prep ? Object.keys(prep.items).length : 0;
+  const prepDone  = prep ? Object.keys(prep.items).filter(id => state.prepDone[id]).length : 0;
+
+  // Dispatch tick stats
+  let dispTotal = 0, dispDone = 0;
+  ['r1','r2'].forEach(k => {
+    const o = state.pending[k];
+    if (!o) return;
+    const items = Object.keys(o.items);
+    dispTotal += items.length;
+    dispDone  += items.filter(id => (state.dispatchTicked[k]||{})[id]).length;
+  });
+
+  document.getElementById('ft-orders').textContent     = activeOrders;
+  document.getElementById('ft-prep-done').textContent  = prepDone;
+  document.getElementById('ft-prep-total').textContent = prepTotal || '—';
+  document.getElementById('ft-disp-done').textContent  = dispDone;
+  document.getElementById('ft-disp-total').textContent = dispTotal || '—';
+
+  // Ready dot — all dispatch ticks done
+  const allDispDone = dispTotal > 0 && dispDone === dispTotal;
+  // Ready dot removed — buttons hidden/shown instead
+
+  const btnR1  = document.getElementById('btn-r1');
+  const btnR2  = document.getElementById('btn-r2');
+  const btnAll = document.getElementById('btn-dispatch-all');
+  if (btnR1)  { btnR1.disabled = !r1;  btnR1.style.display  = r1 ? '' : 'none'; }
+  if (btnR2)  { btnR2.disabled = !r2;  btnR2.style.display  = r2 ? '' : 'none'; }
+  if (btnAll) { btnAll.disabled = activeOrders === 0; btnAll.style.display = activeOrders === 0 ? 'none' : ''; }
+}
+
+// ── DISPATCH FLOW ──
+// Step 1: triggerDispatch(which) — entry point from footer buttons
+// Step 2: name modal — get dispatcher name
+// Step 3: skip modal — if prep items undone, require reason
+// Step 4: doDispatchFull() — execute + open delivery window
+
+let _dispatchWhich = null;        // 'r1' | 'r2' | 'all'
+let _dispatcherName = null;       // entered in name modal
+let _skipReason = null;           // entered in skip modal
+let _pendingSnapshot = null;      // snapshot of pending orders before dispatch
+
+function triggerDispatch(which) {
+  _dispatchWhich  = which;
+  _dispatcherName = null;
+  _skipReason     = null;
+
+  // Snapshot orders NOW before anything clears
+  _pendingSnapshot = {
+    r1: state.pending.r1 ? JSON.parse(JSON.stringify(state.pending.r1)) : null,
+    r2: state.pending.r2 ? JSON.parse(JSON.stringify(state.pending.r2)) : null,
+  };
+
+  // Label for modal
+  const labels = { r1:'Tori 1 — Špansko', r2:'Tori 2 — Trnje', all:'Both Restaurants' };
+  document.getElementById('nm-title').textContent = 'Dispatch — ' + labels[which];
+  document.getElementById('nm-sub').textContent =
+    'Enter the name of the person dispatching this delivery. This will be recorded in the delivery log.';
+  document.getElementById('nm-input').value = '';
+  document.getElementById('nm-ok').disabled = true;
+  document.getElementById('name-modal').classList.add('open');
+  setTimeout(() => document.getElementById('nm-input').focus(), 100);
+}
+
+function closeNameModal() {
+  document.getElementById('name-modal').classList.remove('open');
+}
+
+function onNameConfirmed() {
+  _dispatcherName = document.getElementById('nm-input').value.trim();
+  if (!_dispatcherName) return;
+  closeNameModal();
+
+  // Check if restaurant order items are all ticked in the dispatch columns
+  const which = _dispatchWhich;
+  const targets = which === 'all'
+    ? ['r1','r2'].filter(k => _pendingSnapshot && _pendingSnapshot[k])
+    : [which].filter(k => _pendingSnapshot && _pendingSnapshot[k]);
+
+  // Find any restaurant order items NOT ticked for dispatch
+  const allItemMeta = buildAllItemMeta();
+  const untickedItems = [];
+  targets.forEach(k => {
+    const src = _pendingSnapshot[k];
+    if (!src) return;
+    Object.keys(src.items).forEach(id => {
+      if (!(state.dispatchTicked[k] && state.dispatchTicked[k][id])) {
+        const m = allItemMeta[id] || { name: id };
+        untickedItems.push({ id, name: m.name, restaurant: k });
+      }
+    });
+  });
+
+  if (untickedItems.length > 0) {
+    document.getElementById('modal-warn').textContent =
+      '⚠ ' + untickedItems.length + ' item' + (untickedItems.length!==1?'s':'') + ' not ticked for dispatch';
+    document.getElementById('modal-chips').innerHTML = untickedItems.map(i =>
+      `<span class="unprepared-chip">${i.name}</span>`
+    ).join('');
+    _skipReason = null;
+    document.querySelectorAll('.skip-option').forEach(el => el.classList.remove('selected'));
+    document.getElementById('skip-other').value = '';
+    document.getElementById('skip-other').classList.remove('visible');
+    document.getElementById('modal-ok').disabled = true;
+    document.getElementById('modal').classList.add('open');
+  } else {
+    doDispatchFull();
+  }
+}
+
+function selectSkip(el, value) {
+  document.querySelectorAll('.skip-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  const other = document.getElementById('skip-other');
+  if (value === 'other') {
+    _skipReason = null;
+    other.classList.add('visible');
+    other.focus();
+  } else {
+    _skipReason = value;
+    other.classList.remove('visible');
+    other.value = '';
+  }
+  document.getElementById('modal-ok').disabled = !_skipReason;
+}
+
+function onSkipOther() {
+  const val = document.getElementById('skip-other').value.trim();
+  _skipReason = val || null;
+  document.getElementById('modal-ok').disabled = !_skipReason;
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function confirmDispatch() {
+  closeModal();
+  doDispatchFull();
+}
+
+async function doDispatchFull() {
+  const which    = _dispatchWhich;
+  const snapshot = _pendingSnapshot || {};
+  const targets  = which === 'all'
+    ? ['r1','r2'].filter(k => snapshot[k])
+    : [which].filter(k => snapshot[k]);
+
+  try {
+    // ── API MODE ──
+    if (API_BASE) {
+      const res = await fetch(API_BASE + '/api/orders/dispatch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurant: which,
+          dispatched_by: _dispatcherName,
+          missing_items: {},
+          not_dispatched: {}
+        })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      await fetchAll(true);
+    }
+    // ── FALLBACK: localStorage ──
+    // DEMO: write dispatch to localStorage, mark orders as dispatched
+    targets.forEach(k => {
+      const src = state.pending[k] || snapshot[k];
+      if (src) {
+        state.history.unshift({
+          id: src.id, restaurant: k, staff_name: src.staffName,
+          items: src.items, status: 'dispatched',
+          created_at: new Date(src.ts || Date.now()).toISOString(),
+          dispatched_at: new Date().toISOString(),
+          dispatched_by: _dispatcherName
+        });
+        state.pending[k] = null;
+      }
+    });
+    // Mark orders as dispatched in TORI_ORDERS so checklist knows
+    try {
+      const orders = JSON.parse(localStorage.getItem('TORI_ORDERS') || '{}');
+      targets.forEach(k => { if (orders[k]) orders[k].dispatched = true; });
+      localStorage.setItem('TORI_ORDERS', JSON.stringify(orders));
+    } catch(e) {}
+    // Save history
+    try { localStorage.setItem('TORI_HISTORY', JSON.stringify(state.history)); } catch(e) {}
+
+    // Capture ticked state BEFORE resetting (ticked = dispatched items)
+    const tickedR1 = which === 'all' || which === 'r1' ? { ...state.dispatchTicked.r1 } : {};
+    const tickedR2 = which === 'all' || which === 'r2' ? { ...state.dispatchTicked.r2 } : {};
+
+    state.dispatchTicked = { r1:{}, r2:{} };
+    renderAll();
+
+    // Write delivery snapshot to localStorage for delivery window
+    try {
+      // Capture which items were ticked (dispatched) per restaurant
+      const delivSnapshot = {
+        r1: snapshot.r1 ? { id:snapshot.r1.id, staffName:snapshot.r1.staffName, items:snapshot.r1.items, ts:snapshot.r1.ts, orderDate:snapshot.r1.orderDate, tickedItems:tickedR1 } : null,
+        r2: snapshot.r2 ? { id:snapshot.r2.id, staffName:snapshot.r2.staffName, items:snapshot.r2.items, ts:snapshot.r2.ts, orderDate:snapshot.r2.orderDate, tickedItems:tickedR2 } : null,
+        dispatchedAt:  new Date().toISOString(),
+        dispatchedBy:  _dispatcherName,
+        skipReason:    _skipReason || null,
+        dispatchWhich: which
+      };
+      localStorage.setItem('TORI_DISPATCH', JSON.stringify(delivSnapshot));
+      localStorage.setItem('TORI_DISPATCH_BACKUP', JSON.stringify(delivSnapshot));
+
+      // Write TORI_STATUS for restaurants to track delivery
+      const existingStatus = JSON.parse(localStorage.getItem('TORI_STATUS') || '{}');
+      targets.forEach(k => {
+        const src    = snapshot[k];
+        const ticked = k === 'r1' ? tickedR1 : tickedR2;
+        if (src) {
+          // Build notDispatched: items in order that were NOT ticked
+          const notDispatched = {};
+          Object.keys(src.items || {}).forEach(itemId => {
+            if (!ticked[itemId]) {
+              notDispatched[itemId] = _skipReason || 'Not dispatched';
+            }
+          });
+          existingStatus[k] = {
+            status:        'in_delivery',
+            order:         { id:src.id, staffName:src.staffName, items:src.items, ts:src.ts },
+            dispatchedAt:  delivSnapshot.dispatchedAt,
+            dispatchedBy:  _dispatcherName,
+            notDispatched: Object.keys(ticked).length > 0 ? notDispatched : {}
+          };
+        }
+      });
+      localStorage.setItem('TORI_STATUS', JSON.stringify(existingStatus));
+    } catch(e){}
+
+    showToast('Dispatched by ' + _dispatcherName + ' — opening delivery window…');
+    setTimeout(() => {
+      window.open('tori-dispatch-delivery.html', 'tori_delivery',
+        'width=' + screen.availWidth + ',height=' + screen.availHeight + ',left=0,top=0,toolbar=no,menubar=no');
+    }, 200);
+
+  } catch(e) {
+    showToast('Dispatch failed — check connection');
+  }
+}
+
+// ── PENDING KITCHEN SCREEN ──
+// ── HISTORY ──
+function renderHistory() {
+  const hist = state.history;
+  document.getElementById('hist-total').textContent = hist.length;
+  const body = document.getElementById('hist-body');
+  if (!hist.length) {
+    body.innerHTML = '<div class="hist-empty">No delivery history yet</div>';
+    return;
+  }
+  const rows = hist.slice().reverse().map((h, idx) => {
+    const rk      = normKey(h.restaurant) || 'r1';
+    const rName   = rk === 'r1' ? 'Tori 1 — Špansko' : 'Tori 2 — Trnje';
+    const shortId = '#' + String(h.id || '').slice(-6);
+    const staff   = h.staff_name || '—';
+    const dispBy  = h.dispatched_by || '—';
+    const submDate = h.created_at ? new Date(h.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '—';
+    const submTime = h.created_at ? new Date(h.created_at).toTimeString().slice(0,5) : '';
+    const dispDate = h.dispatched_at ? new Date(h.dispatched_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '—';
+    const dispTime = h.dispatched_at ? new Date(h.dispatched_at).toTimeString().slice(0,5) : '';
+    const status   = h.status || 'dispatched';
+    const realIdx  = hist.length - 1 - idx;
+    return `<tr style="cursor:pointer;" onclick="openKitchenHistoryDetail(${realIdx})">
+      <td><span class="pill ${rk}">${rName}</span></td>
+      <td style="color:var(--ink4);font-size:12px;">${shortId}</td>
+      <td style="font-weight:700;color:var(--ink);">${staff}</td>
+      <td style="font-size:12px;color:var(--ink4);">${submDate} ${submTime}</td>
+      <td style="font-weight:700;color:var(--ink);">${dispBy}</td>
+      <td style="font-size:12px;color:var(--ink4);">${dispDate} ${dispTime}</td>
+      <td><span class="pill ${status}">${status}</span></td>
+    </tr>`;
+  }).join('');
+  body.innerHTML = `<table class="hist-table">
+    <thead><tr>
+      <th>Restaurant</th><th>ID</th><th>Ordered By</th>
+      <th>Submitted</th><th>Dispatched By</th><th>Dispatched</th><th>Status</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function openKitchenHistoryDetail(idx) {
+  const h = state.history[idx];
+  if (!h) return;
+  const rk    = normKey(h.restaurant) || 'r1';
+  const rName = rk === 'r1' ? 'Tori 1 — Špansko' : 'Tori 2 — Trnje';
+  const shortId   = '#' + String(h.id || '').slice(-6);
+  const submTime  = h.created_at  ? new Date(h.created_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+  const dispTime  = h.dispatched_at ? new Date(h.dispatched_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+  const fullDate  = h.created_at  ? new Date(h.created_at).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
+
+  let itemsHtml = '';
+  const items = h.items || {};
+  ORDER_CATS.forEach(cat => {
+    const catItems = cat.items.filter(i => items[i.id] !== undefined);
+    if (!catItems.length) return;
+    itemsHtml += `<div class="kd-cat">${cat.label}</div>`;
+    catItems.forEach(item => {
+      itemsHtml += `<div class="kd-row">
+        <span class="kd-name">${item.name}</span>
+        <span class="kd-qty">${items[item.id]} <span class="kd-unit">${item.unit}</span></span>
+      </div>`;
+    });
+  });
+
+  document.getElementById('kd-title').textContent = rName + ' — ' + fullDate;
+  document.getElementById('kd-meta').innerHTML = `
+    <div class="kd-meta-grid">
+      <div class="kd-meta-item"><div class="kd-meta-label">Order ID</div><div class="kd-meta-val">${shortId}</div></div>
+      <div class="kd-meta-item"><div class="kd-meta-label">Ordered by</div><div class="kd-meta-val">${h.staff_name||'—'}</div></div>
+      <div class="kd-meta-item"><div class="kd-meta-label">Submitted</div><div class="kd-meta-val">${submTime}</div></div>
+      <div class="kd-meta-item"><div class="kd-meta-label">Dispatched by</div><div class="kd-meta-val">${h.dispatched_by||'—'}</div></div>
+      <div class="kd-meta-item"><div class="kd-meta-label">Dispatched</div><div class="kd-meta-val">${dispTime}</div></div>
+    </div>`;
+  document.getElementById('kd-items').innerHTML = itemsHtml || '<div style="padding:30px;text-align:center;color:var(--ink4);">No item details</div>';
+  document.getElementById('kitchen-detail-sheet').classList.add('open');
+}
+
+function closeKitchenHistoryDetail() {
+  document.getElementById('kitchen-detail-sheet').classList.remove('open');
+}
+
+// ── HELPERS ──
+function buildAllItemMeta() {
+  const m = {};
+  ORDER_CATS.forEach(c => c.items.forEach(i => { m[i.id] = i; }));
+  // Prep-specific items — IDs match tori-prep-checklist DEFAULT_TASKS
+  [
+    {id:'dan_dan_sauce',  name:'Dan Dan Sauce',                   unit:'L'},
+    {id:'goma_tare',      name:'Goma Tare',                       unit:'L'},
+    {id:'gyoza_sauce',    name:'Gyoza Sauce',                     unit:'L'},
+    {id:'kimchi_paste',   name:'Kimchi Paste',                    unit:'kg'},
+    {id:'kungpao_sauce',  name:'Kung Pao Sauce',                  unit:'L'},
+    {id:'laksa_base',     name:'Laksa Base',                      unit:'L'},
+    {id:'poke_sauce',     name:'Poke Sauce',                      unit:'L'},
+    {id:'pork_belly_glaze',name:'Pork Belly Glaze',               unit:'L'},
+    {id:'soy_tare',       name:'Soy Tare',                        unit:'L'},
+    {id:'sunomono_sauce', name:'Sunomono Sauce',                  unit:'L'},
+    {id:'sushi_vinegar',  name:'Sushi Vinegar Making',            unit:'L'},
+    {id:'teriyaki_sauce', name:'Teriyaki Sauce',                  unit:'L'},
+    {id:'bamboo_cook',    name:'Bamboo Cook & Marinate',          unit:'kg'},
+    {id:'beef_stripes',   name:'Beef Stripes Cut & Marinate',     unit:'kg'},
+    {id:'chicken_miso',   name:'Chicken Miso',                    unit:'kg'},
+    {id:'chicken_stock',  name:'Chicken Soup Stock',              unit:'L'},
+    {id:'chicken_thighs', name:'Chicken Thighs Cut & Marinate',   unit:'kg'},
+    {id:'coleslaw',       name:'Coleslaw Making',                 unit:'kg'},
+    {id:'crumble',        name:'Crumble Making',                  unit:'kg'},
+    {id:'dan_dan_pork',   name:'Dan Dan Black Bean Pork',         unit:'kg'},
+    {id:'egg_marinade',   name:'Egg Marinade',                    unit:'pcs'},
+    {id:'gyoza_pork',     name:'Gyoza Pork (Freeze)',             unit:'kg'},
+    {id:'icecream_takeaway',name:'Ice Cream Takeaway (Freeze)',   unit:'pcs'},
+    {id:'katsu_chicken',  name:'Katsu Chicken Prep',              unit:'kg'},
+    {id:'kimchi',         name:'Kimchi Making',                   unit:'kg'},
+    {id:'lobster_salad',  name:'Lobster Salad',                   unit:'kg'},
+    {id:'tempura_roll',   name:'Making Tempura Roll',             unit:'pcs'},
+    {id:'peanuts_grind',  name:'Peanuts Grind',                   unit:'kg'},
+    {id:'pork_belly_prep',name:'Pork Belly Prep & Rub',           unit:'kg'},
+    {id:'pork_belly_bake',name:'Pork Belly Bake (Freeze)',        unit:'kg'},
+    {id:'pork_belly_cut', name:'Pork Belly Cutting',              unit:'kg'},
+    {id:'ramen_eggs',     name:'Ramen Eggs Cook, Peel & Marinate',unit:'pcs'},
+    {id:'ramen_noodles',  name:'Ramen Noodles (Freeze)',          unit:'kg'},
+    {id:'ramen_soup',     name:'Ramen Soup Finish',               unit:'L'},
+    {id:'shiitake_soak',  name:'Shiitake Soaking & Cooking',      unit:'kg'},
+    {id:'sushi_rice',     name:'Sushi Rice Cooking',              unit:'kg'},
+    {id:'tofu_cutting',   name:'Tofu Cutting',                    unit:'kg'},
+    {id:'tofu_panko',     name:'Tofu Panko (Freeze)',             unit:'kg'},
+    {id:'tuna_poke',      name:'Tuna Cutting for Poke',           unit:'kg'},
+    {id:'vimixa_noodles', name:'Vimixa Noodles Cooking',          unit:'kg'},
+    {id:'banana_bread',   name:'Banana Bread (Freeze)',           unit:'pcs'},
+    {id:'chilli_cutting', name:'Chilli Cutting',                  unit:'kg'},
+    {id:'cucumber_marinade',name:'Cucumber Marinade',             unit:'kg'},
+    {id:'cucumbers_cut',  name:'Cucumbers Cutting',               unit:'kg'},
+    {id:'daikon_marinate',name:'Daikon Cut & Marinate',           unit:'kg'},
+    {id:'green_beans',    name:'Green Beans Blanche',             unit:'kg'},
+    {id:'pak_choi',       name:'Pak Choi Blanche',                unit:'kg'},
+    {id:'purple_onion',   name:'Purple Onion Cutting',            unit:'kg'},
+    {id:'shiitake_cut',   name:'Shiitake Cutting',                unit:'kg'},
+    {id:'spring_onion',   name:'Spring Onion Cutting',            unit:'kg'},
+  ].forEach(i => { if(!m[i.id]) m[i.id] = i; });
+  return m;
+}
+
+// ── TABS ──
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.screen;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t===tab));
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id===target));
+    if (target === 's-history') renderHistory();
+    if (target === 's-prep')    renderPrepLog();
+  });
+});
+
+// ── CLOCK ──
+function tickClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toTimeString().slice(0,8);
+  const d = document.getElementById('kitchen-date');
+  if (d) {
+    const dd = String(now.getDate()).padStart(2,'0');
+    const mm = String(now.getMonth()+1).padStart(2,'0');
+    const yyyy = now.getFullYear();
+    d.textContent = `${dd}-${mm}-${yyyy}`;
+  }
+}
+setInterval(tickClock, 1000); tickClock();
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+// ── FORMAT ──
+function fmtTime(ts) { return new Date(ts).toTimeString().slice(0,5); }
+function fmtDT(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toISOString().slice(0,10) + ' ' + d.toTimeString().slice(0,5);
+}
+
+// Demo data removed for production
+
+
+</script>
+<!-- KITCHEN HISTORY DETAIL SHEET -->
+<div class="kitchen-detail-sheet" id="kitchen-detail-sheet">
+  <div class="kd-topbar">
+    <button class="kd-back-btn" onclick="closeKitchenHistoryDetail()">← Back</button>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);">Delivery History</div>
+      <div class="kd-title" id="kd-title"></div>
+    </div>
+  </div>
+  <div id="kd-meta"></div>
+  <div id="kd-items" style="flex:1;overflow-y:auto;padding-bottom:40px;"></div>
+</div>
+
+<style>
+.kitchen-detail-sheet {
+  position: fixed; top:0; left:0; right:0; bottom:0;
+  background: var(--bg); z-index: 9000;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.kitchen-detail-sheet.open { transform: translateX(0); }
+.kd-topbar {
+  background: rgba(15,19,20,0.98); border-bottom: 1px solid var(--line2);
+  padding: 0 20px; height: 54px; display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+}
+.kd-back-btn {
+  background: transparent; border: 1px solid var(--line2); color: var(--ink3);
+  font-family: var(--font); font-size: 13px; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 7px 16px; cursor: pointer; flex-shrink: 0;
+}
+.kd-back-btn:hover { color: var(--ink); background: var(--panel3); }
+.kd-title { font-size: 15px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink); }
+.kd-meta-grid {
+  display: flex; gap: 32px; padding: 16px 24px;
+  background: var(--panel); border-bottom: 1px solid var(--line2); flex-shrink: 0; flex-wrap: wrap;
+}
+.kd-meta-item { display: flex; flex-direction: column; gap: 2px; }
+.kd-meta-label { font-size: 10px; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink4); }
+.kd-meta-val   { font-size: 16px; font-weight: 900; color: var(--ink); }
+.kd-cat {
+  padding: 7px 24px 5px; font-size: 11px; font-weight: 900; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--ink4);
+  background: var(--bg2); border-bottom: 1px solid var(--line);
+}
+.kd-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 24px; border-bottom: 1px solid rgba(84,84,84,0.25);
+}
+.kd-name { font-size: 17px; font-weight: 700; text-transform: uppercase; color: var(--ink2); }
+.kd-qty  { font-size: 22px; font-weight: 900; color: var(--ink); }
+.kd-unit { font-size: 12px; font-weight: 700; color: var(--ink4); text-transform: uppercase; }
+</style>
+
+<!-- PREP HISTORY DETAIL SHEET -->
+<div class="kitchen-detail-sheet" id="prep-detail-sheet">
+  <div class="kd-topbar">
+    <button class="kd-back-btn" onclick="document.getElementById('prep-detail-sheet').classList.remove('open')">← Back</button>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);">Preparation History</div>
+      <div class="kd-title" id="pd-title"></div>
+    </div>
+  </div>
+  <div id="pd-meta"></div>
+  <div id="pd-items" style="flex:1;overflow-y:auto;padding-bottom:40px;"></div>
+</div>
+
+</body>
+</html>

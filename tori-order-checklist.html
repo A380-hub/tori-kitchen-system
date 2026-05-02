@@ -1,0 +1,2609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TORI Kitchen Ordering</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0F1314;
+  --bg2:    #1A1F22;
+  --panel:  #242C30;
+  --panel2: #2B3236;
+  --panel3: #3C3D3C;
+  --panel4: #525252;
+  --line:   #3A3F42;
+  --line2:  #545454;
+  --ink:    #FFFFFF;
+  --ink2:   #E1E1E1;
+  --ink3:   #BCC0C2;
+  --ink4:   #7A7E80;
+  --red:    #DE0000;
+  --red2:   #B50000;
+  --green:  #4CAF50;
+  --font:   'Barlow Condensed', sans-serif;
+  --body:   'Barlow', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+html, body { height: 100%; }
+body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.screen { display: none; flex-direction: column; min-height: 100vh; }
+.screen.active { display: flex; }
+
+/* ══════════ WELCOME ══════════ */
+.welcome-header {
+  background: rgba(15,19,20,0.98);
+  border-bottom: 1px solid var(--line2);
+  padding: 22px 20px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.logo {
+  font-size: 28px; font-weight: 900; letter-spacing: -0.04em;
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-dot {
+  width: 9px; height: 9px; background: var(--red); border-radius: 50%;
+  box-shadow: 0 0 8px var(--red); animation: blink 2s ease-in-out infinite; flex-shrink: 0;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.logo-sub { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink4); }
+
+.welcome-body {
+  flex: 1; padding: 28px 20px 120px;
+  display: flex; flex-direction: column; gap: 26px; overflow-y: auto;
+}
+.section-label {
+  font-size: 12px; font-weight: 900; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--ink4); margin-bottom: 10px;
+}
+.field-wrap { display: flex; flex-direction: column; gap: 14px; }
+.field-label {
+  font-size: 12px; font-weight: 900; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink4); margin-bottom: 6px;
+}
+.field-input {
+  width: 100%; background: var(--panel);
+  border: 1px solid var(--line2); border-left: 4px solid var(--line2);
+  color: var(--ink); font-family: var(--font); font-size: 20px; font-weight: 700;
+  padding: 14px 16px; transition: border-color 0.15s; -webkit-appearance: none; border-radius: 0;
+}
+.field-input:focus { outline: none; border-left-color: var(--red); background: var(--panel2); }
+.field-input::placeholder { color: var(--ink4); font-weight: 600; }
+.field-input[type="date"] { font-size: 18px; color-scheme: dark; }
+
+.rest-cards { display: flex; flex-direction: column; gap: 10px; }
+.rest-card {
+  background: var(--panel); border: 1px solid var(--line2); border-left: 4px solid var(--line2);
+  padding: 18px 20px; cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; gap: 16px; user-select: none;
+}
+.rest-card:active { background: var(--panel2); }
+.rest-card.selected { border-left-color: var(--red); background: linear-gradient(90deg,rgba(222,0,0,0.07),transparent 60%); }
+.rest-radio {
+  width: 22px; height: 22px; border: 2px solid var(--line2); border-radius: 50%;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s;
+}
+.rest-card.selected .rest-radio { border-color: var(--red); }
+.rest-radio::after {
+  content: ''; width: 10px; height: 10px; background: var(--red); border-radius: 50%;
+  opacity: 0; transform: scale(0.3); transition: all 0.15s;
+}
+.rest-card.selected .rest-radio::after { opacity: 1; transform: scale(1); }
+.rest-name { font-size: 19px; font-weight: 900; text-transform: uppercase; }
+.rest-sub  { font-family: var(--body); font-size: 13px; color: var(--ink4); margin-top: 2px; }
+
+.start-btn {
+  width: 100%; background: var(--red2); border: none; color: var(--ink);
+  font-family: var(--font); font-size: 19px; font-weight: 900;
+  letter-spacing: 0.14em; text-transform: uppercase; padding: 18px; cursor: pointer; transition: all 0.15s;
+}
+.start-btn:hover { background: var(--red); }
+.start-btn:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+
+/* ══════════ CHECKLIST ══════════ */
+.check-header {
+  background: rgba(15,19,20,0.98); border-bottom: 1px solid var(--line2);
+  padding: 14px 18px 0; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35); flex-shrink: 0;
+}
+.check-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.check-logo { font-size: 20px; font-weight: 900; letter-spacing: -0.03em; }
+.check-meta { font-family: var(--body); font-size: 12px; color: var(--ink4); margin-top: 2px; }
+.check-rest-tag {
+  font-size: 13px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink); background: var(--panel3); padding: 6px 12px; border-left: 3px solid var(--red); white-space: nowrap;
+}
+.progress-track { display: flex; gap: 4px; padding: 10px 0 12px; }
+.progress-step { flex: 1; height: 3px; background: var(--line); transition: background 0.3s; }
+.progress-step.done   { background: var(--red2); }
+.progress-step.active { background: var(--red); }
+
+.amend-banner {
+  display: none; background: rgba(222,0,0,0.12); border-bottom: 2px solid var(--red2);
+  padding: 10px 18px; font-size: 13px; font-weight: 800; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ink2); text-align: center; flex-shrink: 0;
+}
+.amend-banner.on { display: block; }
+
+/* Jump dropdown */
+.jump-bar { background: var(--bg2); border-bottom: 1px solid var(--line); padding: 10px 16px; flex-shrink: 0; }
+.jump-select {
+  width: 100%; background: var(--panel2);
+  border: 1px solid var(--line2); border-left: 3px solid var(--red2);
+  color: var(--ink); font-family: var(--font); font-size: 15px; font-weight: 800;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 11px 38px 11px 14px;
+  cursor: pointer; -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A7E80' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; border-radius: 0;
+}
+.jump-select:focus { outline: none; border-left-color: var(--red); }
+.jump-select option { background: #1A1F22; color: var(--ink); font-size: 15px; }
+
+.cat-title-bar {
+  background: var(--panel3); padding: 12px 18px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.cat-title-text { font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; }
+.cat-title-count { font-family: var(--body); font-size: 13px; color: var(--ink4); }
+
+.items-list { flex: 1; overflow-y: auto; padding-bottom: 90px; }
+.item-row { border-bottom: 1px solid rgba(58,63,66,0.5); overflow: hidden; }
+.item-row:last-child { border-bottom: none; }
+.item-main {
+  display: flex; align-items: center; padding: 0 18px; min-height: 60px;
+  gap: 14px; cursor: pointer; user-select: none;
+}
+.item-main:active { background: rgba(255,255,255,0.03); }
+.item-check {
+  width: 26px; height: 26px; border: 2px solid var(--line2); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; position: relative;
+}
+.item-check::after {
+  content: ''; width: 14px; height: 14px; background: var(--red);
+  opacity: 0; transform: scale(0.3); transition: all 0.15s;
+}
+.item-row.checked .item-check { border-color: var(--red); background: rgba(222,0,0,0.1); }
+.item-row.checked .item-check::after { opacity: 1; transform: scale(1); }
+.item-name {
+  flex: 1; font-size: 18px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.02em; color: var(--ink3); transition: color 0.15s; line-height: 1.15;
+}
+.item-row.checked .item-name { color: var(--ink); }
+
+/* Inline qty — hidden until checked */
+.item-qty-inline {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  opacity: 0; pointer-events: none; transition: opacity 0.15s;
+}
+.item-row.checked .item-qty-inline { opacity: 1; pointer-events: auto; }
+.qty-input {
+  width: 72px; height: 38px; background: var(--panel2);
+  border: 1px solid var(--line2); border-bottom: 2px solid var(--red2);
+  color: var(--ink); font-family: var(--font); font-size: 22px; font-weight: 900;
+  text-align: center; -moz-appearance: textfield; -webkit-appearance: none; border-radius: 0;
+}
+.qty-input::-webkit-outer-spin-button, .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.qty-input:focus { outline: none; border-bottom-color: var(--red); background: var(--panel); }
+.qty-unit { font-family: var(--body); font-size: 13px; color: var(--ink4); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* Legacy — keep for any old references */
+.item-qty-badge { display: none; }
+.item-expand { display: none; }
+
+/* bottom nav */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px; background: rgba(15,19,20,0.98);
+  border-top: 1px solid var(--line2); padding: 12px 16px;
+  display: flex; gap: 10px; z-index: 100; backdrop-filter: blur(10px);
+}
+.nav-btn {
+  flex: 1; background: var(--panel3); border: 1px solid var(--line2); color: var(--ink);
+  font-family: var(--font); font-size: 16px; font-weight: 900; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 15px 10px; cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-btn:hover { background: var(--panel4); }
+.nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+.nav-btn.fwd  { background: var(--red2); border-color: var(--red2); flex: 2; }
+.nav-btn.fwd:hover { background: var(--red); border-color: var(--red); }
+
+/* ══════════ REVIEW ══════════ */
+.review-header {
+  background: rgba(15,19,20,0.98); border-bottom: 1px solid var(--line2);
+  padding: 18px 20px; flex-shrink: 0;
+}
+.review-title { font-size: 24px; font-weight: 900; text-transform: uppercase; }
+.review-sub   { font-family: var(--body); font-size: 13px; color: var(--ink4); margin-top: 3px; }
+.review-body  { flex: 1; overflow-y: auto; padding-bottom: 100px; }
+
+.review-meta {
+  padding: 16px 20px; background: var(--panel); border-bottom: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.review-meta-row { display: flex; justify-content: space-between; align-items: center; }
+.rmeta-lbl { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink4); }
+.rmeta-val { font-size: 16px; font-weight: 800; color: var(--ink); }
+.rest-tag {
+  display: inline-block; background: var(--panel3); border-left: 3px solid var(--red);
+  padding: 4px 10px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.amend-notice {
+  margin-top: 8px; font-size: 13px; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--red);
+}
+
+.review-cat-hdr {
+  padding: 9px 20px 6px; font-size: 11px; font-weight: 900; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--ink4); background: var(--bg2);
+  border-bottom: 1px solid var(--line); margin-top: 2px;
+}
+.review-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 13px 20px; border-bottom: 1px solid rgba(58,63,66,0.4);
+}
+.review-row:last-child { border-bottom: none; }
+.review-iname { font-size: 17px; font-weight: 700; text-transform: uppercase; color: var(--ink2); }
+.review-iqty  { font-size: 18px; font-weight: 900; color: var(--ink); } /* WHITE */
+.review-empty {
+  padding: 40px 20px; text-align: center; font-size: 14px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink4);
+}
+
+.review-footer {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px; background: rgba(15,19,20,0.98);
+  border-top: 1px solid var(--line2); padding: 12px 16px;
+  display: flex; gap: 10px; z-index: 100; backdrop-filter: blur(10px);
+}
+.rev-edit-btn {
+  flex: 1; background: var(--panel3); border: 1px solid var(--line2); color: var(--ink);
+  font-family: var(--font); font-size: 16px; font-weight: 900; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 15px 10px; cursor: pointer; transition: all 0.15s;
+}
+.rev-edit-btn:hover { background: var(--panel4); }
+.rev-send-btn {
+  flex: 2; background: var(--red2); border: none; color: var(--ink);
+  font-family: var(--font); font-size: 16px; font-weight: 900; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 15px 10px; cursor: pointer; transition: all 0.15s;
+}
+.rev-send-btn:hover { background: var(--red); }
+.rev-send-btn:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+
+/* ══════════ SUCCESS ══════════ */
+.success-screen {
+  align-items: center; justify-content: center;
+  padding: 40px 24px; text-align: center; gap: 20px;
+}
+.success-icon {
+  width: 80px; height: 80px; border: 2px solid var(--green); border-radius: 50%;
+  background: rgba(76,175,80,0.1); display: flex; align-items: center; justify-content: center;
+  font-size: 36px; animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes pop { from{transform:scale(0.4);opacity:0} to{transform:scale(1);opacity:1} }
+.success-title { font-size: 36px; font-weight: 900; text-transform: uppercase; }
+.success-body  { font-family: var(--body); font-size: 15px; color: var(--ink4); line-height: 1.7; }
+.success-body strong { color: var(--ink2); }
+.success-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 8px; }
+.amend-btn {
+  width: 100%; background: var(--panel3); border: 1px solid var(--line2); color: var(--ink);
+  font-family: var(--font); font-size: 16px; font-weight: 900; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 16px; cursor: pointer; transition: background 0.15s;
+}
+.amend-btn:hover { background: var(--panel4); }
+.new-btn {
+  width: 100%; background: transparent; border: 1px solid var(--line2); color: var(--ink4);
+  font-family: var(--font); font-size: 15px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 14px; cursor: pointer; transition: all 0.15s;
+}
+.new-btn:hover { color: var(--ink); border-color: var(--ink4); }
+
+/* ══════════ ERROR ══════════ */
+.error-screen {
+  align-items: center; justify-content: center;
+  padding: 40px 24px; text-align: center; gap: 16px;
+}
+.error-icon {
+  width: 80px; height: 80px; border: 2px solid var(--red); border-radius: 50%;
+  background: rgba(222,0,0,0.08); display: flex; align-items: center; justify-content: center; font-size: 36px;
+}
+.error-title { font-size: 30px; font-weight: 900; text-transform: uppercase; }
+.error-body  { font-family: var(--body); font-size: 15px; color: var(--ink4); line-height: 1.7; }
+.err-retry-btn {
+  width: 100%; background: var(--red2); border: none; color: var(--ink);
+  font-family: var(--font); font-size: 16px; font-weight: 900; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 16px; cursor: pointer;
+}
+.err-back-btn {
+  width: 100%; background: transparent; border: 1px solid var(--line2); color: var(--ink4);
+  font-family: var(--font); font-size: 15px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 14px; cursor: pointer; transition: all 0.15s;
+}
+.err-back-btn:hover { color: var(--ink); border-color: var(--ink4); }
+
+/* Dispatched status panel on success screen */
+.dispatch-status-panel {
+  width: 100%;
+  background: rgba(76,175,80,0.08);
+  border: 1px solid rgba(76,175,80,0.3);
+  border-left: 4px solid var(--green);
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.dispatch-status-panel.pending {
+  background: rgba(245,158,11,0.06);
+  border-color: rgba(245,158,11,0.25);
+  border-left-color: var(--amber);
+}
+.dsp-title {
+  font-size: 12px; font-weight: 900; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--green);
+}
+.dsp-title.pending { color: var(--amber); }
+.dsp-meta {
+  font-family: var(--body); font-size: 13px; color: var(--ink3); line-height: 1.5;
+}
+.dsp-items {
+  display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px;
+}
+.dsp-chip {
+  background: rgba(255,255,255,0.05); border: 1px solid var(--line2);
+  font-family: var(--font); font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink3); padding: 2px 8px;
+}
+.dsp-chip.not-delivered {
+  background: rgba(222,0,0,0.08); border-color: rgba(222,0,0,0.3);
+  color: #E07070;
+}
+.dsp-reason {
+  font-family: var(--body); font-size: 12px; color: var(--ink4);
+  font-style: italic; margin-top: 2px;
+}
+
+.amend-btn:disabled {
+  background: var(--panel3); color: var(--ink4); cursor: not-allowed; opacity: 0.5;
+}
+
+/* View pending order button */
+.view-pending-btn {
+  width: 100%; background: rgba(76,175,80,0.12); border: 1px solid rgba(76,175,80,0.4); color: var(--green);
+  font-family: var(--font); font-size: 16px; font-weight: 900; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 16px; cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.view-pending-btn:hover { background: rgba(76,175,80,0.22); }
+.view-pending-btn .vpb-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); flex-shrink: 0; }
+.view-pending-btn.pulsing .vpb-dot { animation: gpulse 1.2s ease-in-out infinite; }
+@keyframes gpulse { 0%,100%{opacity:1;box-shadow:0 0 8px var(--green)} 50%{opacity:0.4;box-shadow:0 0 3px var(--green)} }
+
+/* ══════════ PENDING DELIVERY SCREEN ══════════ */
+.pending-header {
+  background: rgba(15,19,20,0.98); border-bottom: 1px solid var(--line2);
+  padding: 0 18px; flex-shrink: 0; box-shadow: 0 3px 14px rgba(0,0,0,0.35);
+}
+.pending-header-top { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 10px; }
+.pending-back-btn {
+  background: transparent; border: 1px solid var(--line2); color: var(--ink3);
+  font-family: var(--font); font-size: 13px; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 8px 14px; cursor: pointer; transition: all 0.15s;
+}
+.pending-back-btn:hover { color: var(--ink); background: var(--panel3); }
+.pending-title { font-size: 20px; font-weight: 900; text-transform: uppercase; }
+.status-bar { display: flex; align-items: center; gap: 10px; padding: 10px 0 12px; flex-wrap: wrap; }
+.status-step {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink4); padding: 5px 10px; border: 1px solid var(--line2);
+}
+.status-step .ss-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink4); flex-shrink: 0; }
+.status-step.st-preparing  { color: #F59E0B; border-color: rgba(245,158,11,0.45); background: rgba(245,158,11,0.1); }
+.status-step.st-preparing  .ss-dot { background: #F59E0B; box-shadow: 0 0 7px #F59E0B; }
+.status-step.st-in_delivery { color: #3B82F6; border-color: rgba(59,130,246,0.45); background: rgba(59,130,246,0.1); }
+.status-step.st-in_delivery .ss-dot { background: #3B82F6; box-shadow: 0 0 7px #3B82F6; animation: gpulse 1.2s ease-in-out infinite; }
+.status-step.st-delivered  { color: var(--green); border-color: rgba(76,175,80,0.45); background: rgba(76,175,80,0.1); }
+.status-step.st-delivered  .ss-dot { background: var(--green); box-shadow: 0 0 7px var(--green); animation: gpulse 1.2s ease-in-out infinite; }
+.status-arrow { color: var(--line2); font-size: 14px; }
+.pending-body { flex: 1; overflow-y: auto; }
+.pending-cat-hdr {
+  padding: 7px 18px 5px; font-size: 10px; font-weight: 900; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--ink4); background: var(--bg2);
+  border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 4;
+}
+.pending-item-row {
+  display: flex; align-items: center; padding: 0 18px; min-height: 52px;
+  border-bottom: 1px solid rgba(84,84,84,0.35); gap: 12px; cursor: pointer; user-select: none;
+  transition: background 0.12s;
+}
+.pending-item-row:last-child { border-bottom: none; }
+.pending-item-row.missing { background: rgba(222,0,0,0.05); }
+.pending-item-name { flex: 1; font-size: 17px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; color: var(--ink2); }
+.pending-item-row.missing .pending-item-name { color: var(--ink4); text-decoration: line-through; }
+.pending-item-qty-wrap { display: flex; align-items: baseline; gap: 5px; flex-shrink: 0; }
+.pending-item-qty  { font-size: 22px; font-weight: 900; color: var(--ink); }
+.pending-item-unit { font-size: 12px; font-weight: 700; color: var(--ink4); text-transform: uppercase; letter-spacing: 0.1em; }
+.missing-cb { width: 26px; height: 26px; border: 2px solid var(--line2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.missing-cb::after { content:'✕'; font-size:13px; font-weight:900; color:var(--red); opacity:0; transform:scale(0.3); transition:all 0.15s; }
+.pending-item-row.missing .missing-cb { border-color: var(--red); background: rgba(222,0,0,0.1); }
+.pending-item-row.missing .missing-cb::after { opacity:1; transform:scale(1); }
+.missing-reason-tag { font-size:11px; font-family:var(--body); color: var(--red); margin-left: 4px; font-style:italic; }
+.pending-footer {
+  width: 100%; padding: 16px 16px 24px;
+  display: flex; flex-direction: column; gap: 8px;
+  border-top: 1px solid var(--line2);
+  background: var(--bg);
+}
+.accept-all-btn {
+  display: block; width: 100%;
+  background: var(--green2) !important; border: none; color: var(--ink) !important;
+  font-family: var(--font); font-size: 17px; font-weight: 900; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 16px; cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.accept-all-btn:disabled { background: var(--panel3) !important; color: var(--ink4) !important; cursor: not-allowed; }
+.accepted-notice { text-align:center; padding:14px; font-size:14px; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--green); border:1px solid rgba(76,175,80,0.35); background:rgba(76,175,80,0.08); }
+.reason-item-name   { font-size: 16px; font-weight: 900; text-transform: uppercase; color: var(--ink2); margin-bottom: 14px; padding: 8px 12px; background: var(--panel2); border-left: 3px solid var(--red2); }
+.reason-opts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.reason-opt { background: var(--panel2); border: 1px solid var(--line2); color: var(--ink3); font-family: var(--font); font-size: 14px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 8px 16px; cursor: pointer; transition: all 0.15s; }
+.reason-opt:hover { border-color: var(--red2); color: var(--ink); }
+.reason-opt.selected { background: rgba(222,0,0,0.12); border-color: var(--red2); color: #E07070; }
+.reason-ok { background: var(--red2); border: none; color: var(--ink); font-family: var(--font); font-size: 15px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; transition: background 0.15s; }
+.reason-ok:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+.anm-label { font-size: 11px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink4); margin-bottom: 8px; }
+.anm-input { width: 100%; background: var(--panel2); border: 1px solid var(--line2); border-left: 3px solid var(--green2); color: var(--ink); font-family: var(--font); font-size: 20px; font-weight: 700; padding: 13px 15px; border-radius: 0; -webkit-appearance: none; margin-bottom: 4px; }
+.anm-input:focus { outline: none; border-left-color: var(--green); }
+.anm-input::placeholder { color: var(--ink4); font-weight: 600; }
+.anm-ok { background: var(--green2); border: none; color: var(--ink); font-family: var(--font); font-size: 15px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; touch-action: manipulation; }
+.anm-ok:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+.anm-cancel { background: transparent; border: 1px solid var(--line2); color: var(--ink3); font-family: var(--font); font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; touch-action: manipulation; }
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85); z-index: 9999;
+  align-items: center; justify-content: center; padding: 24px;
+}
+.modal-overlay.open { display: flex; }
+.modal-popup {
+  background: var(--panel); border: 1px solid var(--line2);
+  border-top: 4px solid var(--green2);
+  padding: 28px 24px; width: 100%; max-width: 440px;
+}
+.modal-popup-title { font-size: 22px; font-weight: 900; text-transform: uppercase; margin-bottom: 6px; }
+.modal-popup-sub { font-family: var(--body); font-size: 13px; color: var(--ink4); margin-bottom: 20px; line-height: 1.5; }
+.anm-cancel:hover { color: var(--ink); background: var(--panel3); }
+
+/* Settings */
+.settings-header { background: rgba(15,19,20,0.98); border-bottom: 1px solid var(--line2); padding: 18px 18px 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
+.settings-title { font-size: 22px; font-weight: 900; text-transform: uppercase; }
+.settings-body  { flex: 1; padding: 20px 18px 60px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; }
+.settings-section-label { font-size: 11px; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink4); margin-bottom: 10px; }
+.location-cards { display: flex; flex-direction: column; gap: 8px; }
+.location-card { background: var(--panel); border: 1px solid var(--line2); border-left: 4px solid var(--line2); padding: 16px 18px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 14px; user-select: none; }
+.location-card.selected { border-left-color: var(--red); background: linear-gradient(90deg,rgba(222,0,0,0.07),transparent 60%); }
+.location-radio { width: 20px; height: 20px; border: 2px solid var(--line2); border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s; }
+.location-card.selected .location-radio { border-color: var(--red); }
+.location-radio::after { content: ''; width: 9px; height: 9px; background: var(--red); border-radius: 50%; opacity: 0; transform: scale(0.3); transition: all 0.15s; }
+.location-card.selected .location-radio::after { opacity: 1; transform: scale(1); }
+.location-name { font-size: 18px; font-weight: 900; text-transform: uppercase; }
+.location-sub  { font-family: var(--body); font-size: 13px; color: var(--ink4); margin-top: 2px; }
+.settings-save-btn { width: 100%; background: var(--red2); border: none; color: var(--ink); font-family: var(--font); font-size: 17px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; padding: 16px; cursor: pointer; transition: background 0.15s; }
+.settings-save-btn:hover { background: var(--red); }
+.settings-icon-btn { background: transparent; border: 1px solid var(--line2); color: var(--ink4); font-size: 18px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: all 0.15s; align-self: center; margin-left: 8px; }
+.settings-icon-btn:hover { color: var(--ink); background: var(--panel3); }
+.location-tag { font-size: 16px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink2); white-space: nowrap; margin-top: 4px; }
+.delivery-status-badge { display: none; align-items: center; gap: 6px; font-size: 11px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 5px 10px; border: 1px solid rgba(76,175,80,0.4); background: rgba(76,175,80,0.1); color: var(--green); cursor: pointer; }
+.delivery-status-badge.visible { display: flex; }
+.delivery-status-badge .dsb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.delivery-status-badge.pulsing .dsb-dot { animation: gpulse 1.2s ease-in-out infinite; }
+
+
+/* ══════════ TOP BAR (welcome) ══════════ */
+.topbar {
+  background: rgba(15,19,20,0.98);
+  border-bottom: 1px solid var(--line2);
+  padding: 0 16px 0 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  height: 68px;
+  gap: 0;
+}
+.topbar-brand {
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 2px; padding-right: 14px; padding-bottom: 8px; border-right: 1px solid var(--line); flex-shrink: 0;
+}
+.topbar-tabs { display: flex; align-items: stretch; gap: 0; flex: 1; padding: 0 4px; }
+.topbar-tab {
+  background: transparent; border: none; border-bottom: 3px solid transparent;
+  color: var(--ink4); font-family: var(--font); font-size: 13px; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 0 14px;
+  cursor: pointer; transition: all 0.15s; position: relative; white-space: nowrap;
+  display: flex; align-items: center;
+}
+.topbar-tab:hover { color: var(--ink3); }
+.topbar-tab.active { color: var(--ink); border-bottom-color: var(--red); }
+.topbar-tab.tab-live { animation: tab-green-pulse 1.2s ease-in-out infinite; }
+.topbar-tab.tab-preparing  { color: #F59E0B !important; animation: tab-green-pulse 1.2s ease-in-out infinite; }
+.topbar-tab.tab-preparing.active  { border-bottom-color: #F59E0B; }
+.topbar-tab.tab-in_delivery { color: #3B82F6 !important; animation: tab-green-pulse 1.2s ease-in-out infinite; }
+.topbar-tab.tab-in_delivery.active { border-bottom-color: #3B82F6; }
+.topbar-tab.tab-delivered  { color: var(--green) !important; animation: tab-green-pulse 1.2s ease-in-out infinite; }
+.topbar-tab.tab-delivered.active  { border-bottom-color: var(--green); }
+@keyframes tab-blue-pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+@keyframes tab-green-pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.topbar-tab-dot { display: none; /* dot removed, using text pulse instead */ }
+
+/* ══════════ DELIVERY SUB-NAV ══════════ */
+.delivery-subnav {
+  display: flex; background: var(--panel2);
+  border-bottom: 1px solid var(--line); flex-shrink: 0;
+}
+.dsn-btn {
+  flex: 1; background: transparent; border: none; border-bottom: 3px solid transparent;
+  color: var(--ink4); font-family: var(--font); font-size: 13px; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 12px 8px;
+  cursor: pointer; transition: all 0.15s;
+}
+.dsn-btn:hover { color: var(--ink3); }
+.dsn-btn.active { color: var(--ink); border-bottom-color: var(--green); }
+.dsub-content { display: none; }
+.dsub-content.active { display: flex; }
+
+/* ══════════ DASHBOARD TOP BAR (success) ══════════ */
+.dashboard-topbar {
+  background: rgba(15,19,20,0.98);
+  border-bottom: 1px solid var(--line2);
+  padding: 14px 16px 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.dashboard-tabs { display: flex; align-items: flex-end; gap: 2px; flex: 1; padding: 0 8px; }
+.dash-tab {
+  background: transparent; border: none; border-bottom: 3px solid transparent;
+  color: var(--ink4); font-family: var(--font); font-size: 14px; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 14px 10px;
+  cursor: pointer; transition: all 0.15s; position: relative; white-space: nowrap;
+}
+.dash-tab:hover { color: var(--ink3); }
+.dash-tab.active { color: var(--ink); border-bottom-color: var(--red); }
+.dash-tab-dot {
+  width: 7px; height: 7px; background: var(--green); border-radius: 50%;
+  position: absolute; top: 6px; right: 6px;
+  box-shadow: 0 0 6px var(--green); animation: gpulse 1.2s ease-in-out infinite;
+}
+.dash-home-btn {
+  background: transparent; border: 1px solid var(--line2); color: var(--ink4);
+  font-size: 20px; width: 38px; height: 38px; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; flex-shrink: 0; transition: all 0.15s;
+  margin-top: -2px;
+}
+.dash-home-btn:hover { color: var(--ink); background: var(--panel3); }
+
+/* ══════════ SUCCESS INFO BOX ══════════ */
+.suc-info-box {
+  width: 100%; background: var(--panel);
+  border: 1px solid var(--line2); border-left: 4px solid var(--red2);
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;
+}
+.suc-info-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.suc-info-label { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink4); }
+.suc-info-val   { font-size: 17px; font-weight: 900; color: var(--ink); text-align: right; }
+.suc-info-val.green { color: var(--green); }
+
+/* Amendment notification */
+.amended-notice {
+  width: 100%; background: rgba(245,158,11,0.08);
+  border: 1px solid rgba(245,158,11,0.3); border-left: 4px solid var(--amber, #F59E0B);
+  padding: 14px 18px; text-align: center;
+}
+.amended-notice-title { font-size: 22px; font-weight: 900; text-transform: uppercase; color: #F59E0B; }
+.amended-notice-sub   { font-size: 15px; font-weight: 700; color: var(--ink2); margin-top: 4px; }
+
+/* ══════════ DELIVERY HISTORY ══════════ */
+.hist-entry {
+  background: var(--panel); border: 1px solid var(--line2);
+  margin-bottom: 12px; overflow: hidden;
+}
+.hist-entry-head {
+  padding: 12px 16px; background: var(--panel2);
+  border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center;
+}
+.hist-entry-date { font-size: 14px; font-weight: 900; text-transform: uppercase; color: var(--ink2); }
+.hist-entry-by   { font-size: 12px; font-weight: 700; color: var(--ink4); margin-top: 2px; }
+.hist-entry-status { font-size: 11px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border: 1px solid; }
+.hist-entry-status.accepted { color: var(--green); border-color: rgba(76,175,80,0.4); background: rgba(76,175,80,0.08); }
+.hist-entry-items { padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 5px; }
+.hist-chip { background: var(--panel3); border: 1px solid var(--line2); font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--ink3); padding: 2px 8px; }
+
+/* ══════════ PENDING SCREEN: all-ticked items + missing below ══════════ */
+.pending-item-row.delivered-ok { background: rgba(76,175,80,0.05); }
+.pending-item-row.delivered-ok .pending-item-name { color: var(--ink3); }
+.pending-item-row.delivered-ok .pending-item-qty  { color: var(--ink3); }
+.pending-item-row.delivered-ok .missing-cb { border-color: var(--green); background: rgba(76,175,80,0.12); }
+.pending-item-row.delivered-ok .missing-cb::after { content: "✓"; color: var(--green); font-size: 14px; font-weight: 900; opacity: 1; transform: scale(1); }
+
+.missing-section-hdr {
+  padding: 10px 18px 6px; font-size: 11px; font-weight: 900; letter-spacing: 0.2em;
+  text-transform: uppercase; color: #C06060; background: rgba(180,60,60,0.08);
+  border-top: 1px solid rgba(180,60,60,0.18); border-bottom: 1px solid rgba(180,60,60,0.12);
+}
+.missing-row {
+  display: flex; align-items: center; padding: 0 18px; min-height: 52px;
+  border-bottom: 1px solid rgba(84,84,84,0.35); gap: 12px;
+  background: rgba(180,60,60,0.04);
+}
+.missing-row:last-child { border-bottom: none; }
+.missing-row-name { flex: 1; font-size: 17px; font-weight: 700; text-transform: uppercase; color: var(--ink4); text-decoration: line-through; text-decoration-color: #C06060; }
+.missing-row-reason { font-family: var(--body); font-size: 12px; color: #C06060; font-style: italic; white-space: nowrap; }
+.missing-row-qty { font-size: 20px; font-weight: 900; color: var(--ink4); }
+.missing-row-unit { font-size: 11px; font-weight: 700; color: var(--ink4); text-transform: uppercase; margin-left: 3px; }
+
+/* Amend tab content */
+.amend-tab-btn {
+  width: 100%; background: var(--panel3); border: 1px solid var(--line2); color: var(--ink);
+  font-family: var(--font); font-size: 17px; font-weight: 900; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 16px; cursor: pointer; transition: background 0.15s;
+}
+.amend-tab-btn:hover { background: var(--panel4); }
+.amend-tab-btn:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; opacity: 0.5; }
+.amend-dispatched-msg {
+  text-align: center; font-size: 14px; font-family: var(--body); color: var(--ink4);
+  line-height: 1.6; padding: 10px 0;
+}
+
+/* ══ STATUS DISPLAY ══ */
+.pulsing-dot {
+  animation: gpulse 1s ease-in-out infinite !important;
+  box-shadow: 0 0 8px var(--green) !important;
+}
+.status-step.st-past { color: var(--ink4); border-color: var(--line2); }
+.status-step.st-past .ss-dot { background: var(--ink4); }
+
+.no-delivery-state {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px; padding: 60px 20px; text-align: center;
+  color: var(--ink4); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+}
+.no-delivery-icon { font-size: 32px; opacity: 0.12; }
+
+.delivery-waiting-msg {
+  padding: 24px 20px; text-align: center;
+  font-family: var(--body); font-size: 15px; color: var(--ink3);
+  line-height: 1.6;
+}
+
+.delivery-tap-hint {
+  padding: 8px 18px; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink4); background: var(--panel2);
+  border-bottom: 1px solid var(--line); text-align: center;
+}
+
+.amend-home-btn {
+  width: 100%; background: var(--panel3); border: 1px solid var(--line2); color: var(--ink);
+  font-family: var(--font); font-size: 16px; font-weight: 900; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 15px; cursor: pointer; transition: background 0.15s;
+}
+.amend-home-btn:hover { background: var(--panel4); }
+
+/* ══ HISTORY TABLE ══ */
+.hist-table {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+}
+.hist-table th {
+  text-align: left; padding: 9px 12px;
+  background: var(--panel3); border-bottom: 1px solid var(--line2);
+  font-size: 10px; font-weight: 900; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink4); white-space: nowrap;
+}
+.hist-table td {
+  padding: 12px 12px; border-bottom: 1px solid rgba(84,84,84,0.3);
+  font-family: var(--font); font-size: 14px; font-weight: 700;
+  color: var(--ink2); vertical-align: middle;
+}
+.hist-row { cursor: pointer; transition: background 0.12s; }
+.hist-row:hover td { background: rgba(255,255,255,0.04); }
+.hist-row:active td { background: rgba(255,255,255,0.07); }
+.clear-hist-btn {
+  background: transparent; border: 1px solid var(--line2);
+  color: var(--ink4); font-family: var(--font); font-size: 11px;
+  font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 7px 14px; cursor: pointer; white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+.clear-hist-btn:hover { color: var(--red); border-color: var(--red); }
+
+/* ══ HISTORY DETAIL SHEET ══ */
+.history-detail-sheet, .detail-sheet {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%;
+  background: var(--bg);
+  z-index: 9000;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.history-detail-sheet.open, .detail-sheet.open { transform: translateX(0); }
+
+.detail-sheet-topbar {
+  background: rgba(15,19,20,0.98);
+  border-bottom: 1px solid var(--line2);
+  padding: 0 16px;
+  height: 54px;
+  display: flex; align-items: center; gap: 14px;
+  flex-shrink: 0;
+}
+.detail-sheet-meta {
+  background: var(--panel);
+  border-bottom: 1px solid var(--line2);
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 24px;
+  flex-shrink: 0;
+}
+.detail-meta-item { display: flex; flex-direction: column; gap: 2px; }
+.detail-meta-label { font-size: 10px; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink4); }
+.detail-meta-val   { font-size: 15px; font-weight: 800; color: var(--ink); }
+.detail-accepted-banner {
+  background: rgba(76,175,80,0.1); border-bottom: 1px solid rgba(76,175,80,0.25);
+  padding: 10px 18px; display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--green); flex-shrink: 0;
+}
+.detail-back-btn {
+  background: transparent; border: 1px solid var(--line2); color: var(--ink3);
+  font-family: var(--font); font-size: 13px; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 7px 14px; cursor: pointer; transition: all 0.15s;
+  flex-shrink: 0;
+}
+.detail-back-btn:hover { color: var(--ink); background: var(--panel3); }
+.detail-sheet-title {
+  font-size: 14px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--ink); flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.detail-sheet-body { flex: 1; overflow-y: auto; padding-bottom: 40px; }
+
+.detail-section-hdr {
+  padding: 9px 16px 6px;
+  font-size: 11px; font-weight: 900; letter-spacing: 0.2em;
+  text-transform: uppercase; position: sticky; top: 0; z-index: 2;
+}
+.detail-section-hdr.delivered-hdr {
+  color: var(--green); background: rgba(76,175,80,0.08);
+  border-bottom: 1px solid rgba(76,175,80,0.2);
+}
+.detail-section-hdr.bad-hdr {
+  color: #C06060; background: rgba(180,60,60,0.07);
+  border-bottom: 1px solid rgba(180,60,60,0.15);
+}
+.detail-cat {
+  padding: 6px 16px 4px;
+  font-size: 10px; font-weight: 900; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--ink4);
+  background: var(--bg2); border-bottom: 1px solid var(--line);
+}
+.detail-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-bottom: 1px solid rgba(84,84,84,0.3);
+}
+.detail-check     { font-size: 14px; color: var(--green); flex-shrink: 0; width: 18px; text-align: center; }
+.detail-check-bad { font-size: 14px; color: #C06060; flex-shrink: 0; width: 18px; text-align: center; }
+.detail-name { flex: 1; font-size: 16px; font-weight: 700; text-transform: uppercase; color: var(--ink2); }
+.detail-row-bad .detail-name { color: var(--ink4); text-decoration: line-through; text-decoration-color: #C06060; }
+.detail-qty     { font-size: 20px; font-weight: 900; color: var(--ink); flex-shrink: 0; }
+.detail-qty-bad { font-size: 20px; font-weight: 900; color: var(--ink4); flex-shrink: 0; }
+.detail-unit    { font-size: 11px; font-weight: 700; color: var(--ink4); text-transform: uppercase; }
+.detail-reason  { font-size: 12px; font-family: var(--body); color: #C06060; font-style: italic; flex-shrink: 0; white-space: nowrap; }
+
+/* ══ STATUS TAB — ORDER INFO CARD ══ */
+.status-order-card {
+  margin: 16px 16px 0;
+  background: var(--panel);
+  border: 1px solid var(--line2);
+  border-left: 4px solid var(--red2);
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.soc-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.soc-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink4); }
+.soc-val   { font-size: 16px; font-weight: 400; color: var(--ink); text-align: right; }
+.soc-val.green { color: var(--green); }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line2); }
+
+/* ══ MODALS ══ */
+.modal-back {
+  display: none;
+  position: fixed !important;
+  top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+  width: 100vw !important; height: 100vh !important;
+  z-index: 9999 !important;
+  background: rgba(0,0,0,0.85);
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-back.open { display: flex !important; }
+</style>
+</head>
+<body>
+
+<!-- ══ SCREEN: WELCOME ══ -->
+<div class="screen active" id="s-welcome" style="flex-direction:column;">
+  <!-- Top bar with tabs -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="logo">TORI <div class="logo-dot"></div></div>
+      <div id="location-tag-display" class="location-tag" style="display:none;"></div>
+    </div>
+    <div class="topbar-tabs">
+      <button class="topbar-tab active" id="tab-home" onclick="switchTab('home')">Order</button>
+      <button class="topbar-tab" id="tab-delivery" onclick="switchTab('delivery')">
+        Status
+        <span class="topbar-tab-dot" id="tab-delivery-dot" style="display:none;"></span>
+      </button>
+      <button class="topbar-tab" id="tab-history" onclick="switchTab('history')">History</button>
+    </div>
+    <button class="settings-icon-btn" onclick="go('s-settings')" title="Settings">⚙</button>
+  </div>
+
+  <!-- TAB: HOME -->
+  <div id="tab-home-content" class="welcome-body">
+    <div>
+      <div class="section-label" style="text-align:center;">Order Details</div>
+      <div class="field-wrap">
+        <div>
+          <div class="field-label">Date</div>
+          <input class="field-input" type="date" id="order-date" />
+        </div>
+        <div>
+          <div class="field-label">Your Name &amp; Surname</div>
+          <input class="field-input" type="text" id="order-name"
+            placeholder="e.g. Ana Kovač" autocomplete="name" autocorrect="off" />
+        </div>
+      </div>
+    </div>
+    <button class="start-btn" id="start-btn" onclick="startChecklist()" disabled>Start Order →</button>
+  </div><!-- /tab-home-content -->
+
+  <!-- TAB: DELIVERY STATUS — status only, no sub-tabs -->
+  <div id="tab-delivery-content" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+    <div id="home-pending-body" style="flex:1;overflow-y:auto;"></div>
+  </div><!-- /tab-delivery-content -->
+
+  <!-- TAB: HISTORY -->
+  <div id="tab-history-content" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line);flex-shrink:0;">
+      <div style="font-size:11px;font-weight:900;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink4);">Delivery History</div>
+      <button class="clear-hist-btn" onclick="clearOrderHistory()">Clear History</button>
+    </div>
+    <div id="history-tab-body" style="flex:1;overflow-y:auto;"></div>
+  </div><!-- /tab-history-content -->
+
+</div><!-- /s-welcome -->
+
+
+<!-- ══ SCREEN: CHECKLIST ══ -->
+<div class="screen" id="s-checklist" style="flex-direction:column;">
+  <div class="check-header">
+    <div class="check-top">
+      <div>
+        <div class="check-logo">TORI</div>
+        <div class="check-meta" id="check-meta"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="check-rest-tag" id="check-rest-tag"></div>
+        <button class="pending-back-btn" onclick="cancelChecklist()" style="flex-shrink:0;">✕ Cancel</button>
+      </div>
+    </div>
+    <div class="progress-track" id="progress-track"></div>
+  </div>
+
+  <div class="amend-banner" id="amend-banner">⚠ Amending sent order — changes will be re-sent</div>
+
+  <div class="jump-bar">
+    <select class="jump-select" id="jump-select" onchange="jumpTo(this.value)">
+      <option value="" disabled selected>Jump to section…</option>
+    </select>
+  </div>
+
+  <div class="cat-title-bar">
+    <div class="cat-title-text" id="cat-title"></div>
+    <div class="cat-title-count" id="cat-count"></div>
+  </div>
+
+  <div class="items-list" id="items-list"></div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn" id="prev-btn" onclick="prevCat()">← Prev</button>
+    <button class="nav-btn fwd" id="next-btn" onclick="nextOrReview()">Next →</button>
+  </div>
+</div>
+
+
+<!-- ══ SCREEN: REVIEW ══ -->
+<div class="screen" id="s-review" style="flex-direction:column;">
+  <div class="review-header">
+    <div class="review-title">Review Order</div>
+    <div class="review-sub">Check everything before sending to kitchen</div>
+  </div>
+  <div class="review-body" id="review-body"></div>
+  <div class="review-footer">
+    <button class="rev-edit-btn" onclick="go('s-checklist')">← Edit</button>
+    <button class="rev-edit-btn" onclick="cancelChecklist()" style="flex:0.6;background:transparent;border-color:var(--line2);color:var(--ink4);">✕ Cancel</button>
+    <button class="rev-send-btn" id="rev-send-btn" onclick="doSend()">Confirm &amp; Send →</button>
+  </div>
+</div>
+
+
+<!-- ══ SCREEN: SUCCESS (Dashboard) ══ -->
+<div class="screen" id="s-success" style="flex-direction:column;overflow:hidden;">
+  <!-- Dashboard top bar -->
+  <div class="dashboard-topbar">
+    <div>
+      <div class="logo" style="font-size:22px;">TORI <div class="logo-dot"></div></div>
+    </div>
+    <div class="dashboard-tabs">
+      <button class="dash-tab active" id="dtab-order" onclick="switchDashTab('order')">Order</button>
+      <button class="dash-tab" id="dtab-delivery" onclick="switchDashTab('delivery')">
+        Delivery
+        <span class="dash-tab-dot" id="dtab-delivery-dot" style="display:none;"></span>
+      </button>
+    </div>
+    <button class="dash-home-btn" onclick="goHome()" title="Home">⌂</button>
+  </div>
+
+  <!-- DASH TAB: ORDER -->
+  <div id="dtab-order-content" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:18px;overflow-y:auto;">
+    <div class="success-icon" id="suc-icon">✓</div>
+    <div class="success-title" id="suc-title">Order Sent!</div>
+    <div class="suc-info-box" id="suc-info-box"></div>
+    <div id="suc-dispatch-info" style="display:none;width:100%;"></div>
+    <div style="display:flex;flex-direction:column;gap:10px;width:100%;margin-top:8px;">
+      <button class="amend-btn" id="amend-btn" onclick="startAmend()">Amend / Add to This Order</button>
+      <button class="new-btn" onclick="goHome()">Start New Order</button>
+    </div>
+  </div>
+
+  <!-- DASH TAB: DELIVERY -->
+  <div id="dtab-delivery-content" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+    <div class="pending-body" id="dash-pending-body" style="flex:1;overflow-y:auto;"></div>
+  </div>
+
+</div>
+
+
+<!-- ══ SCREEN: ERROR ══ -->
+<div class="screen error-screen" id="s-error">
+  <div class="error-icon">✕</div>
+  <div class="error-title">Send Failed</div>
+  <div class="error-body" id="err-body"></div>
+  <button class="err-retry-btn" onclick="retrySend()">Try Again</button>
+  <button class="err-back-btn"  onclick="goHome()">Start Over</button>
+</div>
+
+
+<!-- s-pending removed — delivery status now in STATUS tab -->
+
+
+<!-- ══ SCREEN: SETTINGS ══ -->
+<div class="screen" id="s-settings" style="flex-direction:column;">
+  <div class="settings-header">
+    <div class="settings-title">Settings</div>
+    <button class="pending-back-btn" onclick="go('s-welcome')">← Back</button>
+  </div>
+  <div class="settings-body">
+    <div>
+      <div class="settings-section-label">This device is located at</div>
+      <div class="location-cards">
+        <div class="location-card" id="loc-r1" onclick="pickLocation('r1')">
+          <div class="location-radio"></div>
+          <div>
+            <div class="location-name">Tori 1</div>
+            <div class="location-sub">Špansko</div>
+          </div>
+        </div>
+        <div class="location-card" id="loc-r2" onclick="pickLocation('r2')">
+          <div class="location-radio"></div>
+          <div>
+            <div class="location-name">Tori 2</div>
+            <div class="location-sub">Trnje</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="settings-save-btn" onclick="saveSettings()">Save Settings →</button>
+  </div>
+</div>
+
+
+<!-- MISSING REASON MODAL -->
+<!-- REASON SHEET -->
+<div class="detail-sheet reason-sheet" id="reason-modal-back">
+  <div class="detail-sheet-topbar">
+    <button class="detail-back-btn" onclick="closeReasonModal()">← Back</button>
+    <div class="detail-sheet-title">Mark as Missing</div>
+  </div>
+  <div style="padding:20px;">
+    <div style="font-family:var(--body);font-size:13px;color:var(--ink4);margin-bottom:16px;line-height:1.5;">Select the reason this item was not delivered.</div>
+    <div class="reason-item-name" id="reason-item-name" style="font-size:18px;font-weight:900;text-transform:uppercase;color:var(--ink);margin-bottom:20px;letter-spacing:0.04em;"></div>
+    <div class="reason-opts">
+      <div class="reason-opt" onclick="selectReason(this,'Not Delivered')">Not Delivered</div>
+      <div class="reason-opt" onclick="selectReason(this,'Damaged')">Damaged</div>
+      <div class="reason-opt" onclick="selectReason(this,'other')">Other</div>
+    </div>
+    <input class="anm-input" id="reason-other-input" type="text" placeholder="Type reason…"
+      style="display:none;margin-top:12px;width:100%;"
+      oninput="onReasonOtherInput()" />
+    <button class="reason-ok" id="reason-ok" disabled onclick="confirmMissing()" style="margin-top:24px;width:100%;">Confirm Missing →</button>
+  </div>
+</div>
+
+<!-- ACCEPT NAME MODAL -->
+<div class="modal-overlay" id="accept-name-modal-back">
+  <div class="modal-popup">
+    <div class="modal-popup-title">Confirm Delivery Accepted</div>
+    <div class="modal-popup-sub">Enter the name of the person accepting this delivery.</div>
+    <div class="anm-label">Accepted by (name &amp; surname)</div>
+    <input class="anm-input" id="anm-input" type="text"
+      placeholder="e.g. Ana Kovač" autocomplete="off"
+      oninput="document.getElementById('anm-ok').disabled = !this.value.trim()" />
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="anm-cancel" onclick="closeAcceptModal()" style="flex:1;">Cancel</button>
+      <button class="anm-ok" id="anm-ok" disabled onclick="confirmAcceptDelivery()" style="flex:2;">Delivery Accepted →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MISSING ITEMS RE-ADD SHEET -->
+<div class="detail-sheet" id="missing-readd-sheet">
+  <div class="detail-sheet-topbar">
+    <button class="detail-back-btn" onclick="dismissMissingReadd()">Skip</button>
+    <div class="detail-sheet-title">Items Not Delivered Last Time</div>
+  </div>
+  <div style="padding:20px 20px 0;">
+    <div style="font-family:var(--body);font-size:13px;color:var(--ink4);line-height:1.5;margin-bottom:16px;">
+      The following items were not delivered during your last order. Would you like to add them to this order?
+    </div>
+  </div>
+  <div id="missing-readd-list" style="flex:1;overflow-y:auto;padding-bottom:20px;"></div>
+  <div style="padding:16px 20px;border-top:1px solid var(--line);display:flex;gap:10px;flex-shrink:0;">
+    <button onclick="dismissMissingReadd()" style="flex:1;background:transparent;border:1px solid var(--line2);color:var(--ink4);font-family:var(--font);font-size:14px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;padding:14px;cursor:pointer;">Skip</button>
+    <button id="readd-confirm-btn" onclick="confirmMissingReadd()" style="flex:2;background:var(--red2);border:none;color:var(--ink);font-family:var(--font);font-size:14px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;padding:14px;cursor:pointer;">Add to Order →</button>
+  </div>
+</div>
+
+<div id="toast" onclick="this.classList.remove('show')" style="
+  display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  background:rgba(30,34,36,0.97); color:#fff; font-family:'Barlow Condensed',sans-serif;
+  font-size:15px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+  padding:18px 28px; z-index:99999; text-align:center; cursor:pointer;
+  border:1px solid rgba(255,255,255,0.12); max-width:80vw;
+  box-shadow:0 8px 40px rgba(0,0,0,0.5);
+"></div>
+
+<!-- HISTORY DETAIL SHEET -->
+<div class="history-detail-sheet" id="history-detail-sheet">
+  <div class="detail-sheet-topbar">
+    <button class="detail-back-btn" onclick="closeHistoryDetail()">← Back</button>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);">Delivery History</div>
+      <div class="detail-sheet-title" id="detail-sheet-title"></div>
+    </div>
+  </div>
+  <div class="detail-sheet-meta" id="detail-sheet-meta"></div>
+  <div class="detail-sheet-body" id="detail-sheet-body"></div>
+</div>
+
+
+<script>
+const API_BASE = 'https://tori-kitchen-system-tv6b.vercel.app'; // set to your backend URL
+
+// Safe localStorage JSON parse — handles null, undefined, and empty string
+function lsGet(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw || raw.trim() === '') return fallback;
+    return JSON.parse(raw);
+  } catch(e) { return fallback; }
+}
+function lsSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+}
+
+const CATS = [
+  { id:'sauces', label:'Sauces', items:[
+    {id:'kungpao',         name:'Kungpao Sauce',         unit:'L'},
+    {id:'katsu',           name:'Katsu Sauce',           unit:'L'},
+    {id:'teriyaki',        name:'Teriyaki',              unit:'L'},
+    {id:'dan',             name:'Dan Sauce',             unit:'L'},
+    {id:'poke',            name:'Poke Sauce',            unit:'L'},
+    {id:'gyoza',           name:'Gyoza Sauce',           unit:'L'},
+    {id:'coriander_wasabi',name:'Coriander Wasabi Mayo', unit:'L'},
+    {id:'sriracha',        name:'Sriracha',              unit:'L'},
+    {id:'soup',            name:'Soup',                  unit:'L'},
+    {id:'vinegar',         name:'Vinegar',               unit:'L'},
+    {id:'sushi_vinegar',   name:'Sushi Vinegar',         unit:'L'},
+    {id:'soy',             name:'Soy Sauce',             unit:'L'},
+    {id:'soy_less_salt',   name:'Soy — Less Salt',       unit:'L'},
+    {id:'tan_tan',         name:'Tan-Tan Men Ramen',     unit:'L'},
+    {id:'laksa',           name:'Laksa',                 unit:'L'},
+    {id:'oil',             name:'Oil',                   unit:'L'},
+    {id:'sunflower_oil',   name:'Sunflower Oil',         unit:'L'},
+    {id:'garlic_oil',      name:'Garlic Oil',            unit:'L'},
+    {id:'chili_oil',       name:'Chili Oil',             unit:'L'},
+    {id:'sesame_oil',      name:'Sesame Oil',            unit:'L'},
+  ]},
+  { id:'foods', label:'Foods', items:[
+    {id:'chicken',        name:'Chicken',              unit:'kg'},
+    {id:'beef',           name:'Beef',                 unit:'kg'},
+    {id:'karaage',        name:'Karaage',              unit:'kg'},
+    {id:'baked_pork',     name:'Baked Pork',           unit:'kg'},
+    {id:'miso',           name:'Miso',                 unit:'kg'},
+    {id:'meat',           name:'Meat',                 unit:'kg'},
+    {id:'egg',            name:'Egg',                  unit:'pcs'},
+    {id:'bamboo',         name:'Marinated Bamboo',     unit:'kg'},
+    {id:'noodles',        name:'Noodles',              unit:'kg'},
+    {id:'shiitake',       name:'Shiitake Mushroom',    unit:'kg'},
+    {id:'thai_paste',     name:'Thai Chili Paste',     unit:'kg'},
+    {id:'sambal',         name:'Sambal',               unit:'kg'},
+    {id:'tofu',           name:'Tofu',                 unit:'kg'},
+    {id:'daikon',         name:'Daikon',               unit:'kg'},
+    {id:'tempura_roll',   name:'Tempura Roll',         unit:'pcs'},
+    {id:'white_seeds',    name:'White Sesame Seeds',   unit:'kg'},
+    {id:'furikake',       name:'Furikake',             unit:'kg'},
+    {id:'togarashi',      name:'Togarashi',            unit:'kg'},
+    {id:'bonito',         name:'Bonito / Tuna Flakes', unit:'kg'},
+    {id:'pickled_ginger', name:'Pickled Ginger',       unit:'kg'},
+    {id:'black_sesame',   name:'Black Sesame Seeds',   unit:'kg'},
+    {id:'peanuts',        name:'Kikirikii / Peanuts',  unit:'kg'},
+    {id:'cashew',         name:'Cashew',               unit:'kg'},
+    {id:'crumble',        name:'Crumble',              unit:'kg'},
+    {id:'coleslaw',       name:'Coleslaw',             unit:'kg'},
+    {id:'wakame',         name:'Wakame',               unit:'kg'},
+    {id:'lobster_surimi', name:'Lobster Surimi',       unit:'kg'},
+    {id:'kimchi',         name:'Kimchi',               unit:'kg'},
+    {id:'frozen',         name:'Frozen Items',         unit:'kg'},
+    {id:'unagi',          name:'Unagi',                unit:'pcs'},
+    {id:'edamame',        name:'Edamame',              unit:'kg'},
+    {id:'stir_fry',       name:'Stir Fry',             unit:'kg'},
+    {id:'rice',           name:'Rice',                 unit:'kg'},
+    {id:'breaded',        name:'Breaded',              unit:'kg'},
+    {id:'ice_cream',      name:'Ice Cream',            unit:'pcs'},
+    {id:'leaves',         name:'Salad Leaves',         unit:'kg'},
+  ]},
+  { id:'vegetables', label:'Vegetables', items:[
+    {id:'enoki',        name:'Enoki',         unit:'kg'},
+    {id:'cucumber',     name:'Cucumber',      unit:'kg'},
+    {id:'pak_choi',     name:'Pak Choi',      unit:'kg'},
+    {id:'radish',       name:'Radish',        unit:'kg'},
+    {id:'green_beans',  name:'Green Beans',   unit:'kg'},
+    {id:'purple_onion', name:'Purple Onion',  unit:'kg'},
+    {id:'spring_onion', name:'Spring Onion',  unit:'kg'},
+    {id:'veg_mix',      name:'Vegetable Mix', unit:'kg'},
+  ]},
+  { id:'drinks', label:'Drinks', items:[
+    {id:'cola_regular', name:'Coca Cola Regular', unit:'bottles'},
+    {id:'cola_zero',    name:'Coca Cola Zero',    unit:'bottles'},
+    {id:'jana',         name:'Jana',              unit:'bottles'},
+    {id:'jamnica',      name:'Jamnica',           unit:'bottles'},
+    {id:'romerquelle',  name:'Römerquelle',       unit:'bottles'},
+    {id:'honey_lemon',  name:'Honey Lemon Tea',   unit:'bottles'},
+    {id:'tea_original', name:'Tea Original',      unit:'bottles'},
+    {id:'tea_no_sugar', name:'Tea No Sugar',      unit:'bottles'},
+    {id:'sapporo',      name:'Sapporo',           unit:'bottles'},
+    {id:'singha',       name:'Singha',            unit:'bottles'},
+    {id:'asahi',        name:'Asahi',             unit:'bottles'},
+    {id:'zmajsko',      name:'Zmajsko Pale Ale',  unit:'bottles'},
+    {id:'therapy',      name:'Therapy',           unit:'bottles'},
+    {id:'pils',         name:'Pils',              unit:'bottles'},
+    {id:'merlot',       name:'Merlot',            unit:'bottles'},
+    {id:'grasevina',    name:'Graševina',         unit:'bottles'},
+  ]},
+  { id:'dry', label:'Dry Items', items:[
+    {id:'gloves',          name:'Gloves',           unit:'boxes'},
+    {id:'tissue_big',      name:'Big Tissue',       unit:'boxes'},
+    {id:'tissue_small',    name:'Small Tissue',     unit:'boxes'},
+    {id:'bag_garbage_blue',name:'Garbage Bag Blue', unit:'pcs'},
+    {id:'bag_large',       name:'Bag Large',        unit:'pcs'},
+    {id:'bag_medium',      name:'Bag Medium',       unit:'pcs'},
+    {id:'bag_brown',       name:'Bag Brown',        unit:'pcs'},
+    {id:'chopsticks',      name:'Chopsticks',       unit:'pcs'},
+    {id:'paper_tray',      name:'Paper Tray',       unit:'pcs'},
+    {id:'tori_bag',        name:'Tori Bag',         unit:'pcs'},
+    {id:'cups',            name:'Cups',             unit:'pcs'},
+    {id:'bowls_lid',       name:'Bowls / Lid Big',  unit:'pcs'},
+    {id:'container',       name:'Container',        unit:'pcs'},
+    {id:'potato_starch',   name:'Potato Starch',    unit:'kg'},
+    {id:'panko',           name:'Panko',            unit:'kg'},
+    {id:'starch',          name:'Starch',           unit:'kg'},
+    {id:'wire',            name:'Wire',             unit:'pcs'},
+    {id:'film_small',      name:'Film Small',       unit:'rolls'},
+    {id:'film_large',      name:'Film Large',       unit:'rolls'},
+    {id:'envelope',        name:'Envelope',         unit:'pcs'},
+    {id:'labels',          name:'Labels',           unit:'pcs'},
+    {id:'tape',            name:'Tape',             unit:'rolls'},
+    {id:'dish_liquid',     name:'Dish Wash Liquid', unit:'bottles'},
+    {id:'detergent',       name:'Detergent Soap',   unit:'bottles'},
+    {id:'hand_soap',       name:'Hand Soap',        unit:'bottles'},
+    {id:'sponge',          name:'Sponge',           unit:'pcs'},
+    {id:'chemical',        name:'Chemical',         unit:'pcs'},
+    {id:'towel',           name:'Towel',            unit:'pcs'},
+    {id:'cloth',           name:'Cloth',            unit:'pcs'},
+    {id:'radikalin',       name:'Radikalin',        unit:'bottles'},
+    {id:'blitz',           name:'Blitz',            unit:'bottles'},
+    {id:'calc_clean',      name:'Calc Cleaner',     unit:'bottles'},
+    {id:'sanitar',         name:'Sanitizer',        unit:'bottles'},
+  ]},
+];
+
+// item lookup
+const itemMap = {};
+CATS.forEach(c => c.items.forEach(i => { itemMap[i.id] = i; }));
+
+// ── STATE ──
+let restaurant = null, staffName = '', orderDate = '';
+let catIdx = 0, checked = {}, isAmending = false, lastPayload = null;
+
+// ── INIT ──
+document.getElementById('order-date').value = new Date().toISOString().slice(0,10);
+['order-name','order-date'].forEach(id => document.getElementById(id).addEventListener('input', chkReady));
+
+function pickRest(k) { restaurant = k; } // kept for amend compatibility
+function chkReady() {
+  document.getElementById('start-btn').disabled =
+    !(document.getElementById('order-name').value.trim() &&
+      document.getElementById('order-date').value);
+}
+
+function startChecklist() {
+  restaurant = selectedLocation;
+  if (!restaurant) {
+    showToast('Please set your restaurant location in Settings ⚙ first');
+    return;
+  }
+  staffName  = document.getElementById('order-name').value.trim();
+  orderDate  = document.getElementById('order-date').value;
+  isAmending = false; catIdx = 0; checked = {};
+
+  // Check last delivery for undelivered items
+  const lastMissing = getLastMissingItems();
+  if (Object.keys(lastMissing).length) {
+    showMissingReadd(lastMissing);
+  } else {
+    launch();
+  }
+}
+
+// ── MISSING ITEMS RE-ADD ──
+let _pendingMissingItems = {};
+
+function getLastMissingItems() {
+  try {
+    const log = lsGet('TORI_RESTAURANT_LOG', []);
+    if (!log.length) return {};
+    const last = log[0];
+    return last.missingItems || {};
+  } catch(e) { return {}; }
+}
+
+function showMissingReadd(missing) {
+  _pendingMissingItems = missing;
+
+  // Build item list
+  const itemMeta = {};
+  CATS.forEach(c => c.items.forEach(i => { itemMeta[i.id] = i; }));
+
+  let html = '';
+  Object.entries(missing).forEach(([id, reason]) => {
+    const m = itemMeta[id];
+    if (!m) return;
+    html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);">
+      <div>
+        <div style="font-size:17px;font-weight:700;text-transform:uppercase;color:var(--ink);">${m.name}</div>
+        <div style="font-family:var(--body);font-size:12px;color:var(--ink4);margin-top:2px;">Not delivered: ${reason}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <input type="number" id="readd-qty-${id}" value="1" min="0" step="any" inputmode="decimal"
+          style="width:60px;height:36px;background:var(--panel2);border:1px solid var(--line2);border-bottom:2px solid var(--red2);color:var(--ink);font-family:var(--font);font-size:20px;font-weight:900;text-align:center;border-radius:0;-webkit-appearance:none;-moz-appearance:textfield;"
+          onclick="event.stopPropagation()" />
+        <span style="font-family:var(--body);font-size:12px;color:var(--ink4);text-transform:uppercase;">${m.unit}</span>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('missing-readd-list').innerHTML = html || '<div style="padding:20px;color:var(--ink4);">No items</div>';
+  document.getElementById('missing-readd-sheet').classList.add('open');
+}
+
+function dismissMissingReadd() {
+  document.getElementById('missing-readd-sheet').classList.remove('open');
+  _pendingMissingItems = {};
+  launch();
+}
+
+function confirmMissingReadd() {
+  const itemMeta = {};
+  CATS.forEach(c => c.items.forEach(i => { itemMeta[i.id] = i; }));
+
+  Object.keys(_pendingMissingItems).forEach(id => {
+    const inp = document.getElementById('readd-qty-' + id);
+    if (!inp) return;
+    const qty = parseFloat(inp.value);
+    if (!isNaN(qty) && qty > 0) {
+      checked[id] = qty;
+    }
+  });
+
+  document.getElementById('missing-readd-sheet').classList.remove('open');
+  _pendingMissingItems = {};
+  launch();
+}
+
+// ── LAUNCH CHECKLIST ──
+function launch() {
+  const restLabel = restaurant==='r1' ? 'Tori 1 — Špansko' : 'Tori 2 — Trnje';
+  document.getElementById('check-rest-tag').textContent = restLabel;
+  const d = new Date(orderDate+'T12:00:00');
+  document.getElementById('check-meta').textContent =
+    staffName + ' · ' + d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('amend-banner').classList.toggle('on', isAmending);
+
+  // Progress steps
+  const track = document.getElementById('progress-track');
+  track.innerHTML = '';
+  CATS.forEach((_,i) => {
+    const s = document.createElement('div');
+    s.className='progress-step'; s.id='step-'+i; track.appendChild(s);
+  });
+
+  // Jump dropdown
+  const sel = document.getElementById('jump-select');
+  sel.innerHTML = '<option value="" disabled>Jump to section…</option>';
+  CATS.forEach((c,i) => {
+    const o = document.createElement('option');
+    o.value=i; o.textContent=c.label+' ('+c.items.length+' items)'; sel.appendChild(o);
+  });
+  sel.value='';
+
+  showCat(catIdx);
+  go('s-checklist');
+}
+
+function jumpTo(v) {
+  const i = parseInt(v,10);
+  if (!isNaN(i)) showCat(i);
+  document.getElementById('jump-select').value='';
+}
+
+// ── SHOW CATEGORY ──
+function showCat(idx) {
+  catIdx = idx;
+  const cat = CATS[idx];
+  const isLast = idx===CATS.length-1;
+
+  document.getElementById('cat-title').textContent = cat.label;
+  document.getElementById('cat-count').textContent = cat.items.length+' items';
+
+  // Progress
+  CATS.forEach((_,i)=>{
+    const el=document.getElementById('step-'+i);
+    if(el) el.className='progress-step'+(i<idx?' done':i===idx?' active':'');
+  });
+
+  // Rows
+  const list = document.getElementById('items-list');
+  list.innerHTML='';
+  cat.items.forEach(item => {
+    const isc = checked[item.id]!==undefined;
+    const qty = checked[item.id]||'';
+    const row = document.createElement('div');
+    row.className='item-row'+(isc?' checked':'');
+    row.id='row-'+item.id;
+    row.innerHTML=`
+      <div class="item-main" onclick="focusQty('${item.id}')">
+        <div class="item-check" onclick="event.stopPropagation();toggle('${item.id}')"></div>
+        <div class="item-name">${item.name}</div>
+        <div class="item-qty-inline" onclick="event.stopPropagation()">
+          <input class="qty-input" type="number" id="qty-${item.id}"
+            value="${qty}" min="0" step="any" inputmode="decimal" placeholder="0"
+            oninput="qtyChange('${item.id}','${item.unit}')" />
+          <span class="qty-unit">${item.unit}</span>
+        </div>
+      </div>`;
+    list.appendChild(row);
+  });
+  list.scrollTop=0;
+
+  document.getElementById('prev-btn').disabled = idx===0;
+  const nb = document.getElementById('next-btn');
+  if (isLast) { nb.textContent='Review Order →'; nb.className='nav-btn fwd'; }
+  else        { nb.textContent='Next →';          nb.className='nav-btn fwd'; }
+}
+
+function toggle(id) {
+  const row = document.getElementById('row-'+id);
+  const was = row.classList.contains('checked');
+  if (was) {
+    // Tapping checkbox unchecks
+    row.classList.remove('checked');
+    delete checked[id];
+    const inp = document.getElementById('qty-'+id);
+    if (inp) inp.value = '';
+  } else {
+    row.classList.add('checked');
+    const inp = document.getElementById('qty-'+id);
+    if (inp) { inp.focus(); inp.select(); }
+  }
+}
+
+function focusQty(id) {
+  // Tapping anywhere on the row (not checkbox) just opens keyboard
+  const row = document.getElementById('row-'+id);
+  if (!row.classList.contains('checked')) {
+    row.classList.add('checked');
+  }
+  const inp = document.getElementById('qty-'+id);
+  if (inp) { inp.focus(); inp.select(); }
+}
+
+function qtyChange(id, unit) {
+  const inp = document.getElementById('qty-'+id);
+  const v   = parseFloat(inp.value);
+  const row = document.getElementById('row-'+id);
+  if (!isNaN(v) && v > 0) {
+    checked[id] = v;
+    row.classList.add('checked');
+  } else {
+    delete checked[id];
+    row.classList.remove('checked');
+  }
+}
+
+function prevCat(){ if(catIdx>0) showCat(catIdx-1); }
+function nextOrReview(){ catIdx<CATS.length-1 ? showCat(catIdx+1) : showReview(); }
+
+// ── REVIEW ──
+function showReview() {
+  const d = new Date(orderDate+'T12:00:00');
+  const dateStr=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const restName=restaurant==='r1'?'Tori 1 — Špansko':'Tori 2 — Trnje';
+  const total=Object.keys(checked).length;
+  const btn=document.getElementById('rev-send-btn');
+
+  let html=`<div class="review-meta">
+    <div class="review-meta-row"><span class="rmeta-lbl">Restaurant</span><span class="rest-tag">${restName}</span></div>
+    <div class="review-meta-row"><span class="rmeta-lbl">Date</span><span class="rmeta-val">${dateStr}</span></div>
+    <div class="review-meta-row"><span class="rmeta-lbl">Submitted by</span><span class="rmeta-val">${staffName}</span></div>
+    ${isAmending?'<div class="amend-notice">⚠ This will amend the previously sent order</div>':''}
+  </div>`;
+
+  if(total===0){
+    html+='<div class="review-empty">No items selected.<br>Go back and tick items to order.</div>';
+    btn.disabled=true;
+  } else {
+    btn.disabled=false;
+    CATS.forEach(cat=>{
+      const ci=cat.items.filter(i=>checked[i.id]!==undefined);
+      if(!ci.length) return;
+      html+=`<div class="review-cat-hdr">${cat.label} — ${ci.length} item${ci.length!==1?'s':''}</div>`;
+      ci.forEach(item=>{
+        html+=`<div class="review-row">
+          <span class="review-iname">${item.name}</span>
+          <span class="review-iqty">${checked[item.id]} ${item.unit}</span>
+        </div>`;
+      });
+    });
+  }
+
+  document.getElementById('review-body').innerHTML=html;
+  btn.textContent='Confirm & Send →';
+  go('s-review');
+}
+
+// ── SEND ──
+async function doSend() {
+  const btn=document.getElementById('rev-send-btn');
+  btn.disabled=true; btn.textContent='Sending…';
+
+  const payload={
+    restaurant, staff_name:staffName, order_date:orderDate,
+    items:{...checked}, is_amendment:isAmending, ts:Date.now()
+  };
+  lastPayload=payload;
+
+  try {
+    // ── API MODE ──
+    if (API_BASE) {
+      const ep = isAmending ? '/api/orders/amend' : '/api/orders/submit';
+      const res = await fetch(API_BASE + ep, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      showSuccess(payload);
+      return;
+    }
+    // FALLBACK: write order directly to localStorage for kitchen system to read
+    const orders = lsGet('TORI_ORDERS', {});
+    const rk = payload.restaurant;
+    const prevId = orders[rk] ? orders[rk].id : null;
+    orders[rk] = {
+      id: payload.ts,           // always new ts = always triggers kitchen refresh
+      originalId: prevId || payload.ts,
+      restaurant: rk,
+      staffName: payload.staff_name,
+      orderDate: payload.order_date,
+      items: payload.items,
+      ts: payload.ts,
+      isAmendment: isAmending,
+      dispatched: false
+    };
+    localStorage.setItem('TORI_ORDERS', JSON.stringify(orders));
+
+    // Clear stale delivery status for this restaurant when a NEW order is placed (not amendment)
+    if (!isAmending) {
+      try {
+        const statusData = lsGet('TORI_STATUS', {});
+        if (statusData[rk]) {
+          delete statusData[rk];
+          localStorage.setItem('TORI_STATUS', JSON.stringify(statusData));
+        }
+      } catch(e) {}
+      // Clear name field for next order
+      document.getElementById('order-name').value = '';
+      document.getElementById('start-btn').disabled = true;
+    }
+
+    await new Promise(r=>setTimeout(r,400));
+    showSuccess(payload);
+  } catch(err) {
+    btn.disabled=false; btn.textContent='Confirm & Send →';
+    document.getElementById('err-body').textContent='Could not reach the kitchen system.'+(err.message?' ('+err.message+')':'')+' Check your connection and try again.';
+    go('s-error');
+  }
+}
+
+async function retrySend(){
+  if(!lastPayload){goHome();return;}
+  go('s-review');
+  try{
+    // ── API MODE ──
+    if (API_BASE) {
+      const ep = lastPayload.is_amendment ? '/api/orders/amend' : '/api/orders/submit';
+      const res = await fetch(API_BASE + ep, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(lastPayload)
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      showSuccess(lastPayload);
+      return;
+    }
+    // FALLBACK: re-write order to localStorage
+    const orders2 = lsGet('TORI_ORDERS', {});
+    const rk2 = lastPayload.restaurant;
+    orders2[rk2] = { id:lastPayload.ts, restaurant:rk2, staffName:lastPayload.staff_name, orderDate:lastPayload.order_date, items:lastPayload.items, ts:lastPayload.ts, dispatched:false };
+    localStorage.setItem('TORI_ORDERS', JSON.stringify(orders2));
+    await new Promise(r=>setTimeout(r,400));
+    showSuccess(lastPayload);
+  } catch(err){
+    document.getElementById('err-body').textContent='Still failing. Check your connection.';
+    go('s-error');
+  }
+}
+
+function showSuccess(p){
+  const restName = p.restaurant==='r1' ? 'Tori 1 — Špansko' : 'Tori 2 — Trnje';
+  const itemCount = Object.keys(p.items).length;
+  const d = new Date(p.order_date+'T12:00:00');
+  const dateStr = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+
+  if (p.is_amendment) {
+    document.getElementById('suc-title').style.display = 'none';
+    document.getElementById('suc-icon').style.display = 'none';
+    document.getElementById('suc-info-box').innerHTML = `
+      <div class="amended-notice">
+        <div class="amended-notice-title">✓ Order Updated</div>
+        <div class="amended-notice-sub">${restName}</div>
+        <div class="amended-notice-sub">${dateStr}</div>
+        <div class="amended-notice-sub" style="margin-top:8px;color:var(--ink4);font-size:13px;">Your changes have been sent to the kitchen.</div>
+      </div>`;
+  } else {
+    document.getElementById('suc-title').style.display = '';
+    document.getElementById('suc-icon').style.display = '';
+    document.getElementById('suc-title').textContent = 'Order Sent!';
+    document.getElementById('suc-info-box').innerHTML = `
+      <div class="suc-info-box">
+        <div class="suc-info-row"><span class="suc-info-label">Restaurant</span><span class="suc-info-val">${restName}</span></div>
+        <div class="suc-info-row"><span class="suc-info-label">Date</span><span class="suc-info-val">${dateStr}</span></div>
+        <div class="suc-info-row"><span class="suc-info-label">Submitted by</span><span class="suc-info-val">${p.staff_name}</span></div>
+        <div class="suc-info-row"><span class="suc-info-label">Items</span><span class="suc-info-val green">${itemCount}</span></div>
+      </div>`;
+  }
+
+  // Navigate to welcome STATUS tab — this becomes the persistent home for order+delivery info
+  lastPayload = p;
+  go('s-welcome');
+  switchTab('delivery');
+  updateDeliveryTabDots();
+}
+
+function checkDispatchStatus(p) {
+  const infoEl   = document.getElementById('suc-dispatch-info');
+  const amendBtn = document.getElementById('amend-btn');
+
+  let dispatchData = null;
+  try {
+    const raw = localStorage.getItem('TORI_DISPATCH');
+    if (raw) dispatchData = JSON.parse(raw);
+  } catch(e){}
+
+  const rk = p.restaurant;
+  let dispatched = dispatchData && dispatchData[rk] && dispatchData[rk].id;
+  if (!dispatched) {
+    try {
+      const orders = lsGet('TORI_ORDERS', {});
+      if (orders[rk] && orders[rk].dispatched) dispatched = true;
+    } catch(e) {}
+  }
+
+  if (!dispatched) {
+    amendBtn.disabled = false;
+    amendBtn.title = '';
+    infoEl.style.display = 'none';
+    return;
+  }
+
+  // Dispatched — disable amend, show dispatch time only (no name needed)
+  amendBtn.disabled = true;
+  amendBtn.title = 'Cannot amend — order has already been dispatched';
+
+  // Read dispatch time — prefer TORI_STATUS (more reliable after TORI_DISPATCH is cleared)
+  let dispAt = '—';
+  try {
+    const statusData = lsGet('TORI_STATUS', {});
+    const rk = p.restaurant;
+    if (statusData[rk] && statusData[rk].dispatchedAt) {
+      dispAt = fmtDTLocal(statusData[rk].dispatchedAt);
+    } else if (dispatchData && dispatchData.dispatchedAt) {
+      dispAt = fmtDTLocal(dispatchData.dispatchedAt);
+    }
+  } catch(e) {}
+
+  infoEl.innerHTML = `<div class="dispatch-status-panel">
+    <div class="dsp-title">✓ Order Dispatched</div>
+    <div class="dsp-meta">Dispatched at <strong>${dispAt}</strong></div>
+  </div>`;
+  infoEl.style.display = 'block';
+}
+
+function fmtDTLocal(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' ' + d.toTimeString().slice(0,5);
+}
+
+function startAmend(){ isAmending=true; catIdx=0; launch(); }
+
+function cancelChecklist() {
+  const hasItems = Object.keys(checked).length > 0;
+  if (hasItems && !confirm('Cancel order? All entered quantities will be lost.')) return;
+  checked = {};
+  isAmending = false;
+  go('s-welcome');
+  switchTab('home');
+}
+
+function goHome(){
+  lastPayload=null; isAmending=false; checked={}; restaurant=selectedLocation||null;
+  document.getElementById('order-name').value='';
+  document.getElementById('order-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('start-btn').disabled=true;
+  updateWelcomeStatusBadge();
+  switchTab('home');
+  go('s-welcome');
+}
+
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
+  window.scrollTo(0,0);
+}
+
+/* ═══════════════════════════════════════
+   SETTINGS & LOCATION
+   ═══════════════════════════════════════ */
+const LOCATIONS = { r1:'Tori 1 — Špansko', r2:'Tori 2 — Trnje' };
+let selectedLocation = null;
+
+function loadSettings() {
+  try {
+    const s = localStorage.getItem('TORI_LOCATION');
+    if (s) selectedLocation = s;
+  } catch(e){}
+  restaurant = selectedLocation;
+  applyLocationUI();
+}
+
+function applyLocationUI() {
+  if (!selectedLocation) return;
+  ['r1','r2'].forEach(k => {
+    document.getElementById('loc-'+k).classList.toggle('selected', k===selectedLocation);
+  });
+  const tag = document.getElementById('location-tag-display');
+  tag.textContent = LOCATIONS[selectedLocation];
+  tag.style.display = 'block';
+}
+
+function pickLocation(k) {
+  selectedLocation = k;
+  ['r1','r2'].forEach(id => document.getElementById('loc-'+id).classList.toggle('selected', id===k));
+}
+
+function saveSettings() {
+  if (!selectedLocation) { showToast('Please select a location first'); return; }
+  try { localStorage.setItem('TORI_LOCATION', selectedLocation); } catch(e){}
+  restaurant = selectedLocation;
+  applyLocationUI();
+  showToast('Settings saved — ' + LOCATIONS[selectedLocation]);
+  go('s-welcome');
+}
+
+/* ═══════════════════════════════════════
+   STATUS POLLING & BADGE
+   ═══════════════════════════════════════ */
+function getMyDeliveryStatus() {
+  if (!selectedLocation) return null;
+  const rk = selectedLocation;
+  try {
+    // Primary: TORI_STATUS (written by kitchen on dispatch, updated by driver on delivery)
+    const raw = localStorage.getItem('TORI_STATUS');
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (data[rk]) return data[rk];
+    }
+    // Fallback: TORI_DISPATCH (written by kitchen) — means status is 'in_delivery'
+    const disp = localStorage.getItem('TORI_DISPATCH');
+    if (disp) {
+      const d = JSON.parse(disp);
+      if (d[rk] && d[rk].id) {
+        return {
+          status: 'in_delivery',
+          order: d[rk],
+          dispatchedAt: d.dispatchedAt,
+          dispatchedBy: d.dispatchedBy
+        };
+      }
+    }
+    // Also check TORI_ORDERS — order submitted but not yet dispatched = 'preparing'
+    const orders = localStorage.getItem('TORI_ORDERS');
+    if (orders) {
+      const o = JSON.parse(orders);
+      if (o[rk] && !o[rk].dispatched) {
+        return { status: 'preparing', order: o[rk] };
+      }
+    }
+    return null;
+  } catch(e){ return null; }
+}
+
+function updateWelcomeStatusBadge() {
+  const st = getMyDeliveryStatus();
+  const badge = document.getElementById('delivery-badge');
+  if (!badge) return;
+  if (!st || !st.status || st.status === 'none') {
+    badge.classList.remove('visible','pulsing');
+    return;
+  }
+  badge.classList.add('visible');
+  const txtEl = document.getElementById('delivery-badge-txt');
+  if (st.status === 'preparing') {
+    badge.classList.remove('pulsing');
+    txtEl.textContent = 'Preparing';
+  } else if (st.status === 'in_delivery') {
+    badge.classList.add('pulsing');
+    txtEl.textContent = 'In Delivery';
+  } else if (st.status === 'delivered') {
+    badge.classList.remove('pulsing');
+    txtEl.textContent = 'Delivered — Tap to Accept';
+  }
+}
+
+// Also update "View Pending" button on success screen
+function updateViewPendingBtn() {
+  const st = getMyDeliveryStatus();
+  const btn = document.getElementById('view-pending-btn');
+  if (!btn) return;
+  const lbl = document.getElementById('vpb-label');
+  btn.classList.remove('pulsing');
+  if (!st || !st.status || st.status === 'none' || st.status === 'accepted') {
+    if (lbl) lbl.textContent = 'View Pending Delivery';
+    return;
+  }
+  if (st.status === 'preparing')   { if(lbl) lbl.textContent = 'View Order — Preparing'; }
+  if (st.status === 'in_delivery') { if(lbl) lbl.textContent = 'View Order — In Delivery'; btn.classList.add('pulsing'); }
+  if (st.status === 'delivered')   { if(lbl) lbl.textContent = 'Delivery Arrived — Accept Now'; btn.classList.add('pulsing'); }
+}
+
+setInterval(() => {
+  updateWelcomeStatusBadge();
+  updateDeliveryTabDots();
+  pollDispatchStatus();
+  updateAmendHomeBtn();
+  refreshAllDeliveryViews();
+}, 2000);
+
+// Live-poll whether this restaurant's order has been dispatched.
+// Runs every 2s so the amend button is disabled the moment kitchen dispatches.
+function pollDispatchStatus() {
+  if (!lastPayload) return; // no order sent yet
+  const successScreen = document.getElementById('s-success');
+  if (!successScreen || !successScreen.classList.contains('active')) return;
+
+  const rk = lastPayload.restaurant;
+  let dispatched = false;
+
+  // Check TORI_ORDERS dispatched flag 
+  try {
+    const orders = lsGet('TORI_ORDERS', {});
+    if (orders[rk] && orders[rk].dispatched) dispatched = true;
+  } catch(e) {}
+
+  // Also check TORI_DISPATCH snapshot (production + demo)
+  if (!dispatched) {
+    try {
+      const d = lsGet('TORI_DISPATCH', {});
+      if (d[rk] && d[rk].id) dispatched = true;
+    } catch(e) {}
+  }
+
+  const amendBtn = document.getElementById('amend-btn');
+  if (!amendBtn) return;
+
+  if (dispatched && !amendBtn.disabled) {
+    amendBtn.disabled = true;
+    amendBtn.title = 'Cannot amend — order has already been dispatched';
+    // Show dispatch panel if not already shown
+    if (document.getElementById('suc-dispatch-info').style.display === 'none') {
+      checkDispatchStatus(lastPayload);
+    }
+  }
+}
+
+/* ═══════════════════════════════════════
+   PENDING DELIVERY SCREEN
+   ═══════════════════════════════════════ */
+const CATS_META = {};
+CATS.forEach(c => c.items.forEach(i => { CATS_META[i.id] = { ...i, catLabel:c.label }; }));
+
+let missingItems = {}; // { itemId: reason }
+let _pendingItemForReason = null;
+let _selectedReason = null;
+
+function viewPendingOrder() {
+  missingItems = {};
+  // If on success screen, show delivery tab in dashboard
+  const successActive = document.getElementById('s-success') && document.getElementById('s-success').classList.contains('active');
+  if (successActive) {
+    switchDashTab('delivery');
+  } else {
+    // Go to welcome and open delivery tab
+    go('s-welcome');
+    switchTab('delivery');
+  }
+}
+
+function renderPendingScreen() { refreshAllDeliveryViews(); } // redirected
+
+function toggleMissing(itemId, itemName) {
+  if (missingItems[itemId]) {
+    delete missingItems[itemId];
+    refreshAllDeliveryViews();
+  } else {
+    _pendingItemForReason = { id: itemId, name: itemName };
+    _selectedReason = null;
+    document.getElementById('reason-item-name').textContent = itemName;
+    document.querySelectorAll('.reason-opt').forEach(o => o.classList.remove('selected'));
+    document.getElementById('reason-ok').disabled = true;
+    document.getElementById('reason-modal-back').classList.add('open');
+  }
+}
+
+function selectReason(el, value) {
+  document.querySelectorAll('.reason-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  const otherInput = document.getElementById('reason-other-input');
+  if (value === 'other') {
+    _selectedReason = null;
+    otherInput.style.display = 'block';
+    otherInput.value = '';
+    otherInput.focus();
+    document.getElementById('reason-ok').disabled = true;
+  } else {
+    _selectedReason = value;
+    otherInput.style.display = 'none';
+    document.getElementById('reason-ok').disabled = false;
+  }
+}
+
+function onReasonOtherInput() {
+  const val = document.getElementById('reason-other-input').value.trim();
+  _selectedReason = val || null;
+  document.getElementById('reason-ok').disabled = !val;
+}
+
+function closeReasonModal() {
+  document.getElementById('reason-modal-back').classList.remove('open');
+  document.getElementById('reason-other-input').style.display = 'none';
+  document.getElementById('reason-other-input').value = '';
+  _pendingItemForReason = null;
+  _selectedReason = null;
+}
+
+function confirmMissing() {
+  if (!_pendingItemForReason || !_selectedReason) return;
+  missingItems[_pendingItemForReason.id] = _selectedReason;
+  closeReasonModal();
+  refreshAllDeliveryViews();
+}
+
+function openAcceptModal() {
+  document.getElementById('anm-input').value = '';
+  document.getElementById('anm-ok').disabled = true;
+  document.getElementById('accept-name-modal-back').classList.add('open');
+  setTimeout(() => document.getElementById('anm-input').focus(), 100);
+}
+
+function closeAcceptModal() {
+  document.getElementById('accept-name-modal-back').classList.remove('open');
+}
+
+function confirmAcceptDelivery() {
+  const name = document.getElementById('anm-input').value.trim();
+  if (!name) return;
+  closeAcceptModal();
+
+  // Write accepted status to localStorage
+  try {
+    const raw = localStorage.getItem('TORI_STATUS') || '{}';
+    const data = JSON.parse(raw);
+    const rk = selectedLocation;
+    // Create entry if missing (e.g. status was set via TORI_DISPATCH not TORI_STATUS)
+    if (!data[rk]) {
+      const dispatch = lsGet('TORI_DISPATCH', {});
+      data[rk] = {
+        status: 'delivered',
+        order: dispatch[rk] || null,
+        dispatchedAt: dispatch.dispatchedAt || null,
+        dispatchedBy: dispatch.dispatchedBy || null,
+      };
+    }
+    data[rk].status       = 'accepted';
+    data[rk].acceptedAt   = new Date().toISOString();
+    data[rk].acceptedBy   = name;
+    data[rk].missingItems = { ...missingItems };
+    localStorage.setItem('TORI_STATUS', JSON.stringify(data));
+  } catch(e){ console.error('confirmAcceptDelivery error:', e); }
+
+  // Save to local history log so this device has its own record
+  try {
+    const st = lsGet('TORI_STATUS', {});
+    const rk2 = selectedLocation;
+    const entry = st[rk2] || {};
+    const log = lsGet('TORI_RESTAURANT_LOG', []);
+    log.unshift({
+      id:           entry.order ? entry.order.id : Date.now(),
+      restaurant:   rk2,
+      orderedBy:    entry.order ? entry.order.staffName : '—',
+      orderedAt:    entry.order ? new Date(entry.order.ts).toISOString() : null,
+      dispatchedBy: entry.dispatchedBy || '—',
+      dispatchedAt: entry.dispatchedAt || null,
+      acceptedBy:   name,
+      acceptedAt:   new Date().toISOString(),
+      items:        entry.order ? entry.order.items : {},
+      missingItems: { ...missingItems },
+      notDispatched: entry.notDispatched || {}
+    });
+    localStorage.setItem('TORI_RESTAURANT_LOG', JSON.stringify(log));
+  } catch(e) { console.error('history log error:', e); }
+
+  missingItems = {};
+  showToast('Delivery accepted by ' + name);
+  // Stay on STATUS tab — refresh to show accepted state, then user can navigate freely
+  updateWelcomeStatusBadge();
+  updateDeliveryTabDots();
+  refreshAllDeliveryViews();
+}
+
+/* ═══════════════════════════════════════
+   TOAST
+   ═══════════════════════════════════════ */
+let _toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.style.display = 'none'; }, 2500);
+}
+
+/* ═══════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════ */
+// Clear all order/delivery data on open — fresh start every time
+['TORI_ORDERS','TORI_DISPATCH','TORI_DISPATCH_BACKUP','TORI_STATUS','TORI_HISTORY','tori_delivery_log'].forEach(k => {
+  try { localStorage.removeItem(k); } catch(e) {}
+});
+
+loadSettings();
+updateWelcomeStatusBadge();
+updateDeliveryTabDots();
+updateAmendHomeBtn();
+switchTab('home');
+
+/* ═══════════════════════════════════════
+   TAB SWITCHING — WELCOME SCREEN
+   ═══════════════════════════════════════ */
+function switchTab(which) {
+  ['home','delivery','history'].forEach(t => {
+    const btn = document.getElementById('tab-'+t);
+    const el  = document.getElementById('tab-'+t+'-content');
+    if (btn) btn.classList.toggle('active', t===which);
+    if (el)  el.style.display = t===which ? 'flex' : 'none';
+  });
+  if (which === 'delivery') renderHomeDeliveryStatus();
+  if (which === 'history')  renderDeliveryHistory();
+  if (which === 'home')     updateAmendHomeBtn();
+}
+
+function switchDeliverySub(which) { /* no-op, sub-tabs removed */ }
+
+/* ═══════════════════════════════════════
+   TAB SWITCHING — DASHBOARD (SUCCESS)
+   ═══════════════════════════════════════ */
+function switchDashTab(which) {
+  ['order','delivery'].forEach(t => {
+    const btn = document.getElementById('dtab-'+t);
+    const el  = document.getElementById('dtab-'+t+'-content');
+    if (btn) btn.classList.toggle('active', t===which);
+    if (el)  el.style.display = t===which ? 'flex' : 'none';
+  });
+  if (which === 'delivery') renderDashDeliveryStatus();
+}
+
+/* ═══════════════════════════════════════
+   RENDER DELIVERY STATUS
+   ═══════════════════════════════════════ */
+
+function buildStatusBadge(st) {
+  if (!st) return '';
+  const configs = {
+    preparing:   { label: 'Preparing',   cls: 'st-preparing',   pulse: false },
+    in_delivery: { label: 'In Delivery', cls: 'st-in_delivery', pulse: true  },
+    delivered:   { label: 'Delivered',   cls: 'st-delivered',   pulse: true  },
+    accepted:    { label: 'Accepted',    cls: 'st-delivered',   pulse: false }
+  };
+  const steps = ['preparing', 'in_delivery', 'delivered'];
+  const current = st.status;
+  return `<div class="status-bar" style="padding:16px 18px 14px;">` +
+    steps.map((s, i) => {
+      const cfg = configs[s] || { label: s, cls: '', pulse: false };
+      const isActive = s === current || (current === 'accepted' && s === 'delivered');
+      const isPast = steps.indexOf(current) > i;
+      const dotCls = isActive && cfg.pulse ? 'ss-dot pulsing-dot' : 'ss-dot';
+      const stepCls = 'status-step' + (isActive ? ' ' + cfg.cls : (isPast ? ' st-past' : ''));
+      return (i > 0 ? '<div class="status-arrow">→</div>' : '') +
+        `<div class="${stepCls}"><span class="${dotCls}"></span>${cfg.label}</div>`;
+    }).join('') + '</div>';
+}
+
+function buildItemList(st, missingItemsRef, canMark) {
+  const items        = st.order.items || {};
+  const notDisp      = st.notDispatched || {};
+  const notDispIds   = new Set(Object.keys(notDisp));
+  let html = '';
+
+  CATS.forEach(cat => {
+    const catItems = cat.items.filter(i => items[i.id] !== undefined && !notDispIds.has(i.id));
+    if (!catItems.length) return;
+    html += `<div class="pending-cat-hdr">${cat.label}</div>`;
+    catItems.forEach(item => {
+      const qty = items[item.id];
+      const isMissing = !!(missingItemsRef && missingItemsRef[item.id]);
+      if (!isMissing) {
+        const clickAttr = canMark ? `onclick="toggleMissingInContext('${item.id}','${item.name}')" style="cursor:pointer;"` : 'style="cursor:default;"';
+        html += `<div class="pending-item-row delivered-ok" ${clickAttr}>
+          <div class="missing-cb"></div>
+          <span class="pending-item-name">${item.name}</span>
+          <div class="pending-item-qty-wrap">
+            <span class="pending-item-qty">${qty}</span>
+            <span class="pending-item-unit">${item.unit}</span>
+          </div>
+        </div>`;
+      }
+    });
+  });
+
+  // Not dispatched by kitchen
+  if (notDispIds.size > 0) {
+    html += `<div class="missing-section-hdr">✕ Not Dispatched by Kitchen</div>`;
+    notDispIds.forEach(id => {
+      const m = itemMap[id] || { name: id, unit: '' };
+      const qty = items[id] || '';
+      const reason = notDisp[id] || '—';
+      html += `<div class="missing-row">
+        <span class="missing-row-name">${m.name}</span>
+        <span class="missing-row-reason">${reason}</span>
+        <div class="missing-row-qty-wrap"><span class="missing-row-qty">${qty}</span><span class="missing-row-unit">${m.unit}</span></div>
+      </div>`;
+    });
+  }
+
+  // Missing items marked by restaurant on delivery
+  if (missingItemsRef && Object.keys(missingItemsRef).length) {
+    html += `<div class="missing-section-hdr">✕ Not Delivered</div>`;
+    Object.entries(missingItemsRef).forEach(([id, reason]) => {
+      const m = itemMap[id] || { name: id, unit: '' };
+      const qty = items[id] || '';
+      const undoBtn = canMark
+        ? `<button onclick="toggleMissingInContext('${id}','${m.name}')"
+            style="background:transparent;border:1px solid var(--line2);color:var(--ink4);
+            font-family:var(--font);font-size:10px;font-weight:900;letter-spacing:0.1em;
+            text-transform:uppercase;padding:4px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+            Undo
+          </button>`
+        : '';
+      html += `<div class="missing-row">
+        <span class="missing-row-name">${m.name}</span>
+        <span class="missing-row-reason">${reason}</span>
+        <div class="missing-row-qty-wrap" style="display:flex;align-items:center;gap:8px;">
+          ${undoBtn}
+          <span class="missing-row-qty">${qty}</span><span class="missing-row-unit">${m.unit}</span>
+        </div>
+      </div>`;
+    });
+  }
+  return html;
+}
+
+function renderDeliveryStatusInto(bodyEl, footerEl) {
+  const st = getMyDeliveryStatus();
+
+  if (!st || !st.order) {
+    bodyEl.innerHTML = `<div class="no-delivery-state">
+      <div class="no-delivery-icon">◻</div>
+      <div>No active delivery</div>
+    </div>`;
+    
+    return;
+  }
+
+  const showList = (st.status === 'delivered' || st.status === 'accepted');
+  const canMark  = st.status === 'delivered';
+  const dispBy   = st.dispatchedBy || '—';
+
+  let html = buildStatusBadge(st);
+
+  if (!showList) {
+    // Preparing or in_delivery — just the status, no list
+    const msg = st.status === 'preparing'
+      ? 'Your order is being prepared in the kitchen.'
+      : `Your order is on its way — driver: <strong>${dispBy}</strong>`;
+    html += `<div class="delivery-waiting-msg">${msg}</div>`;
+    
+  } else {
+    // Delivered or accepted — show full list
+    if (canMark) {
+      html += `<div class="delivery-tap-hint">Tap an item to mark it as not delivered</div>`;
+    }
+    html += buildItemList(st, missingItems, canMark);
+
+    if (st.status === 'accepted') {
+      html += `<div class="accepted-notice" style="margin:16px;">✓ Delivery Accepted by ${st.acceptedBy || '—'}</div>`;
+    } else {
+      html += `<div style="padding:16px;">
+        <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:8px;">
+          Delivered by <strong style="color:var(--ink3)">${dispBy}</strong>
+        </div>
+        <button class="accept-all-btn" onclick="openAcceptModal()" style="background:#388E3C;color:#fff;">Delivery Accepted →</button>
+      </div>`;
+    }
+    
+  }
+
+  bodyEl.innerHTML = html;
+}
+
+function refreshAllDeliveryViews() {
+  const homeBody   = document.getElementById('home-pending-body');
+  const homeFooter = null;
+  const dashBody   = document.getElementById('dash-pending-body');
+  const dashFooter = null;
+  const delivTab   = document.getElementById('tab-delivery-content');
+  const dashDTab   = document.getElementById('dtab-delivery-content');
+  // Home STATUS tab uses full render (with order card)
+  if (homeBody && delivTab && delivTab.style.display !== 'none') renderDeliveryStatusIntoFull(homeBody, homeFooter);
+  // Dashboard DELIVERY tab uses simple render
+  if (dashBody && dashDTab && dashDTab.style.display !== 'none') renderDeliveryStatusInto(dashBody, dashFooter);
+}
+
+function renderHomeDeliveryStatus() {
+  const bodyEl   = document.getElementById('home-pending-body');
+  const footerEl = null;
+  if (bodyEl) renderDeliveryStatusIntoFull(bodyEl, footerEl);
+}
+
+// Full render including order info card for preparing/in_delivery states
+function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
+  const st = getMyDeliveryStatus();
+
+  // 'accepted' = delivery cycle complete, treat as no active delivery
+  if (!st || !st.order || st.status === 'accepted' || st.status === 'none') {
+    bodyEl.innerHTML = `<div class="no-delivery-state">
+      <div class="no-delivery-icon">◻</div>
+      <div>No deliveries in progress</div>
+      <div style="font-size:11px;margin-top:4px;opacity:0.6;">Submit a new order from the Home tab</div>
+    </div>`;
+    
+    return;
+  }
+
+  const showList    = st.status === 'delivered' || st.status === 'accepted';
+  const showInfo    = st.status === 'preparing' || st.status === 'in_delivery';
+  const canAmend    = st.status === 'preparing';
+  const canMark     = st.status === 'delivered';
+  const dispBy      = st.dispatchedBy || '—';
+
+  let html = '';
+
+  // Order info card (preparing + in_delivery only)
+  if (showInfo && lastPayload) {
+    const p = lastPayload;
+    const restName = p.restaurant==='r1' ? 'Tori 1 — Špansko' : 'Tori 2 — Trnje';
+    const itemCount = Object.keys(p.items || {}).length;
+    const d = new Date((p.order_date||'')+'T12:00:00');
+    const dateStr = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+    html += `<div class="status-order-card">
+      <div class="soc-row"><span class="soc-label">Restaurant</span><span class="soc-val">${restName}</span></div>
+      <div class="soc-row"><span class="soc-label">Date</span><span class="soc-val">${dateStr}</span></div>
+      <div class="soc-row"><span class="soc-label">Submitted by</span><span class="soc-val">${p.staff_name || '—'}</span></div>
+    </div>`;
+  }
+
+  // Status bar
+  html += buildStatusBadge(st);
+
+  if (!showList) {
+    // Preparing or in_delivery — message only
+    const msg = st.status === 'preparing'
+      ? 'Your order is being prepared in the kitchen.'
+      : `On its way — driver: <strong>${dispBy}</strong>`;
+    html += `<div class="delivery-waiting-msg">${msg}</div>`;
+
+    // Amend button (preparing only)
+    if (canAmend) {
+      const isDispatched = false; // if preparing, not yet dispatched
+      html += `<div style="padding:0 16px 16px;">
+        <button class="amend-btn" id="status-amend-btn" onclick="startAmend()"
+          style="width:100%;margin-top:8px;">Amend / Add to This Order</button>
+      </div>`;
+    }
+
+    
+  } else {
+    // Delivered or accepted — full item list
+    if (canMark) {
+      html += `<div class="delivery-tap-hint">Tap an item to mark it as not delivered</div>`;
+    }
+    html += buildItemList(st, missingItems, canMark);
+
+    if (st.status === 'accepted') {
+      html += `<div class="accepted-notice" style="margin:16px;">✓ Delivery Accepted by ${st.acceptedBy || '—'}</div>`;
+    } else {
+      html += `<div style="padding:16px;">
+        <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:8px;">
+          Delivered by <strong style="color:var(--ink3)">${dispBy}</strong>
+        </div>
+        <button class="accept-all-btn" onclick="openAcceptModal()" style="background:#388E3C;color:#fff;">Delivery Accepted →</button>
+      </div>`;
+    }
+    
+  }
+
+  bodyEl.innerHTML = html;
+}
+
+function renderDashDeliveryStatus() {
+  const bodyEl   = document.getElementById('dash-pending-body');
+  const footerEl = null;
+  if (bodyEl) renderDeliveryStatusInto(bodyEl, footerEl);
+}
+
+function updateStatusSteps(prefix) { /* status now rendered inline */ }
+
+function toggleMissingInContext(itemId, itemName) {
+  if (missingItems[itemId]) {
+    delete missingItems[itemId];
+    refreshAllDeliveryViews();
+  } else {
+    _pendingItemForReason = { id: itemId, name: itemName };
+    _selectedReason = null;
+    document.getElementById('reason-item-name').textContent = itemName;
+    document.querySelectorAll('.reason-opt').forEach(o => o.classList.remove('selected'));
+    document.getElementById('reason-ok').disabled = true;
+    document.getElementById('reason-other-input').style.display = 'none';
+    document.getElementById('reason-other-input').value = '';
+    document.getElementById('reason-modal-back').classList.add('open');
+  }
+}
+
+function updateAmendHomeBtn() {
+  const btn = document.getElementById('amend-home-btn');
+  if (!btn) return;
+  if (!lastPayload) { btn.style.display = 'none'; return; }
+  try {
+    const orders = lsGet('TORI_ORDERS', {});
+    const dispatched = orders[lastPayload.restaurant] && orders[lastPayload.restaurant].dispatched;
+    btn.style.display = dispatched ? 'none' : 'block';
+  } catch(e) { btn.style.display = 'none'; }
+}
+
+function startAmendFromHome() { go('s-success'); startAmend(); }
+
+function renderAmendTab() { /* moved to home tab */ }
+
+/* ─── Delivery history ─── */
+let _historyEntries = []; // cached for detail sheet
+
+function clearOrderHistory() {
+  if (!confirm('Clear delivery history from this device?\n\nThis only removes local data. Full history can be restored once the database is connected.')) return;
+  try { localStorage.removeItem('TORI_RESTAURANT_LOG'); } catch(e) {}
+  try { localStorage.removeItem('tori_delivery_log'); } catch(e) {}
+  renderDeliveryHistory();
+  showToast('Delivery history cleared');
+}
+
+function renderDeliveryHistory() {
+  const el = document.getElementById('history-tab-body');
+  if (!el) return;
+
+  // Read from restaurant's own log (written on acceptance)
+  let log = [];
+  try { log = lsGet('TORI_RESTAURANT_LOG', []); } catch(e){}
+
+  // Also check driver delivery log as fallback
+  if (!log.length) {
+    try {
+      const dlog = lsGet('tori_delivery_log', []);
+      const rk = selectedLocation;
+      log = dlog.filter(e => e.restaurant === rk).map(e => ({
+        id:           e.id,
+        restaurant:   e.restaurant,
+        orderedBy:    e.orderedBy || '—',
+        orderedAt:    e.orderedAt || null,
+        dispatchedBy: e.dispatchedBy || '—',
+        dispatchedAt: e.dispatchedAt || null,
+        acceptedBy:   e.deliveredBy || '—',
+        acceptedAt:   e.deliveredAt || null,
+        items:        e.items || {},
+        missingItems: {},
+        notDispatched: {}
+      }));
+    } catch(e){}
+  }
+
+  _historyEntries = log;
+
+  if (!log.length) {
+    el.innerHTML = `<div style="padding:40px 0;text-align:center;color:var(--ink4);font-size:12px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;">No delivery history yet</div>`;
+    return;
+  }
+
+  const RNAMES = { r1:'Tori 1 — Špansko', r2:'Tori 2 — Trnje' };
+
+  el.innerHTML = `<table class="hist-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Restaurant</th>
+        <th>ID</th>
+        <th>Staff</th>
+        <th>Submitted</th>
+        <th>Dispatched by</th>
+        <th>Delivered</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${log.map((entry, idx) => {
+        const date       = entry.acceptedAt ? new Date(entry.acceptedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
+        const rest       = RNAMES[entry.restaurant] || entry.restaurant || '—';
+        const shortId    = '#' + String(entry.id || '').slice(-6);
+        const staff      = entry.orderedBy || '—';
+        const submitted  = entry.orderedAt ? new Date(entry.orderedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+        const dispBy     = entry.dispatchedBy || '—';
+        const delivered  = entry.acceptedAt ? new Date(entry.acceptedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+        return `<tr class="hist-row" onclick="openHistoryDetail(${idx})">
+          <td>${date}</td>
+          <td>${rest}</td>
+          <td style="font-family:var(--body);letter-spacing:0.04em;color:var(--ink4);">${shortId}</td>
+          <td>${staff}</td>
+          <td style="font-family:var(--body);">${submitted}</td>
+          <td>${dispBy}</td>
+          <td style="font-family:var(--body);">${delivered}</td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
+}
+
+function openHistoryDetail(idx) {
+  const entry = _historyEntries[idx];
+  if (!entry) return;
+
+  const RNAMES = { r1:'Tori 1 — Špansko', r2:'Tori 2 — Trnje' };
+  const date = entry.acceptedAt ? new Date(entry.acceptedAt).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
+  const rest = RNAMES[entry.restaurant] || '—';
+
+  const allItems = entry.items || {};
+  const missing  = entry.missingItems || {};
+  const notDisp  = entry.notDispatched || {};
+  const missingIds  = new Set(Object.keys(missing));
+  const notDispIds  = new Set(Object.keys(notDisp));
+
+  let deliveredHtml = '', notDispHtml = '', notDelivHtml = '';
+
+  // Categorise items
+  const CATS_REF = typeof CATS !== 'undefined' ? CATS : [];
+  const allItemIds = Object.keys(allItems);
+
+  // Build category-ordered lists
+  CATS_REF.forEach(cat => {
+    const catItems = cat.items.filter(i => allItemIds.includes(i.id));
+    if (!catItems.length) return;
+    const catDelivered = catItems.filter(i => !missingIds.has(i.id) && !notDispIds.has(i.id));
+    if (catDelivered.length) {
+      deliveredHtml += `<div class="detail-cat">${cat.label}</div>`;
+      catDelivered.forEach(item => {
+        deliveredHtml += `<div class="detail-row">
+          <span class="detail-check">✓</span>
+          <span class="detail-name">${item.name}</span>
+          <span class="detail-qty">${allItems[item.id]} <span class="detail-unit">${item.unit}</span></span>
+        </div>`;
+      });
+    }
+  });
+
+  // Not dispatched
+  Object.entries(notDisp).forEach(([id, reason]) => {
+    const m = itemMap[id] || { name: id, unit: '' };
+    const qty = allItems[id] || '';
+    notDispHtml += `<div class="detail-row detail-row-bad">
+      <span class="detail-check-bad">✕</span>
+      <span class="detail-name">${m.name}</span>
+      <span class="detail-qty-bad">${qty} <span class="detail-unit">${m.unit}</span></span>
+      <span class="detail-reason">${reason}</span>
+    </div>`;
+  });
+
+  // Not delivered (marked missing by restaurant on acceptance)
+  Object.entries(missing).forEach(([id, reason]) => {
+    const m = itemMap[id] || { name: id, unit: '' };
+    const qty = allItems[id] || '';
+    notDelivHtml += `<div class="detail-row detail-row-bad">
+      <span class="detail-check-bad">✕</span>
+      <span class="detail-name">${m.name}</span>
+      <span class="detail-qty-bad">${qty} <span class="detail-unit">${m.unit}</span></span>
+      <span class="detail-reason">${reason}</span>
+    </div>`;
+  });
+
+  let body = '';
+  if (deliveredHtml) {
+    body += `<div class="detail-section-hdr delivered-hdr">✓ Delivered</div>${deliveredHtml}`;
+  }
+  if (notDispHtml) {
+    body += `<div class="detail-section-hdr bad-hdr">✕ Not Dispatched</div>${notDispHtml}`;
+  }
+  if (notDelivHtml) {
+    body += `<div class="detail-section-hdr bad-hdr">✕ Not Delivered</div>${notDelivHtml}`;
+  }
+  if (!body) {
+    body = `<div style="padding:30px;text-align:center;color:var(--ink4);font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;">No item details recorded</div>`;
+  }
+
+  // Populate topbar title
+  document.getElementById('detail-sheet-title').textContent = rest;
+
+  // Populate meta grid
+  const shortId   = '#' + String(entry.id || '').slice(-6);
+  const submTime  = entry.orderedAt   ? new Date(entry.orderedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+  const dispTime  = entry.dispatchedAt ? new Date(entry.dispatchedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+  const accTime   = entry.acceptedAt  ? new Date(entry.acceptedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+  const fullDate  = entry.acceptedAt  ? new Date(entry.acceptedAt).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : date;
+
+  document.getElementById('detail-sheet-meta').innerHTML = `
+    <div class="detail-accepted-banner" style="grid-column:1/-1;">
+      ✓ Delivery Accepted — ${fullDate}
+    </div>
+    <div class="detail-meta-item"><div class="detail-meta-label">Order ID</div><div class="detail-meta-val">${shortId}</div></div>
+    <div class="detail-meta-item"><div class="detail-meta-label">Ordered by</div><div class="detail-meta-val">${entry.orderedBy || '—'}</div></div>
+    <div class="detail-meta-item"><div class="detail-meta-label">Submitted</div><div class="detail-meta-val">${submTime}</div></div>
+    <div class="detail-meta-item"><div class="detail-meta-label">Dispatched by</div><div class="detail-meta-val">${entry.dispatchedBy || '—'}</div></div>
+    <div class="detail-meta-item"><div class="detail-meta-label">Dispatch time</div><div class="detail-meta-val">${dispTime}</div></div>
+    <div class="detail-meta-item"><div class="detail-meta-label">Accepted by</div><div class="detail-meta-val">${entry.acceptedBy || '—'}</div></div>
+    <div class="detail-meta-item"><div class="detail-meta-label">Delivery time</div><div class="detail-meta-val">${accTime}</div></div>
+  `;
+
+  document.getElementById('detail-sheet-body').innerHTML = body;
+  document.getElementById('history-detail-sheet').classList.add('open');
+}
+
+function closeHistoryDetail() {
+  document.getElementById('history-detail-sheet').classList.remove('open');
+}
+
+/* ═══════════════════════════════════════
+   UPDATE DELIVERY TAB DOT
+   ═══════════════════════════════════════ */
+function updateDeliveryTabDots() {
+  const st = getMyDeliveryStatus();
+  const status = st && st.status && st.status !== 'none' && st.status !== 'accepted' ? st.status : null;
+
+  // Remove all status classes first
+  const tabClasses = ['tab-live','tab-preparing','tab-in_delivery','tab-delivered'];
+  const tabs = [
+    document.getElementById('tab-delivery'),
+    document.getElementById('dtab-delivery')
+  ];
+  tabs.forEach(tab => {
+    if (!tab) return;
+    tabClasses.forEach(c => tab.classList.remove(c));
+    if (status) tab.classList.add('tab-' + status);
+  });
+
+  updateStatusStepHighlight(st);
+}
+
+function updateStatusStepHighlight(st) {
+  // Re-render delivery views to pick up new status — lightweight
+  const delivTab = document.getElementById('tab-delivery-content');
+  const dashDTab = document.getElementById('dtab-delivery-content');
+  const homeBody = document.getElementById('home-pending-body');
+  const dashBody = document.getElementById('dash-pending-body');
+  const homeFooter = null;
+  const dashFooter = null;
+  if (homeBody && delivTab && delivTab.style.display !== 'none') renderDeliveryStatusInto(homeBody, homeFooter);
+  if (dashBody && dashDTab && dashDTab.style.display !== 'none') renderDeliveryStatusInto(dashBody, dashFooter);
+}
+
+</script>
+</body>
+</html>

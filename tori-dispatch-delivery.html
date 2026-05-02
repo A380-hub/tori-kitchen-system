@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TORI Dispatch</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0F1314;
+  --bg2:    #1A1F22;
+  --panel:  #242C30;
+  --panel2: #2B3236;
+  --panel3: #3C3D3C;
+  --panel4: #525252;
+  --line:   #3A3F42;
+  --line2:  #545454;
+  --ink:    #FFFFFF;
+  --ink2:   #E1E1E1;
+  --ink3:   #BCC0C2;
+  --ink4:   #7A7E80;
+  --red:    #DE0000;
+  --red2:   #B50000;
+  --green:  #4CAF50;
+  --green2: #388E3C;
+  --amber:  #F59E0B;
+  --font:   'Barlow Condensed', sans-serif;
+  --body:   'Barlow', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--font); }
+
+body { display: flex; flex-direction: column; }
+
+/* ══ TOP BAR ══ */
+.topbar {
+  display: flex;
+  align-items: center;
+  background: rgba(15,19,20,0.99);
+  border-bottom: 1px solid var(--line2);
+  padding: 0 20px;
+  height: 56px;
+  flex-shrink: 0;
+  gap: 16px;
+  box-shadow: 0 3px 16px rgba(0,0,0,0.5);
+  z-index: 50;
+}
+.brand { display: flex; align-items: center; gap: 10px; padding-right: 16px; border-right: 1px solid var(--line); flex-shrink: 0; }
+.brand-name { font-size: 22px; font-weight: 900; letter-spacing: -0.03em; }
+.brand-dot { width: 8px; height: 8px; background: var(--red); border-radius: 50%; box-shadow: 0 0 8px var(--red); animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+.brand-label { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink4); }
+
+.tabs { display: flex; align-items: stretch; height: 100%; gap: 2px; }
+.tab {
+  background: transparent; border: none; color: var(--ink4);
+  font-family: var(--font); font-size: 14px; font-weight: 800;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0 20px; cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.15s; display: flex; align-items: center; gap: 8px; white-space: nowrap;
+}
+.tab:hover { color: var(--ink3); background: rgba(255,255,255,0.03); }
+.tab.active { color: var(--ink); border-bottom-color: var(--red); background: rgba(222,0,0,0.06); }
+.tab-badge {
+  font-size: 11px; font-weight: 900; background: var(--panel3);
+  color: var(--ink3); padding: 1px 6px; min-width: 20px; text-align: center;
+}
+.tab-badge.live { background: var(--red2); color: var(--ink); }
+.tab-badge.green { background: var(--green2); color: var(--ink); }
+
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.clock { font-size: 16px; font-weight: 700; color: var(--ink3); letter-spacing: 0.12em; font-variant-numeric: tabular-nums; }
+.close-btn {
+  background: var(--panel3); border: 1px solid var(--line2); color: var(--ink3);
+  font-family: var(--font); font-size: 13px; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 8px 16px; cursor: pointer; transition: all 0.15s;
+}
+.close-btn:hover { color: var(--ink); background: var(--panel4); }
+
+/* ══ SCREEN SYSTEM ══ */
+.screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.screen.active { display: flex; }
+
+/* ══════════════════════════════
+   SCREEN: PACKING LISTS
+══════════════════════════════ */
+
+/* View toggle strip */
+.view-toggle {
+  display: flex;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line2);
+  padding: 12px 24px;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.view-toggle-label {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--ink4); margin-right: 6px;
+}
+.toggle-btn {
+  background: var(--panel3); border: 1px solid var(--line2); color: var(--ink3);
+  font-family: var(--font); font-size: 13px; font-weight: 800;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 9px 18px; cursor: pointer; transition: all 0.15s;
+}
+.toggle-btn:hover { color: var(--ink); background: var(--panel4); }
+.toggle-btn.active { background: var(--red2); border-color: var(--red2); color: var(--ink); }
+
+.dispatch-info {
+  width: 100%; flex-shrink: 0;
+}
+.dispatch-info strong { color: var(--ink3); }
+
+/* ── DOT TRACKER — matches order checklist status pills ── */
+.dot-tracker {
+  display: flex; align-items: center; justify-content: center;
+  padding: 14px 16px; gap: 8px; width: 100%; flex-wrap: wrap;
+}
+.dot-stage {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.dot-circle { display: none; } /* not used in pill style */
+.status-pill {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  font-size: 11px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink4); padding: 6px 10px; border: 1px solid var(--line2);
+  min-width: 100px; min-height: 50px; box-sizing: border-box;
+}
+.pill-top { display: flex; align-items: center; gap: 7px; }
+.pill-label { font-size: 11px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
+.pill-timer { font-size: 13px; font-weight: 900; letter-spacing: 0.06em; color: #ffffff; line-height: 1; }
+.pill-spacer { font-size: 13px; line-height: 1; visibility: hidden; }
+.status-pill .sp-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink4); flex-shrink: 0; }
+
+/* Active — white, pulsing */
+.status-pill.sp-active {
+  color: #ffffff; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05);
+  animation: pill-pulse 1.2s ease-in-out infinite;
+}
+.status-pill.sp-active .sp-dot { background: #ffffff; box-shadow: 0 0 7px #ffffff; }
+
+/* Dim — all non-active */
+.status-pill.sp-dim { color: var(--ink4); border-color: var(--line2); background: transparent; }
+.status-pill.sp-dim .sp-dot { background: var(--ink4); box-shadow: none; }
+
+@keyframes pill-pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.dot-arrow { color: var(--line2); font-size: 14px; }
+.dot-time  { font-family: var(--body); font-size: 11px; font-weight: 700; color: var(--ink4); text-align: center; }
+.dot-timer { font-family: var(--font); font-size: 12px; font-weight: 900; color: var(--ink); text-align: center; letter-spacing: 0.06em; display: block; margin-top: 3px; }
+@keyframes dot-pulse-anim { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+.col-tracker { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.col-tracker .dot-stage { display: flex; flex-direction: column; align-items: flex-start; }
+.col-tracker .dot-arrow { flex-shrink: 0; }
+
+/* Packing list area */
+.pack-area {
+  display: grid;
+  gap: 0;
+  overflow-y: auto;
+  align-content: start;
+  padding: 8px;
+}
+.pack-area.view-both { grid-template-columns: 1fr 1fr; }
+.pack-area.view-r1   { grid-template-columns: 1fr; }
+.pack-area.view-r2   { grid-template-columns: 1fr; }
+
+/* Individual packing column */
+.pack-col {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line2);
+  margin: 8px;
+}
+.pack-col:last-child { border: 1px solid var(--line2); }
+
+.pack-col-head {
+  padding: 16px 20px;
+  background: var(--panel3);
+  border-bottom: 1px solid var(--line2);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.pack-col-title {
+  font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.pack-col-title.r1 { color: var(--ink); }
+.pack-col-title.r2 { color: var(--ink2); }
+
+.pack-col-scroll { flex: 1; overflow-y: auto; }
+
+/* Category section in packing list */
+.pack-cat-hdr {
+  padding: 8px 24px 6px;
+  font-size: 11px; font-weight: 900; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--ink4);
+  background: var(--bg2); border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 3;
+}
+
+.pack-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  border-bottom: 1px solid rgba(58,63,66,0.4);
+  min-height: 52px;
+}
+.pack-item-row:last-child { border-bottom: none; }
+.pack-item-name { font-size: 20px; font-weight: 700; text-transform: uppercase; color: var(--ink2); }
+.pack-item-qty-wrap { display: flex; align-items: baseline; gap: 6px; }
+.pack-item-qty  { font-size: 26px; font-weight: 900; color: var(--ink); }
+.pack-item-unit { font-size: 14px; font-weight: 700; color: var(--ink4); letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* No order state */
+.no-order-state {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; color: var(--ink4); text-align: center; padding: 40px;
+  border: 2px dashed var(--line2); margin: 16px; background: rgba(255,255,255,0.01);
+}
+.no-order-icon { font-size: 48px; opacity: 0.15; }
+.no-order-text { font-size: 14px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; }
+
+/* Delivery confirmation footer */
+.delivery-footer {
+  display: flex;
+  gap: 12px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--line2);
+  background: rgba(15,19,20,0.98);
+  flex-shrink: 0;
+}
+.deliver-btn {
+  flex: 1;
+  background: var(--green2); border: none; color: var(--ink);
+  font-family: var(--font); font-size: 16px; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 16px 20px; cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.col-deliver-btn {
+  width: 100%; flex: none; border-top: 1px solid var(--line2); flex-shrink: 0;
+}
+.deliver-btn:hover:not(:disabled) { background: var(--green); }
+.deliver-btn:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+.deliver-btn.delivered {
+  background: var(--panel3); border: 1px solid var(--green2); color: var(--green);
+  cursor: default;
+}
+.deliver-check { font-size: 18px; }
+
+/* ══ HISTORY TABLE ══ */
+.hist-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.hist-table th {
+  text-align: left; padding: 10px 16px; font-size: 10px; font-weight: 900;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink4);
+  border-bottom: 1px solid var(--line2); white-space: nowrap;
+}
+.hist-table td {
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+  color: var(--ink3); vertical-align: middle;
+}
+.hist-table td strong { color: var(--ink); font-weight: 800; }
+.hist-table tr:hover td { background: rgba(255,255,255,0.03); cursor: pointer; }
+
+/* ══ DETAIL SHEET ══ */
+.detail-sheet {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--bg); z-index: 9000;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.detail-sheet.open { transform: translateX(0); }
+.detail-sheet-topbar {
+  background: rgba(15,19,20,0.98); border-bottom: 1px solid var(--line2);
+  padding: 0 16px; height: 54px;
+  display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+}
+.detail-back-btn {
+  background: transparent; border: 1px solid var(--line2); color: var(--ink3);
+  font-family: var(--font); font-size: 13px; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 7px 14px; cursor: pointer;
+}
+.detail-sheet-title {
+  font-size: 14px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--ink); flex: 1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ══ HISTORY ROWS ══ */
+.hist-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 20px; border-bottom: 1px solid var(--line);
+  transition: background 0.12s;
+}
+.hist-row:hover { background: var(--panel); }
+.hist-row-left { flex: 1; min-width: 0; }
+.hist-row-title { font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 3px; }
+.hist-row-meta  { font-family: var(--body); font-size: 12px; color: var(--ink4); }
+.hist-row-meta strong { color: var(--ink3); font-weight: 700; }
+.hist-row-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.hist-row-count { font-size: 24px; font-weight: 900; color: var(--ink); }
+.hist-row-count-lbl { font-size: 11px; font-weight: 700; color: var(--ink4); text-transform: uppercase; letter-spacing: 0.1em; }
+.hist-row-arrow { font-size: 20px; color: var(--ink4); }
+
+/* ══ DETAIL CONTENT ══ */
+.kd-meta-wrap { padding: 16px 20px; background: var(--panel); border-bottom: 1px solid var(--line2); flex-shrink: 0; }
+.kd-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; }
+.kd-meta-item { display: flex; flex-direction: column; gap: 2px; }
+.kd-meta-label { font-size: 10px; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink4); }
+.kd-meta-val   { font-size: 15px; font-weight: 800; color: var(--ink); }
+.kd-cat  { padding: 7px 20px 5px; font-size: 10px; font-weight: 900; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink4); background: var(--bg2); border-bottom: 1px solid var(--line); }
+.kd-row  { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--line); }
+.kd-name { font-size: 16px; font-weight: 700; text-transform: uppercase; color: var(--ink); }
+.kd-qty  { font-size: 20px; font-weight: 900; color: var(--ink); }
+.kd-unit { font-size: 13px; font-weight: 600; color: var(--ink4); }
+.start-modal-back {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.92); z-index: 500;
+  align-items: center; justify-content: center; padding: 24px;
+}
+.start-modal-back.open { display: flex; }
+.start-modal {
+  background: var(--panel); border: 1px solid var(--line2);
+  border-top: 4px solid var(--amber);
+  padding: 32px 28px; width: 100%; max-width: 480px;
+}
+.start-modal-title {
+  font-size: 26px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.04em; margin-bottom: 6px;
+}
+.start-modal-sub {
+  font-family: var(--body); font-size: 14px; color: var(--ink4);
+  margin-bottom: 24px; line-height: 1.5;
+}
+.start-modal-label {
+  font-size: 11px; font-weight: 900; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink4); margin-bottom: 8px;
+}
+.start-modal-input {
+  width: 100%; background: var(--panel2); border: 1px solid var(--line2);
+  border-left: 3px solid var(--amber); color: var(--ink);
+  font-family: var(--font); font-size: 22px; font-weight: 700;
+  padding: 13px 15px; border-radius: 0; -webkit-appearance: none;
+  margin-bottom: 24px;
+}
+.start-modal-input:focus { outline: none; border-left-color: #F59E0B; background: var(--panel); }
+.start-modal-input::placeholder { color: var(--ink4); font-weight: 600; }
+.start-modal-confirm {
+  width: 100%; background: var(--amber); border: none; color: #000;
+  font-family: var(--font); font-size: 17px; font-weight: 900;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 16px; cursor: pointer; transition: background 0.15s;
+}
+.start-modal-confirm:hover { background: #FBBF24; }
+.start-modal-confirm:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+.dmodal-back {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8); z-index: 200;
+  align-items: center; justify-content: center; padding: 24px;
+}
+.dmodal-back.open { display: flex; }
+.dmodal {
+  background: var(--panel); border: 1px solid var(--line2);
+  border-top: 4px solid var(--green2); padding: 28px 24px;
+  width: 100%; max-width: 420px;
+}
+.dmodal-title { font-size: 22px; font-weight: 900; text-transform: uppercase; margin-bottom: 6px; }
+.dmodal-sub { font-family: var(--body); font-size: 14px; color: var(--ink4); margin-bottom: 18px; line-height: 1.5; }
+
+.dmodal-field { margin-bottom: 14px; }
+.dmodal-label {
+  font-size: 11px; font-weight: 900; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink4); margin-bottom: 6px;
+}
+.dmodal-input {
+  width: 100%; background: var(--panel2);
+  border: 1px solid var(--line2); border-left: 3px solid var(--green2);
+  color: var(--ink); font-family: var(--font); font-size: 18px; font-weight: 700;
+  padding: 12px 14px; -webkit-appearance: none; border-radius: 0;
+}
+.dmodal-input:focus { outline: none; border-left-color: var(--green); background: var(--panel); }
+.dmodal-input::placeholder { color: var(--ink4); font-weight: 600; }
+
+.dmodal-acts { display: flex; gap: 10px; margin-top: 20px; }
+.dmodal-confirm {
+  flex: 2; background: var(--green2); border: none; color: var(--ink);
+  font-family: var(--font); font-size: 15px; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer;
+  transition: background 0.15s;
+}
+.dmodal-confirm:hover { background: var(--green); }
+.dmodal-confirm:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+.dmodal-cancel {
+  flex: 1; background: transparent; border: 1px solid var(--line2); color: var(--ink3);
+  font-family: var(--font); font-size: 14px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer;
+  transition: all 0.15s;
+}
+.dmodal-cancel:hover { color: var(--ink); background: var(--panel3); }
+
+/* ══════════════════════════════
+   SCREEN: AUDIT LOG
+══════════════════════════════ */
+.log-screen { overflow-y: auto; padding: 24px 28px 40px; flex-direction: column; }
+
+.log-header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--line2);
+  flex-shrink: 0;
+}
+.log-title { font-size: 30px; font-weight: 900; text-transform: uppercase; }
+.log-sub   { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink4); margin-top: 4px; }
+.log-count { text-align: right; }
+.log-count strong { font-size: 26px; font-weight: 900; color: var(--ink); display: block; }
+.log-count span   { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink4); }
+
+/* Log entry card */
+.log-entry {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line2);
+  margin-bottom: 12px;
+  overflow: hidden;
+  animation: slide-in 0.3s ease-out;
+}
+@keyframes slide-in { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+.log-entry.r1 { border-left-color: var(--ink); }
+.log-entry.r2 { border-left-color: var(--ink3); }
+
+.log-entry-head {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.log-entry-tag {
+  padding: 10px 16px;
+  font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;
+  border-right: 1px solid var(--line);
+}
+.log-entry-tag.r1 { color: var(--ink); }
+.log-entry-tag.r2 { color: var(--ink2); }
+
+.log-entry-step {
+  padding: 8px 16px;
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.log-entry-step:last-child { border-right: none; }
+.log-step-label {
+  font-size: 10px; font-weight: 900; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink4);
+}
+.log-step-val {
+  font-size: 13px; font-weight: 700; color: var(--ink2);
+}
+.log-step-val.pending { color: var(--amber); }
+.log-step-val.done    { color: var(--green); }
+
+.log-entry-body {
+  padding: 12px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.log-item-chip {
+  background: var(--panel2);
+  border: 1px solid var(--line2);
+  padding: 4px 10px;
+  font-size: 13px; font-weight: 700; text-transform: uppercase;
+  color: var(--ink3);
+  display: flex; gap: 6px; align-items: baseline;
+}
+.log-item-chip-qty { font-weight: 900; color: var(--ink); font-size: 14px; }
+.log-item-chip-unit { color: var(--ink4); font-size: 11px; }
+
+.log-empty {
+  padding: 80px 20px; text-align: center;
+  color: var(--ink4); font-size: 13px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+}
+
+/* toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--panel4); color: var(--ink);
+  border: 1px solid var(--line2); padding: 10px 22px;
+  font-family: var(--font); font-size: 13px; font-weight: 900;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 999; pointer-events: none; white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line2); }
+</style>
+</head>
+<body>
+
+<!-- ══ TOP BAR ══ -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-name">TORI</div>
+    <div class="brand-dot"></div>
+    <div class="brand-label">Dispatch &amp; Delivery</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-screen="s-packing">
+      Dispatch
+      <span class="tab-badge live" id="badge-pack" style="display:none;">0</span>
+    </button>
+    <button class="tab" data-screen="s-log">
+      Delivery Log
+      <span class="tab-badge green" id="badge-log" style="display:none;">0</span>
+    </button>
+  </div>
+
+  <div class="topbar-right">
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+      <div class="clock" id="clock">00:00:00</div>
+      <div id="topbar-date" style="font-family:var(--body);font-size:11px;font-weight:400;color:var(--ink4);letter-spacing:0.04em;"></div>
+    </div>
+    <button class="close-btn" onclick="window.close()">✕ Close</button>
+  </div>
+</header>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN: PACKING LISTS
+══════════════════════════════════════ -->
+<div class="screen active" id="s-packing">
+
+  <!-- View toggle -->
+  <div class="view-toggle">
+    <span class="view-toggle-label">View:</span>
+    <button class="toggle-btn active" id="tog-both" onclick="setView('both')">All Deliveries</button>
+    <button class="toggle-btn" id="tog-r1"   onclick="setView('r1')">Restaurant 1</button>
+    <button class="toggle-btn" id="tog-r2"   onclick="setView('r2')">Restaurant 2</button>
+  </div>
+
+  <!-- Packing list columns -->
+  <div class="pack-area view-both" id="pack-area"></div>
+
+</div>
+
+
+<!-- ══════════════════════════════════════
+     SCREEN: DELIVERY LOG
+══════════════════════════════════════ -->
+<div class="screen log-screen" id="s-log">
+  <div class="log-header">
+    <div>
+      <div class="log-title">Delivery Log</div>
+      <div class="log-sub">Full audit trail — order to delivery</div>
+    </div>
+    <div class="log-count">
+      <strong id="log-count">0</strong>
+      <span>Completed</span>
+    </div>
+  </div>
+  <div id="log-entries"></div>
+</div>
+
+
+<!-- DELIVERY LOG DETAIL SHEET -->
+<div class="detail-sheet" id="delivery-log-detail">
+  <div class="detail-sheet-topbar">
+    <button class="detail-back-btn" onclick="closeDeliveryLogDetail()">← Back</button>
+    <div class="detail-sheet-title" id="dld-title">Delivery Detail</div>
+  </div>
+  <div id="dld-meta" class="kd-meta-wrap"></div>
+  <div id="dld-items" style="flex:1;overflow-y:auto;"></div>
+</div>
+
+<!-- Delivery confirm modal -->
+<div class="start-modal-back" id="start-modal">
+  <div class="start-modal">
+    <div class="start-modal-title">Start Delivery</div>
+    <div class="start-modal-sub">Enter the driver's name to confirm delivery has started. The timer will begin once confirmed.</div>
+    <div class="start-modal-label">Driver name &amp; surname</div>
+    <input class="start-modal-input" id="start-modal-name" type="text"
+      placeholder="e.g. Ivan Horvat" autocomplete="off" autocorrect="off"
+      oninput="document.getElementById('start-modal-confirm').disabled = !this.value.trim()" />
+    <button class="start-modal-confirm" id="start-modal-confirm" disabled onclick="confirmStartDelivery()">
+      Start Delivery →
+    </button>
+  </div>
+</div>
+
+<div class="dmodal-back" id="dmodal">
+  <div class="dmodal">
+    <div class="dmodal-title" id="dmodal-title">Confirm Delivery</div>
+    <div class="dmodal-sub" id="dmodal-sub"></div>
+    <div class="dmodal-acts">
+      <button class="dmodal-cancel" onclick="closeDModal()">Cancel</button>
+      <button class="dmodal-confirm" id="dmodal-confirm" onclick="confirmDelivery()">
+        ✓ Mark as Delivered
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+/* ═══════════════════════════════════════════
+   TORI Dispatch & Delivery Window
+   Reads state from window.opener (kitchen display)
+   or from localStorage for standalone testing
+   ═══════════════════════════════════════════ */
+
+const API_BASE = 'https://tori-kitchen-system-tv6b.vercel.app'; // same as kitchen display
+
+// ── ITEM DEFINITIONS ──
+const CATS = [
+  { id:'sauces', label:'Sauces', items:[
+    {id:'kungpao',         name:'Kungpao Sauce',        unit:'L'},
+    {id:'katsu',           name:'Katsu Sauce',          unit:'L'},
+    {id:'teriyaki',        name:'Teriyaki',             unit:'L'},
+    {id:'dan',             name:'Dan Sauce',            unit:'L'},
+    {id:'poke',            name:'Poke Sauce',           unit:'L'},
+    {id:'gyoza',           name:'Gyoza Sauce',          unit:'L'},
+    {id:'coriander_wasabi',name:'Coriander Wasabi Mayo',unit:'L'},
+    {id:'sriracha',        name:'Sriracha',             unit:'L'},
+    {id:'soup',            name:'Soup',                 unit:'L'},
+    {id:'vinegar',         name:'Vinegar',              unit:'L'},
+    {id:'sushi_vinegar',   name:'Sushi Vinegar',        unit:'L'},
+    {id:'soy',             name:'Soy Sauce',            unit:'L'},
+    {id:'soy_less_salt',   name:'Soy — Less Salt',      unit:'L'},
+    {id:'tan_tan',         name:'Tan-Tan Men Ramen',    unit:'L'},
+    {id:'laksa',           name:'Laksa',                unit:'L'},
+    {id:'oil',             name:'Oil',                  unit:'L'},
+    {id:'sunflower_oil',   name:'Sunflower Oil',        unit:'L'},
+    {id:'garlic_oil',      name:'Garlic Oil',           unit:'L'},
+    {id:'chili_oil',       name:'Chili Oil',            unit:'L'},
+    {id:'sesame_oil',      name:'Sesame Oil',           unit:'L'},
+  ]},
+  { id:'foods', label:'Foods', items:[
+    {id:'chicken',        name:'Chicken',             unit:'kg'},
+    {id:'beef',           name:'Beef',                unit:'kg'},
+    {id:'karaage',        name:'Karaage',             unit:'kg'},
+    {id:'baked_pork',     name:'Baked Pork',          unit:'kg'},
+    {id:'miso',           name:'Miso',                unit:'kg'},
+    {id:'meat',           name:'Meat',                unit:'kg'},
+    {id:'egg',            name:'Egg',                 unit:'pcs'},
+    {id:'bamboo',         name:'Marinated Bamboo',    unit:'kg'},
+    {id:'noodles',        name:'Noodles',             unit:'kg'},
+    {id:'shiitake',       name:'Shiitake Mushroom',   unit:'kg'},
+    {id:'thai_paste',     name:'Thai Chili Paste',    unit:'kg'},
+    {id:'sambal',         name:'Sambal',              unit:'kg'},
+    {id:'tofu',           name:'Tofu',                unit:'kg'},
+    {id:'daikon',         name:'Daikon',              unit:'kg'},
+    {id:'tempura_roll',   name:'Tempura Roll',        unit:'pcs'},
+    {id:'white_seeds',    name:'White Sesame Seeds',  unit:'kg'},
+    {id:'furikake',       name:'Furikake',            unit:'kg'},
+    {id:'togarashi',      name:'Togarashi',           unit:'kg'},
+    {id:'bonito',         name:'Bonito/Tuna Flakes',  unit:'kg'},
+    {id:'pickled_ginger', name:'Pickled Ginger',      unit:'kg'},
+    {id:'black_sesame',   name:'Black Sesame Seeds',  unit:'kg'},
+    {id:'peanuts',        name:'Kikirikii/Peanuts',   unit:'kg'},
+    {id:'cashew',         name:'Cashew',              unit:'kg'},
+    {id:'crumble',        name:'Crumble',             unit:'kg'},
+    {id:'coleslaw',       name:'Coleslaw',            unit:'kg'},
+    {id:'wakame',         name:'Wakame',              unit:'kg'},
+    {id:'lobster_surimi', name:'Lobster Surimi',      unit:'kg'},
+    {id:'kimchi',         name:'Kimchi',              unit:'kg'},
+    {id:'frozen',         name:'Frozen Items',        unit:'kg'},
+    {id:'unagi',          name:'Unagi',               unit:'pcs'},
+    {id:'edamame',        name:'Edamame',             unit:'kg'},
+    {id:'stir_fry',       name:'Stir Fry',            unit:'kg'},
+    {id:'rice',           name:'Rice',                unit:'kg'},
+    {id:'breaded',        name:'Breaded',             unit:'kg'},
+    {id:'ice_cream',      name:'Ice Cream',           unit:'pcs'},
+    {id:'leaves',         name:'Salad Leaves',        unit:'kg'},
+  ]},
+  { id:'vegetables', label:'Vegetables', items:[
+    {id:'enoki',        name:'Enoki',        unit:'kg'},
+    {id:'cucumber',     name:'Cucumber',     unit:'kg'},
+    {id:'pak_choi',     name:'Pak Choi',     unit:'kg'},
+    {id:'radish',       name:'Radish',       unit:'kg'},
+    {id:'green_beans',  name:'Green Beans',  unit:'kg'},
+    {id:'purple_onion', name:'Purple Onion', unit:'kg'},
+    {id:'spring_onion', name:'Spring Onion', unit:'kg'},
+    {id:'veg_mix',      name:'Vegetable Mix',unit:'kg'},
+  ]},
+  { id:'drinks', label:'Drinks', items:[
+    {id:'cola_regular', name:'Coca Cola Regular', unit:'bottles'},
+    {id:'cola_zero',    name:'Coca Cola Zero',    unit:'bottles'},
+    {id:'jana',         name:'Jana',              unit:'bottles'},
+    {id:'jamnica',      name:'Jamnica',           unit:'bottles'},
+    {id:'romerquelle',  name:'Römerquelle',       unit:'bottles'},
+    {id:'honey_lemon',  name:'Honey Lemon Tea',   unit:'bottles'},
+    {id:'tea_original', name:'Tea Original',      unit:'bottles'},
+    {id:'tea_no_sugar', name:'Tea No Sugar',      unit:'bottles'},
+    {id:'sapporo',      name:'Sapporo',           unit:'bottles'},
+    {id:'singha',       name:'Singha',            unit:'bottles'},
+    {id:'asahi',        name:'Asahi',             unit:'bottles'},
+    {id:'zmajsko',      name:'Zmajsko Pale Ale',  unit:'bottles'},
+    {id:'therapy',      name:'Therapy',           unit:'bottles'},
+    {id:'pils',         name:'Pils',              unit:'bottles'},
+    {id:'merlot',       name:'Merlot',            unit:'bottles'},
+    {id:'grasevina',    name:'Graševina',         unit:'bottles'},
+  ]},
+  { id:'dry', label:'Dry Items', items:[
+    {id:'gloves',          name:'Gloves',          unit:'boxes'},
+    {id:'tissue_big',      name:'Big Tissue',      unit:'boxes'},
+    {id:'tissue_small',    name:'Small Tissue',    unit:'boxes'},
+    {id:'bag_garbage_blue',name:'Garbage Bag Blue',unit:'pcs'},
+    {id:'bag_large',       name:'Bag Large',       unit:'pcs'},
+    {id:'bag_medium',      name:'Bag Medium',      unit:'pcs'},
+    {id:'bag_brown',       name:'Bag Brown',       unit:'pcs'},
+    {id:'chopsticks',      name:'Chopsticks',      unit:'pcs'},
+    {id:'paper_tray',      name:'Paper Tray',      unit:'pcs'},
+    {id:'tori_bag',        name:'Tori Bag',        unit:'pcs'},
+    {id:'cups',            name:'Cups',            unit:'pcs'},
+    {id:'bowls_lid',       name:'Bowls/Lid Big',   unit:'pcs'},
+    {id:'container',       name:'Container',       unit:'pcs'},
+    {id:'potato_starch',   name:'Potato Starch',   unit:'kg'},
+    {id:'panko',           name:'Panko',           unit:'kg'},
+    {id:'starch',          name:'Starch',          unit:'kg'},
+    {id:'wire',            name:'Wire',            unit:'pcs'},
+    {id:'film_small',      name:'Film Small',      unit:'rolls'},
+    {id:'film_large',      name:'Film Large',      unit:'rolls'},
+    {id:'envelope',        name:'Envelope',        unit:'pcs'},
+    {id:'labels',          name:'Labels',          unit:'pcs'},
+    {id:'tape',            name:'Tape',            unit:'rolls'},
+    {id:'dish_liquid',     name:'Dish Wash Liquid',unit:'bottles'},
+    {id:'detergent',       name:'Detergent Soap',  unit:'bottles'},
+    {id:'hand_soap',       name:'Hand Soap',       unit:'bottles'},
+    {id:'sponge',          name:'Sponge',          unit:'pcs'},
+    {id:'chemical',        name:'Chemical',        unit:'pcs'},
+    {id:'towel',           name:'Towel',           unit:'pcs'},
+    {id:'cloth',           name:'Cloth',           unit:'pcs'},
+    {id:'radikalin',       name:'Radikalin',       unit:'bottles'},
+    {id:'blitz',           name:'Blitz',           unit:'bottles'},
+    {id:'calc_clean',      name:'Calc Cleaner',    unit:'bottles'},
+    {id:'sanitar',         name:'Sanitizer',       unit:'bottles'},
+  ]},
+];
+
+const itemMeta = {};
+CATS.forEach(c => c.items.forEach(i => { itemMeta[i.id] = { ...i, catId:c.id, catLabel:c.label }; }));
+
+// ── STATE ──
+// dispatchBatch: the orders being dispatched in this session
+// deliveryLog:   persistent log of completed cycles
+let dispatchBatch = {
+  r1: null, r2: null,
+  dispatchedAt: null,
+  dispatchedBy: null,   // name of person who hit dispatch on kitchen display
+  preparedBy: null,     // name of kitchen staff who prepared (from checklist)
+};
+let deliveredStatus = { r1: false, r2: false };
+let deliveryLog = [];
+let currentView = 'both';
+let pendingDeliveryKey = null; // which restaurant we're confirming delivery for
+
+// ── LOAD DATA ──
+function loadDispatchData() {
+  let d = null;
+
+  // Read from localStorage — try TORI_DISPATCH first, fall back to backup
+  try {
+    const raw = localStorage.getItem('TORI_DISPATCH');
+    if (raw) {
+      d = JSON.parse(raw);
+      // Write persistent backup so reopening the window still works
+      localStorage.setItem('TORI_DISPATCH_BACKUP', raw);
+    } else {
+      // Try backup if main key is gone
+      const backup = localStorage.getItem('TORI_DISPATCH_BACKUP');
+      if (backup) d = JSON.parse(backup);
+    }
+  } catch(e) {}
+
+  if (d) {
+    // Check if this dispatch is stale — skip restaurants already accepted
+    let statusData = {};
+    try { statusData = JSON.parse(localStorage.getItem('TORI_STATUS') || '{}'); } catch(e){}
+
+    ['r1','r2'].forEach(k => {
+      const order = d[k];
+      if (!order) return;
+      const st = statusData[k];
+      if (st && st.status === 'accepted') return;
+      dispatchBatch[k] = order;
+    });
+
+    dispatchBatch.dispatchedAt = d.dispatchedAt || new Date().toISOString();
+    dispatchBatch.dispatchedBy = d.dispatchedBy || 'Kitchen Staff';
+  }
+
+  // Load persisted delivery log
+  try {
+    const saved = localStorage.getItem('tori_delivery_log');
+    if (saved) deliveryLog = JSON.parse(saved);
+  } catch(e) {}
+}
+
+function saveLog() {
+  try { localStorage.setItem('tori_delivery_log', JSON.stringify(deliveryLog)); } catch(e) {}
+}
+
+
+// ── VIEW TOGGLE ──
+function setView(v) {
+  currentView = v;
+  ['both','r1','r2'].forEach(k => {
+    document.getElementById('tog-'+k).classList.toggle('active', k === v);
+  });
+  renderPackingArea();
+}
+
+// ── RENDER PACKING AREA ──
+function renderPackingArea() {
+  const area = document.getElementById('pack-area');
+
+  const toShow = currentView === 'both'
+    ? ['r1','r2'].filter(k => dispatchBatch[k])
+    : [currentView].filter(k => dispatchBatch[k]);
+
+  // If nothing to show in current view, show both columns as placeholders
+  const cols = currentView === 'both' ? ['r1','r2'] : [currentView];
+  area.className = 'pack-area view-' + currentView;
+  area.innerHTML = cols.map(k => buildPackCol(k)).join('');
+
+  const active = (dispatchBatch.r1?1:0) + (dispatchBatch.r2?1:0);
+  document.getElementById('badge-pack').textContent = active;
+}
+
+function buildPackCol(k) {
+  const order = dispatchBatch[k];
+  if (!order) {
+    const rName = k === 'r1' ? 'TORI — Špansko' : 'TORI — Trnje';
+    return `<div class="pack-col">
+      <div class="pack-col-head">
+        <div class="pack-col-title ${k}" style="color:var(--ink4);">${rName}</div>
+      </div>
+      <div class="no-order-state">
+        <div class="no-order-icon">◻</div>
+        <div class="no-order-text">No order</div>
+      </div>
+    </div>`;
+  }
+
+  const rName = k === 'r1' ? 'TORI — Špansko' : 'TORI — Trnje';
+
+  let statusData = {};
+  try { statusData = JSON.parse(localStorage.getItem('TORI_STATUS') || '{}'); } catch(e){}
+  const kStatus     = statusData[k] || {};
+  const transitAt   = dispatchBatch.transitAt ? new Date(dispatchBatch.transitAt) : null;
+  const deliveredAt = kStatus.deliveredAt     ? new Date(kStatus.deliveredAt)     : null;
+  const isDelivered = deliveredStatus[k] || !!deliveredAt;
+  const isInTransit = !!transitAt;
+
+  const currentStage = isDelivered ? 'delivered' : (isInTransit ? 'in_transit' : 'waiting');
+
+  const stages = [
+    { key:'in_transit', label:'In Transit', cls:'sp-in_transit', since: transitAt },
+    { key:'delivered',  label:'Delivered',  cls:'sp-delivered',  since: deliveredAt },
+  ];
+
+  let trackerHtml = '<div class="col-tracker">';
+  stages.forEach((stage, i) => {
+    const isActive = stage.key === currentStage;
+    const pillCls  = isActive ? stage.cls : 'sp-dim';
+    const sinceMs  = stage.since ? stage.since.getTime() : 0;
+    const timeHtml = (isActive && sinceMs)
+      ? `<div class="pill-timer" id="dtimer-${k}-${stage.key}" data-since="${sinceMs}">00:00</div>`
+      : `<div class="pill-spacer">00:00</div>`;
+    if (i > 0) trackerHtml += '<span class="dot-arrow">→</span>';
+    trackerHtml += `<div class="status-pill ${pillCls}">
+      <div class="pill-top"><span class="sp-dot"></span><span class="pill-label">${stage.label}</span></div>
+      ${timeHtml}
+    </div>`;
+  });
+  trackerHtml += '</div>';
+
+  let rows = '';
+  CATS.forEach(cat => {
+    const catItems = cat.items.filter(i => order.items[i.id]);
+    if (!catItems.length) return;
+    rows += `<div class="pack-cat-hdr">${cat.label}</div>`;
+    catItems.forEach(item => {
+      const qty = order.items[item.id];
+      rows += `<div class="pack-item-row">
+        <span class="pack-item-name">${item.name}</span>
+        <span class="pack-item-qty-wrap">
+          <span class="pack-item-qty">${qty}</span>
+          <span class="pack-item-unit">${item.unit}</span>
+        </span>
+      </div>`;
+    });
+  });
+
+  let btnHtml = '';
+  if (isDelivered) {
+    btnHtml = `<button class="deliver-btn delivered col-deliver-btn" disabled>✓ Order for ${rName} is Delivered</button>`;
+  } else if (isInTransit) {
+    btnHtml = `<button class="deliver-btn col-deliver-btn" onclick="openDeliveryModal('${k}')">Order Delivered — ${rName}</button>`;
+  } else {
+    btnHtml = `<button class="deliver-btn col-deliver-btn" disabled style="background:var(--panel3);color:var(--ink4);cursor:not-allowed;">Waiting for driver to start…</button>`;
+  }
+
+  return `<div class="pack-col">
+    <div class="pack-col-head">
+      <div class="pack-col-title ${k}">${rName}</div>
+      ${trackerHtml}
+    </div>
+    <div class="pack-col-scroll">${rows}</div>
+    ${btnHtml}
+  </div>`;
+}
+
+// ── DELIVERY MODAL ──
+function openDeliveryModal(k) {
+  pendingDeliveryKey = k;
+  const rName = k === 'r1' ? 'Restaurant 1 — Špansko' : 'Restaurant 2 — Trnje';
+  document.getElementById('dmodal-title').textContent = 'Confirm Delivery';
+  document.getElementById('dmodal-sub').textContent   =
+    `Confirm that the order for ${rName} has been delivered.`;
+  document.getElementById('dmodal-confirm').disabled = false;
+  document.getElementById('dmodal').classList.add('open');
+}
+
+function closeDModal() {
+  document.getElementById('dmodal').classList.remove('open');
+  pendingDeliveryKey = null;
+}
+
+function confirmDelivery() {
+  const k = pendingDeliveryKey;
+  if (!k) return;
+  const deliveredBy = dispatchBatch.driverName || '—';
+
+  const order     = dispatchBatch[k];
+  const rName     = k === 'r1' ? 'Restaurant 1 — Špansko' : 'Restaurant 2 — Trnje';
+  const now       = new Date().toISOString();
+
+  // Add to log
+  deliveryLog.unshift({
+    id:            order.id,
+    restaurant:    k,
+    restaurantName: rName,
+    orderDate:     order.orderDate,
+    orderedBy:     order.staffName,
+    orderedAt:     new Date(order.ts).toISOString(),
+    dispatchedAt:  dispatchBatch.dispatchedAt,
+    dispatchedBy:  dispatchBatch.dispatchedBy || '—',
+    deliveredBy,
+    deliveredAt:   now,
+    items:         order.items
+  });
+
+  deliveredStatus[k] = true;
+  dispatchBatch[k] = null; // remove from packing area
+  saveLog();
+
+  // Update TORI_STATUS to 'delivered' so restaurant knows to confirm
+  try {
+    const statusData = JSON.parse(localStorage.getItem('TORI_STATUS') || '{}');
+    if (statusData[k]) {
+      statusData[k].status = 'delivered';
+      statusData[k].deliveredAt = now;
+      statusData[k].deliveredBy = deliveredBy;
+    }
+    localStorage.setItem('TORI_STATUS', JSON.stringify(statusData));
+  } catch(e) {}
+
+  closeDModal();
+  showToast(`Delivery confirmed — ${rName}`);
+  renderPackingArea();
+  renderLog();
+
+  // Update badge
+  document.getElementById('badge-log').textContent = deliveryLog.length;
+
+  // If all deliveries done, switch to log tab automatically
+  const allDone = !dispatchBatch.r1 && !dispatchBatch.r2;
+  if (allDone) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.screen === 's-log'));
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 's-log'));
+  }
+
+  // Notify API if backend is set
+  if (API_BASE) {
+    fetch(API_BASE + '/api/orders/delivered', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ restaurant: k, delivered_by: deliveredBy, delivered_at: now })
+    }).catch(console.error);
+  }
+}
+
+// ── RENDER LOG ──
+function renderLog() {
+  const el = document.getElementById('log-entries');
+  document.getElementById('log-count').textContent = deliveryLog.length;
+  document.getElementById('badge-log').textContent = deliveryLog.length;
+
+  if (!deliveryLog.length) {
+    el.innerHTML = '<div class="log-empty">No deliveries confirmed yet.</div>';
+    return;
+  }
+
+  const rows = deliveryLog.map((entry, idx) => {
+    const d = entry.deliveredAt ? new Date(entry.deliveredAt) : new Date(entry.orderedAt);
+    const dateStr = d.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
+    const dayStr  = d.toLocaleDateString('en-GB',{weekday:'short'});
+    const timeStr = d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const rName   = entry.restaurant === 'r1' ? 'TORI — Špansko' : 'TORI — Trnje';
+    return `<tr onclick="openDeliveryLogDetail(${idx})">
+      <td><strong>${dateStr}</strong></td>
+      <td>${dayStr}</td>
+      <td>${rName}</td>
+      <td>${entry.dispatchedBy || '—'}</td>
+      <td>${entry.deliveredBy || '—'}</td>
+      <td>${timeStr}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `<table class="hist-table">
+    <thead><tr>
+      <th>Date</th><th>Day</th><th>Restaurant</th>
+      <th>Dispatched By</th><th>Delivered By</th><th>Delivered At</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function openDeliveryLogDetail(idx) {
+  const entry = deliveryLog[idx];
+  if (!entry) return;
+  const sheet = document.getElementById('delivery-log-detail');
+  const rName = entry.restaurant === 'r1' ? 'TORI — Špansko' : 'TORI — Trnje';
+  const d = new Date(entry.deliveredAt || entry.orderedAt);
+  const dateStr = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  document.getElementById('dld-title').textContent = rName + ' — ' + dateStr;
+  document.getElementById('dld-meta').innerHTML = `
+    <div class="kd-meta-grid">
+      <div class="kd-meta-item"><div class="kd-meta-label">Ordered by</div><div class="kd-meta-val">${entry.orderedBy||'—'}</div></div>
+      <div class="kd-meta-item"><div class="kd-meta-label">Dispatched by</div><div class="kd-meta-val">${entry.dispatchedBy||'—'}</div></div>
+      <div class="kd-meta-item"><div class="kd-meta-label">Delivered by</div><div class="kd-meta-val">${entry.deliveredBy||'—'}</div></div>
+      <div class="kd-meta-item"><div class="kd-meta-label">Delivered at</div><div class="kd-meta-val">${entry.deliveredAt ? new Date(entry.deliveredAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—'}</div></div>
+    </div>`;
+
+  const items = entry.items || {};
+  let itemsHtml = '';
+  CATS.forEach(cat => {
+    const catItems = cat.items.filter(i => items[i.id]);
+    if (!catItems.length) return;
+    itemsHtml += `<div class="kd-cat">${cat.label}</div>`;
+    catItems.forEach(item => {
+      itemsHtml += `<div class="kd-row">
+        <span class="kd-name">${item.name}</span>
+        <span class="kd-qty">${items[item.id]} <span class="kd-unit">${item.unit}</span></span>
+      </div>`;
+    });
+  });
+  document.getElementById('dld-items').innerHTML = itemsHtml || '<div style="padding:30px;text-align:center;color:var(--ink4);">No items</div>';
+  sheet.classList.add('open');
+}
+
+function closeDeliveryLogDetail() {
+  document.getElementById('delivery-log-detail').classList.remove('open');
+}
+
+// ── TABS ──
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.screen;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t===tab));
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id===target));
+    if (target === 's-log') renderLog();
+  });
+});
+
+// ── CLOCK ──
+function tickClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toTimeString().slice(0,8);
+  const d = document.getElementById('topbar-date');
+  if (d) {
+    const dd = String(now.getDate()).padStart(2,'0');
+    const mm = String(now.getMonth()+1).padStart(2,'0');
+    const yyyy = now.getFullYear();
+    d.textContent = `${dd}-${mm}-${yyyy}`;
+  }
+}
+setInterval(tickClock, 1000); tickClock();
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ── FORMAT ──
+function fmtDT(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toISOString().slice(0,10) + ' ' + d.toTimeString().slice(0,5);
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toISOString().slice(0,10);
+}
+
+// ── DISPATCH DOT TRACKER ──
+function renderDispatchTracker() {
+  const el = document.getElementById('dispatch-info');
+  if (!el) return;
+
+  const dispAt  = dispatchBatch.dispatchedAt ? new Date(dispatchBatch.dispatchedAt) : null;
+  const allDelivered = !dispatchBatch.r1 && !dispatchBatch.r2;
+
+  let statusData = {};
+  try { statusData = JSON.parse(localStorage.getItem('TORI_STATUS') || '{}'); } catch(e){}
+  const anyStatus = statusData.r1 || statusData.r2 || {};
+  const deliveredAt = anyStatus.deliveredAt ? new Date(anyStatus.deliveredAt) : null;
+  const acceptedAt  = anyStatus.acceptedAt  ? new Date(anyStatus.acceptedAt)  : null;
+
+  let currentStage = 'dispatched';
+  if (allDelivered || deliveredAt) currentStage = 'delivered';
+  if (acceptedAt) currentStage = 'accepted';
+
+  const fmt = d => d ? d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : null;
+
+  const stages = [
+    { key:'dispatched', label:'Dispatched', cls:'sp-dispatched', time: fmt(dispAt),      since: dispAt },
+    { key:'in_transit', label:'In Transit', cls:'sp-in_transit', time: fmt(dispAt),      since: dispAt },
+    { key:'delivered',  label:'Delivered',  cls:'sp-delivered',  time: fmt(deliveredAt), since: deliveredAt },
+    { key:'accepted',   label:'Accepted',   cls:'sp-accepted',   time: fmt(acceptedAt),  since: acceptedAt  },
+  ];
+
+  const order = ['dispatched','in_transit','delivered','accepted'];
+  const currentIdx = order.indexOf(currentStage);
+
+  let html = '<div class="dot-tracker">';
+  stages.forEach((stage, i) => {
+    const isPast   = i < currentIdx;
+    const isActive = i === currentIdx;
+    const isFuture = i > currentIdx;
+    const pillCls  = isActive ? 'sp-active' : 'sp-dim';
+
+    let timeHtml = '';
+    if (isActive && stage.since) {
+      timeHtml = `<div><span class="dot-timer" id="dtimer-${stage.key}" data-since="${stage.since.getTime()}">00:00</span></div>`;
+    } else if (isPast && stage.time) {
+      timeHtml = `<div class="dot-time">${stage.time}</div>`;
+    }
+
+    if (i > 0) html += '<span class="dot-arrow">→</span>';
+    html += `<div class="dot-stage">
+      <div class="status-pill ${pillCls}">
+        <span class="sp-dot"></span>${stage.label}
+      </div>
+      ${timeHtml}
+    </div>`;
+  });
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function tickDispatchTimers() {
+  document.querySelectorAll('.pill-timer, .dot-timer').forEach(el => {
+    const since = parseInt(el.dataset.since || '0');
+    if (!since) return;
+    const secs = Math.floor((Date.now() - since) / 1000);
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    el.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  });
+}
+setInterval(tickDispatchTimers, 1000);
+setInterval(() => {
+  renderDispatchTracker();
+  // Refresh column headers to update timers with correct dispatchedAt
+  if (dispatchBatch.dispatchedAt) renderPackingArea();
+}, 5000);
+
+// ── START DELIVERY MODAL ──
+function confirmStartDelivery() {
+  const name = document.getElementById('start-modal-name').value.trim();
+  if (!name) return;
+
+  const now = new Date().toISOString();
+  dispatchBatch.transitAt    = now;
+  dispatchBatch.driverName   = name;
+
+  // Persist transitAt so it survives page refresh
+  try {
+    localStorage.setItem('TORI_DISPATCH', JSON.stringify(dispatchBatch));
+    localStorage.setItem('TORI_DISPATCH_BACKUP', JSON.stringify(dispatchBatch));
+    // Update TORI_STATUS for each restaurant
+    const statusData = JSON.parse(localStorage.getItem('TORI_STATUS') || '{}');
+    ['r1','r2'].forEach(k => {
+      if (dispatchBatch[k]) {
+        if (!statusData[k]) statusData[k] = {};
+        statusData[k].status       = 'in_delivery';
+        statusData[k].dispatchedBy = name;
+        statusData[k].dispatchedAt = now;
+      }
+    });
+    localStorage.setItem('TORI_STATUS', JSON.stringify(statusData));
+  } catch(e) {}
+
+  document.getElementById('start-modal').classList.remove('open');
+  showToast('Delivery started — ' + name);
+  renderPackingArea();
+}
+
+// ── INIT ──
+function init() {
+  loadDispatchData();
+  if (dispatchBatch.r1 || dispatchBatch.r2) {
+    renderPackingArea();
+    renderLog();
+    // Show start delivery modal if driver hasn't confirmed yet
+    if (!dispatchBatch.transitAt) {
+      setTimeout(() => {
+        document.getElementById('start-modal').classList.add('open');
+        document.getElementById('start-modal-name').focus();
+      }, 300);
+    }
+  } else {
+    let attempts = 0;
+    const retry = setInterval(() => {
+      attempts++;
+      loadDispatchData();
+      if (dispatchBatch.r1 || dispatchBatch.r2 || attempts >= 30) {
+        clearInterval(retry);
+        renderPackingArea();
+        renderLog();
+        if (!dispatchBatch.transitAt) {
+          setTimeout(() => {
+            document.getElementById('start-modal').classList.add('open');
+            document.getElementById('start-modal-name').focus();
+          }, 300);
+        }
+      }
+    }, 100);
+  }
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TORI Preparation List</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0F1314;
+  --bg2:    #1A1F22;
+  --panel:  #242C30;
+  --panel2: #2B3236;
+  --panel3: #3C3D3C;
+  --panel4: #525252;
+  --line:   #3A3F42;
+  --line2:  #545454;
+  --ink:    #FFFFFF;
+  --ink2:   #E1E1E1;
+  --ink3:   #BCC0C2;
+  --ink4:   #7A7E80;
+  --red:    #DE0000;
+  --red2:   #B50000;
+  --green:  #4CAF50;
+  --green2: #3D8B40;
+  --amber:  #F59E0B;
+  --font:   'Barlow Condensed', sans-serif;
+  --body:   'Barlow', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.screen { display: none; flex-direction: column; min-height: 100vh; }
+.screen.active { display: flex; }
+
+/* ══════════ WELCOME ══════════ */
+.welcome-header {
+  background: rgba(15,19,20,0.98);
+  border-bottom: 1px solid var(--line2);
+  padding: 0 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  height: 68px;
+  gap: 0;
+}
+.topbar-brand {
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 2px; padding-right: 14px; padding-bottom: 8px;
+  border-right: 1px solid var(--line); flex-shrink: 0;
+}
+.logo {
+  font-size: 28px; font-weight: 900; letter-spacing: -0.04em;
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-dot {
+  width: 9px; height: 9px; background: var(--red); border-radius: 50%;
+  box-shadow: 0 0 8px var(--red); animation: blink 2s ease-in-out infinite; flex-shrink: 0;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.logo-sub { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink4); }
+
+.header-nav {
+  display: flex; align-items: stretch; gap: 0; flex: 1; padding: 0 4px;
+}
+.nav-tab {
+  background: transparent; border: none; border-bottom: 3px solid transparent;
+  color: var(--ink4); padding: 0 14px; cursor: pointer;
+  font-family: var(--font); font-size: 13px; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  transition: color 0.15s, border-color 0.15s;
+  display: flex; align-items: center; white-space: nowrap;
+}
+.nav-tab:hover { color: var(--ink3); }
+.nav-tab.active { color: var(--ink); border-bottom-color: var(--red); }
+.gear-btn {
+  background: transparent; border: none; border-left: 1px solid var(--line);
+  color: var(--ink3); padding: 0 16px; cursor: pointer;
+  font-family: var(--font); font-size: 18px; font-weight: 800;
+  display: flex; align-items: center;
+}
+.gear-btn:hover { color: var(--ink); }
+.clear-hist-btn {
+  background: transparent; border: 1px solid var(--line2);
+  color: var(--ink4); font-family: var(--font); font-size: 11px;
+  font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 7px 14px; cursor: pointer; white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+.clear-hist-btn:hover { color: var(--red); border-color: var(--red); }
+
+.welcome-body {
+  flex: 1; padding: 28px 20px 120px;
+  display: flex; flex-direction: column; gap: 26px; overflow-y: auto;
+}
+.section-label {
+  font-size: 12px; font-weight: 900; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--ink4); margin-bottom: 10px;
+}
+.field-wrap { display: flex; flex-direction: column; gap: 14px; }
+.field-label {
+  font-size: 12px; font-weight: 900; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink4); margin-bottom: 6px;
+}
+.field-input {
+  width: 100%; background: var(--panel);
+  border: 1px solid var(--line2); border-left: 4px solid var(--line2);
+  color: var(--ink); font-family: var(--font); font-size: 20px; font-weight: 700;
+  padding: 14px 16px; transition: border-color 0.15s; -webkit-appearance: none; border-radius: 0;
+}
+.field-input:focus { outline: none; border-left-color: var(--red); background: var(--panel2); }
+.field-input::placeholder { color: var(--ink4); font-weight: 600; }
+.field-input[type="date"] { font-size: 18px; color-scheme: dark; }
+
+.start-btn {
+  width: 100%; background: var(--red2); border: none; color: var(--ink);
+  font-family: var(--font); font-size: 19px; font-weight: 900;
+  letter-spacing: 0.14em; text-transform: uppercase; padding: 18px; cursor: pointer; transition: all 0.15s;
+}
+.start-btn:hover { background: var(--red); }
+.start-btn:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+
+/* ══════════ CHECKLIST ══════════ */
+.check-header {
+  background: rgba(15,19,20,0.98); border-bottom: 1px solid var(--line2);
+  padding: 14px 18px; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35); flex-shrink: 0;
+}
+.check-top { display: flex; align-items: center; justify-content: space-between; }
+.check-logo { font-size: 20px; font-weight: 900; letter-spacing: -0.03em; }
+.check-meta { font-family: var(--body); font-size: 12px; color: var(--ink4); margin-top: 2px; }
+.check-day-tag {
+  font-size: 13px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink); background: var(--panel3); padding: 6px 12px; border-left: 3px solid var(--red); white-space: nowrap;
+}
+
+/* Section header */
+.list-section {
+  background: var(--panel3); padding: 11px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--line); flex-shrink: 0;
+  border-left: 4px solid var(--red);
+}
+/* "Added" section at the bottom — grey border to distinguish from scheduled categories */
+.list-section.extra-section {
+  border-left-color: var(--line2);
+  background: var(--bg2);
+}
+.list-section.extra-section .list-section-label { color: var(--ink3); }
+.list-section-label {
+  font-size: 14px; font-weight: 900; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--ink);
+}
+.list-section-count {
+  font-family: var(--body); font-size: 12px; color: var(--ink3);
+  font-weight: 700;
+}
+
+.items-list { flex: 1; overflow-y: auto; padding-bottom: 90px; }
+
+/* Item rows */
+.item-row { border-bottom: 1px solid rgba(58,63,66,0.5); overflow: hidden; }
+.item-row:last-child { border-bottom: none; }
+
+/* Manually-added (off-schedule) rows: red left bar + a lighter grey tint
+   so they read as "added by chef" at a glance. */
+.item-row.extra .item-main {
+  box-shadow: inset 3px 0 0 var(--red);
+  background: rgba(255,255,255,0.04);
+}
+.item-row.extra.checked .item-main {
+  box-shadow: inset 3px 0 0 var(--red);
+  background: rgba(255,255,255,0.06);
+}
+
+.item-main {
+  display: flex; align-items: center; padding: 0 18px; min-height: 64px;
+  gap: 14px; cursor: pointer; user-select: none;
+  background: transparent;
+  transition: background 0.12s;
+}
+.item-main:active { background: rgba(255,255,255,0.03); }
+
+.item-check {
+  width: 28px; height: 28px; border: 2px solid var(--line2); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; position: relative;
+}
+.item-check::after {
+  content: '✓'; font-size: 17px; font-weight: 900; color: var(--green);
+  opacity: 0; transform: scale(0.3); transition: all 0.15s;
+}
+.item-row.checked .item-check {
+  border-color: var(--green); background: rgba(76,175,80,0.14);
+}
+.item-row.checked .item-check::after { opacity: 1; transform: scale(1); }
+
+.item-info { flex: 1; min-width: 0; }
+.item-name {
+  font-size: 17px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.02em; color: var(--ink); line-height: 1.15;
+}
+/* No strikethrough or colour change when checked — name stays the same */
+
+.item-meta {
+  font-family: var(--body);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink4); margin-top: 3px;
+}
+.item-row.extra .item-meta { color: var(--red); letter-spacing: 0.14em; }
+
+/* Inline qty controls — sit at the right end of the same row, only visible when ticked */
+.item-qty-inline {
+  display: none; align-items: center; gap: 6px; flex-shrink: 0;
+}
+.item-row.checked .item-qty-inline { display: flex; }
+.qty-input {
+  width: 78px; height: 38px; background: var(--panel2);
+  border: 1px solid var(--line2); border-bottom: 2px solid var(--green2);
+  color: var(--ink); font-family: var(--font); font-size: 20px; font-weight: 900;
+  text-align: center; -moz-appearance: textfield; -webkit-appearance: none; border-radius: 0;
+  padding: 0 6px;
+}
+.qty-input::-webkit-outer-spin-button, .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.qty-input:focus { outline: none; border-bottom-color: var(--green); background: var(--panel); }
+.qty-unit-input {
+  width: 56px; height: 38px; background: var(--panel2);
+  border: 1px solid var(--line2);
+  color: var(--ink2); font-family: var(--font); font-size: 13px; font-weight: 700;
+  text-align: center; text-transform: uppercase; letter-spacing: 0.04em;
+  -webkit-appearance: none; border-radius: 0;
+  padding: 0 4px;
+}
+.qty-unit-input:focus { outline: none; border-color: var(--ink4); background: var(--panel); }
+
+.list-empty {
+  padding: 60px 24px; text-align: center;
+  font-family: var(--body); font-size: 14px; color: var(--ink4); line-height: 1.6;
+}
+.list-empty .dash {
+  font-family: var(--font); font-size: 64px; font-weight: 900;
+  color: var(--line); display: block; margin-bottom: 8px;
+}
+.list-empty-title {
+  font-family: var(--font); font-size: 18px; font-weight: 900;
+  color: var(--ink2); text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+/* bottom nav */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  background: var(--bg);            /* solid — no transparency artefacts */
+  border-top: 1px solid var(--line2); padding: 12px 16px;
+  display: flex; gap: 10px; z-index: 100;
+}
+.nav-btn {
+  flex: 1; background: var(--panel3); border: 1px solid var(--line2); color: var(--ink);
+  font-family: var(--font); font-size: 16px; font-weight: 900; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 15px 10px; cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+  outline: none;                    /* kill the default focus rectangle */
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+.nav-btn:focus { outline: none; }
+.nav-btn:focus-visible { outline: 2px solid var(--ink4); outline-offset: -4px; }
+.nav-btn:hover { background: var(--panel4); }
+.nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+.nav-btn.fwd  { background: var(--red2); border-color: var(--red2); flex: 2; }
+.nav-btn.fwd:hover { background: var(--red); border-color: var(--red); }
+.nav-btn.fwd:disabled { background: var(--panel3); border-color: var(--line2); }
+
+/* ══════════ REVIEW ══════════ */
+.review-header {
+  background: rgba(15,19,20,0.98); border-bottom: 1px solid var(--line2);
+  padding: 18px 20px; flex-shrink: 0;
+}
+.review-title { font-size: 24px; font-weight: 900; text-transform: uppercase; }
+.review-sub   { font-family: var(--body); font-size: 13px; color: var(--ink4); margin-top: 3px; }
+.review-body  { flex: 1; overflow-y: auto; padding-bottom: 100px; }
+
+.review-meta {
+  padding: 16px 20px; background: var(--panel); border-bottom: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.review-meta-row { display: flex; justify-content: space-between; align-items: center; }
+.rmeta-lbl { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink4); }
+.rmeta-val { font-size: 16px; font-weight: 800; color: var(--ink); }
+.day-tag {
+  display: inline-block; background: var(--panel3); border-left: 3px solid var(--red);
+  padding: 4px 10px; font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+.review-cat-hdr {
+  padding: 9px 20px 6px; font-size: 11px; font-weight: 900; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--ink4); background: var(--bg2);
+  border-bottom: 1px solid var(--line); margin-top: 2px;
+}
+.review-cat-hdr.scheduled { color: var(--ink); border-left: 3px solid var(--red); }
+.review-cat-hdr.missed {
+  color: var(--amber); cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  user-select: none;
+}
+.review-cat-hdr.missed:hover { background: var(--panel2); }
+.missed-chevron {
+  font-size: 14px; font-weight: 900; color: var(--amber);
+  transition: transform 0.2s ease; display: inline-block;
+}
+.missed-chevron.open { transform: rotate(180deg); }
+.missed-items {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+.missed-items.open { max-height: 2000px; }
+.review-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 13px 20px; border-bottom: 1px solid rgba(58,63,66,0.4);
+}
+.review-row:last-child { border-bottom: none; }
+.review-iname { font-size: 16px; font-weight: 700; text-transform: uppercase; color: var(--ink2); flex: 1; }
+.review-iqty  { font-size: 17px; font-weight: 900; color: var(--ink); }
+.review-empty {
+  padding: 40px 20px; text-align: center; font-size: 14px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink4);
+}
+
+.review-footer {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px; background: rgba(15,19,20,0.98);
+  border-top: 1px solid var(--line2); padding: 12px 16px;
+  display: flex; gap: 10px; z-index: 100; backdrop-filter: blur(10px);
+}
+.rev-edit-btn {
+  flex: 1; background: var(--panel3); border: 1px solid var(--line2); color: var(--ink);
+  font-family: var(--font); font-size: 16px; font-weight: 900; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 15px 10px; cursor: pointer; transition: all 0.15s;
+}
+.rev-edit-btn:hover { background: var(--panel4); }
+.rev-send-btn {
+  flex: 2; background: var(--red2); border: none; color: var(--ink);
+  font-family: var(--font); font-size: 16px; font-weight: 900; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 15px 10px; cursor: pointer; transition: all 0.15s;
+}
+.rev-send-btn:hover { background: var(--red); }
+.rev-send-btn:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+
+/* ══════════ SUCCESS ══════════ */
+.success-screen {
+  align-items: center; justify-content: center;
+  padding: 40px 24px; text-align: center; gap: 20px;
+}
+.success-icon {
+  width: 80px; height: 80px; border: 2px solid var(--green); border-radius: 50%;
+  background: rgba(76,175,80,0.1); display: flex; align-items: center; justify-content: center;
+  font-size: 36px; animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes pop { from{transform:scale(0.4);opacity:0} to{transform:scale(1);opacity:1} }
+.success-title { font-size: 36px; font-weight: 900; text-transform: uppercase; }
+.success-body  { font-family: var(--body); font-size: 15px; color: var(--ink4); line-height: 1.7; }
+.success-body strong { color: var(--ink2); }
+.success-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 8px; }
+.new-btn {
+  width: 100%; background: var(--panel3); border: 1px solid var(--line2); color: var(--ink);
+  font-family: var(--font); font-size: 16px; font-weight: 900; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 16px; cursor: pointer; transition: background 0.15s;
+}
+.new-btn:hover { background: var(--panel4); }
+
+/* ══════════ SETTINGS ══════════ */
+.settings-header {
+  background: rgba(15,19,20,0.98); border-bottom: 1px solid var(--line2);
+  padding: 16px 18px; position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35); flex-shrink: 0;
+  display: flex; align-items: center; gap: 14px;
+}
+.settings-back {
+  background: transparent; border: 1px solid var(--line2);
+  color: var(--ink2); padding: 8px 14px; cursor: pointer;
+  font-family: var(--font); font-size: 13px; font-weight: 800;
+  letter-spacing: 0.12em; text-transform: uppercase;
+}
+.settings-back:hover { color: var(--ink); border-color: var(--ink4); }
+.settings-title {
+  font-size: 22px; font-weight: 900; letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+.settings-sub {
+  font-family: var(--body); font-size: 12px; color: var(--ink4);
+  margin-top: 1px; font-weight: 600;
+}
+
+.settings-info {
+  background: var(--bg2); padding: 12px 18px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--body); font-size: 13px; color: var(--ink3);
+  line-height: 1.5;
+}
+
+.settings-list { flex: 1; overflow-y: auto; padding-bottom: 100px; }
+
+.setting-row {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(58,63,66,0.5);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-row-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.setting-name {
+  font-size: 16px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.02em; color: var(--ink); flex: 1;
+}
+.setting-summary {
+  font-family: var(--body); font-size: 11px; font-weight: 700;
+  color: var(--ink4); text-transform: uppercase; letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.day-toggles { display: flex; gap: 5px; }
+.day-toggle {
+  flex: 1; min-height: 38px;
+  background: var(--panel2); border: 1px solid var(--line);
+  color: var(--ink4); font-family: var(--font); font-size: 13px;
+  font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  cursor: pointer; transition: all 0.12s; -webkit-appearance: none; border-radius: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.day-toggle:hover { border-color: var(--line2); color: var(--ink3); }
+.day-toggle.on {
+  background: rgba(222,0,0,0.18); border-color: var(--red); color: var(--ink);
+}
+.day-toggle.on:hover { background: rgba(222,0,0,0.28); }
+
+.settings-footer {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px; background: rgba(15,19,20,0.98);
+  border-top: 1px solid var(--line2); padding: 12px 16px;
+  display: flex; gap: 10px; z-index: 100; backdrop-filter: blur(10px);
+}
+.settings-reset {
+  flex: 1; background: var(--panel3); border: 1px solid var(--line2); color: var(--ink2);
+  font-family: var(--font); font-size: 14px; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 14px 10px; cursor: pointer;
+}
+.settings-reset:hover { background: var(--panel4); color: var(--ink); }
+
+/* Toast — completely hidden until .show is added */
+.toast {
+  position: fixed; bottom: 130px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--panel4); color: var(--ink);
+  border: 1px solid var(--line2); padding: 10px 22px;
+  font-family: var(--font); font-size: 13px; font-weight: 900;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1),
+              opacity 0.2s, visibility 0s linear 0.2s;
+  z-index: 999; pointer-events: none; white-space: nowrap;
+  opacity: 0; visibility: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1; visibility: visible;
+  transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1),
+              opacity 0.2s, visibility 0s;
+}
+
+/* ══════════ ADD-OTHER-ITEMS BUTTON (in checklist) ══════════ */
+.add-other-wrap {
+  padding: 16px 18px 24px;
+  display: flex; justify-content: center;
+}
+.add-other-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--line2);
+  color: var(--ink2);
+  font-family: var(--font); font-size: 14px; font-weight: 800;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 14px 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  transition: all 0.15s; border-radius: 0;
+  -webkit-appearance: none; appearance: none;
+}
+.add-other-btn:hover:not(:disabled) {
+  border-color: var(--ink4); color: var(--ink); background: rgba(255,255,255,0.02);
+}
+.add-other-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.add-other-btn .plus {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border: 1.5px solid currentColor;
+  font-size: 16px; font-weight: 900; line-height: 1;
+}
+.add-other-btn .add-other-count {
+  font-family: var(--body); font-size: 11px; font-weight: 700;
+  color: var(--ink4); letter-spacing: 0.08em; margin-left: auto;
+}
+
+/* ══════════ PICKER MODAL ══════════ */
+.picker-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none; align-items: flex-end; justify-content: center;
+  z-index: 500;
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+}
+.picker-modal.open { display: flex; }
+.picker-card {
+  width: 100%; max-width: 480px;
+  background: var(--bg2); border-top: 2px solid var(--red);
+  display: flex; flex-direction: column;
+  max-height: 85vh;
+  animation: slide-up 0.24s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes slide-up {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@keyframes slide-down {
+  from { transform: translateY(-40px); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+.picker-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(15,19,20,0.98); flex-shrink: 0;
+}
+.picker-title {
+  font-size: 20px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.picker-sub {
+  font-family: var(--body); font-size: 12px; color: var(--ink4);
+  margin-top: 2px; font-weight: 600;
+}
+.picker-close {
+  width: 36px; height: 36px;
+  background: transparent; border: 1px solid var(--line2);
+  color: var(--ink2); font-size: 22px; font-weight: 700; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font);
+}
+.picker-close:hover { color: var(--ink); border-color: var(--ink4); }
+
+.picker-body { flex: 1; overflow-y: auto; padding-bottom: 12px; }
+
+.picker-cat {
+  padding: 10px 20px 6px;
+  font-size: 11px; font-weight: 900; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--ink4);
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+
+.picker-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(58,63,66,0.5);
+  cursor: pointer; transition: background 0.12s;
+}
+.picker-row:active { background: rgba(255,255,255,0.04); }
+.picker-row:hover  { background: rgba(255,255,255,0.02); }
+.picker-row.picker-selected { background: rgba(222,0,0,0.08); }
+.picker-check {
+  flex-shrink: 0;
+  width: 28px; height: 28px;
+  border: 2px solid var(--line2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 900; color: var(--green);
+  transition: all 0.12s;
+}
+.picker-row.picker-selected .picker-check {
+  border-color: var(--red); background: rgba(222,0,0,0.15); color: var(--ink);
+}
+.picker-info { flex: 1; min-width: 0; }
+.picker-name {
+  font-size: 16px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.02em; color: var(--ink); line-height: 1.2;
+}
+.picker-days {
+  font-family: var(--body); font-size: 11px; font-weight: 700;
+  color: var(--ink4); margin-top: 3px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.picker-footer {
+  padding: 12px 16px; border-top: 1px solid var(--line2);
+  background: rgba(15,19,20,0.98); flex-shrink: 0;
+}
+.picker-confirm-btn {
+  width: 100%; background: var(--red2); border: none; color: var(--ink);
+  font-family: var(--font); font-size: 16px; font-weight: 900;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 15px; cursor: pointer; transition: background 0.15s;
+}
+.picker-confirm-btn:hover:not(:disabled) { background: var(--red); }
+.picker-confirm-btn:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+.picker-empty {
+  padding: 50px 24px; text-align: center;
+  font-family: var(--body); font-size: 14px; color: var(--ink4);
+}
+
+/* ══════════ HISTORY LIST ══════════ */
+.hist-list { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+.hist-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.hist-table th {
+  text-align: left; padding: 11px 14px;
+  background: var(--panel3); border-bottom: 1px solid var(--line2);
+  font-size: 11px; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink3);
+}
+.hist-table td {
+  padding: 12px 14px; border-bottom: 1px solid rgba(84,84,84,0.4);
+  font-family: var(--body); font-size: 13px; color: var(--ink3); vertical-align: middle;
+}
+.hist-table tr:hover td { background: rgba(255,255,255,0.03); cursor: pointer; }
+.hist-empty {
+  padding: 60px 20px; text-align: center;
+  font-family: var(--body); font-size: 13px; color: var(--ink4);
+  font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+}
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(58,63,66,0.5);
+  cursor: pointer; transition: background 0.12s;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.hist-row:hover, .hist-row:active { background: rgba(255,255,255,0.03); }
+.hist-row-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+}
+.hist-row-day {
+  font-size: 16px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--ink);
+}
+.hist-row-date {
+  font-family: var(--body); font-size: 12px; color: var(--ink4); font-weight: 600;
+}
+.hist-row-meta {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.hist-row-chef {
+  font-family: var(--body); font-size: 13px; color: var(--ink3); font-weight: 600;
+}
+.hist-row-count {
+  font-size: 13px; font-weight: 900; color: var(--ink2);
+}
+.hist-empty {
+  padding: 60px 24px; text-align: center;
+  font-family: var(--body); font-size: 14px; color: var(--ink4);
+}
+
+/* ══════════ DETAIL MODAL ══════════ */
+.detail-modal {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: none; flex-direction: column;
+  z-index: 600;
+}
+.detail-modal.open { display: flex; }
+.detail-card {
+  width: 100%;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  flex: 1; overflow: hidden;
+  animation: slide-down 0.24s cubic-bezier(0.16,1,0.3,1);
+}
+.detail-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(15,19,20,0.98); flex-shrink: 0;
+}
+.detail-title {
+  font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.detail-sub {
+  font-family: var(--body); font-size: 12px; color: var(--ink4); margin-top: 2px; font-weight: 600;
+}
+.detail-body { flex: 1; overflow-y: auto; padding-bottom: 40px; }
+.detail-cat {
+  padding: 8px 20px 4px;
+  font-size: 11px; font-weight: 900; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--ink4);
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.detail-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 11px 20px; border-bottom: 1px solid rgba(58,63,66,0.3);
+}
+.detail-item-name {
+  font-size: 15px; font-weight: 700; text-transform: uppercase; color: var(--ink2);
+}
+.detail-item-qty { font-size: 16px; font-weight: 900; color: var(--ink); }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line2); }
+</style>
+</head>
+<body>
+
+<!-- ══ SCREEN: WELCOME ══ -->
+<div class="screen active" id="s-welcome" style="flex-direction:column;">
+  <div class="welcome-header">
+    <div class="topbar-brand">
+      <div class="logo">TORI <div class="logo-dot"></div></div>
+      <div class="logo-sub">Prep Kitchen</div>
+    </div>
+    <div class="header-nav">
+      <button class="nav-tab active" id="tab-prep" onclick="showTab('prep')">Prep</button>
+      <button class="nav-tab" id="tab-history" onclick="showTab('history')">History</button>
+    </div>
+    <button class="gear-btn" onclick="openSettings()" title="Settings">⚙</button>
+  </div>
+  <div class="welcome-body">
+    <div>
+      <div class="section-label">Preparation Checklist</div>
+      <div style="font-family:var(--body);font-size:14px;color:var(--ink3);line-height:1.6;margin-bottom:8px;">
+        Daily preparation tasks for the central preparation kitchen. Items scheduled for the selected day will be loaded automatically.
+      </div>
+    </div>
+    <div>
+      <div class="field-wrap">
+        <div>
+          <div class="field-label">Date</div>
+          <input class="field-input" type="date" id="prep-date" />
+        </div>
+        <div>
+          <div class="field-label">Chef Name &amp; Surname</div>
+          <input class="field-input" type="text" id="prep-name"
+            placeholder="e.g. head chef name" autocomplete="name" autocorrect="off" />
+        </div>
+      </div>
+    </div>
+    <button class="start-btn" id="start-btn" onclick="startPrep()" disabled>Start Preparation →</button>
+  </div>
+</div>
+
+
+<!-- ══ SCREEN: CHECKLIST ══ -->
+<div class="screen" id="s-checklist" style="flex-direction:column;">
+  <div class="check-header">
+    <div class="check-top">
+      <div>
+        <div class="check-logo">TORI</div>
+        <div class="check-meta" id="check-meta"></div>
+      </div>
+      <div class="check-day-tag" id="check-day-tag"></div>
+    </div>
+  </div>
+
+  <div class="items-list" id="items-list"></div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn" onclick="goHome()">← Cancel</button>
+    <button class="nav-btn fwd" id="next-btn" onclick="showReview()">Review →</button>
+  </div>
+</div>
+
+
+<!-- ══ SCREEN: REVIEW ══ -->
+<div class="screen" id="s-review" style="flex-direction:column;">
+  <div class="review-header">
+    <div class="review-title">Review Prep Log</div>
+    <div class="review-sub">Confirm before saving the day's preparation</div>
+  </div>
+  <div class="review-body" id="review-body"></div>
+  <div class="review-footer">
+    <button class="rev-edit-btn" onclick="go('s-checklist')">← Edit</button>
+    <button class="rev-send-btn" id="rev-send-btn" onclick="doSend()">Confirm &amp; Save →</button>
+  </div>
+</div>
+
+
+<!-- ══ SCREEN: SUCCESS ══ -->
+<div class="screen success-screen" id="s-success">
+  <div class="success-icon">✓</div>
+  <div class="success-title">Prep Saved!</div>
+  <div class="success-body" id="suc-body"></div>
+  <div class="success-actions">
+    <button class="new-btn" onclick="goHome()">Start New Prep Log</button>
+  </div>
+</div>
+
+
+<!-- ══ SCREEN: SETTINGS ══ -->
+<div class="screen" id="s-settings" style="flex-direction:column;">
+  <div class="settings-header">
+    <button class="settings-back" onclick="closeSettings()">← Back</button>
+    <div>
+      <div class="settings-title">Schedule</div>
+      <div class="settings-sub">Set which days each task is prepared</div>
+    </div>
+  </div>
+  <div class="settings-info">
+    Tap a day for any task to add or remove it from that day's schedule. Changes save automatically.
+  </div>
+  <div class="settings-list" id="settings-list"></div>
+  <div class="settings-footer">
+    <button class="settings-reset" onclick="resetSchedule()">Reset to Default</button>
+  </div>
+</div>
+
+
+<!-- ══ SCREEN: HISTORY ══ -->
+<div class="screen" id="s-history" style="flex-direction:column;">
+  <div class="welcome-header">
+    <div class="topbar-brand">
+      <div class="logo">TORI <div class="logo-dot"></div></div>
+      <div class="logo-sub">Prep Kitchen</div>
+    </div>
+    <div class="header-nav">
+      <button class="nav-tab" onclick="showTab('prep')">Prep</button>
+      <button class="nav-tab active" onclick="showTab('history')">History</button>
+    </div>
+    <button class="gear-btn" onclick="openSettings()" title="Settings">⚙</button>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px 12px;border-bottom:1px solid var(--line);">
+    <div style="font-size:11px;font-weight:900;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink4);">Preparation History</div>
+    <button class="clear-hist-btn" onclick="clearPrepHistory()">Clear History</button>
+  </div>
+  <div class="hist-list" id="hist-list"></div>
+</div>
+
+<!-- ══ DETAIL MODAL ══ -->
+<div class="detail-modal" id="detail-modal">
+  <div class="detail-card">
+    <div class="detail-header">
+      <div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);margin-bottom:3px;">Preparation History</div>
+        <div class="detail-title" id="detail-title"></div>
+        <div class="detail-sub" id="detail-sub"></div>
+      </div>
+      <button class="picker-close" onclick="closeDetail()">×</button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+</div>
+
+
+<!-- ══ PICKER: Add other items (scheduled on different days) ══ -->
+<div class="picker-modal" id="picker-modal">
+  <div class="picker-card">
+    <div class="picker-header">
+      <div>
+        <div class="picker-title">Add Other Items</div>
+        <div class="picker-sub">Select one or more tasks, then tap Add</div>
+      </div>
+      <button class="picker-close" onclick="closeAddOther()" aria-label="Close">×</button>
+    </div>
+    <div class="picker-body" id="picker-body"></div>
+    <div class="picker-footer">
+      <button class="picker-confirm-btn" id="picker-confirm-btn" onclick="confirmAddOther()" disabled>Select items to add</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+const API_BASE = 'https://tori-kitchen-system-tv6b.vercel.app'; // set to your backend URL when ready
+const STORAGE_KEY = 'tori_prep_schedule_v1';
+
+/* ───────────────────────────────────────────────
+   PREP TASKS — defaults from TORI_PREPARATION.csv
+   Days: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat
+   ─────────────────────────────────────────────── */
+const DAY_LABELS = ['Mon','Tue','Wed','Thu','Fri','Sat'];
+const DAY_FULL   = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+/* Categories — match the kitchen order checklist labels.
+   Order here defines the display order on screen. */
+const CATEGORIES = [
+  { id:'sauces',     label:'Sauces' },
+  { id:'foods',      label:'Foods' },
+  { id:'vegetables', label:'Vegetables' },
+];
+
+const DEFAULT_TASKS = [
+  // ── SAUCES ──
+  { id:'dan_dan_sauce',       cat:'sauces',     name:'Dan Dan Sauce',                   unit:'L',      days:[1] },
+  { id:'goma_tare',           cat:'sauces',     name:'Goma Tare',                       unit:'L',      days:[1] },
+  { id:'gyoza_sauce',         cat:'sauces',     name:'Gyoza Sauce',                     unit:'L',      days:[1] },
+  { id:'kimchi_paste',        cat:'sauces',     name:'Kimchi Paste',                    unit:'kg',     days:[1] },
+  { id:'kungpao_sauce',       cat:'sauces',     name:'Kung Pao Sauce',                  unit:'L',      days:[1] },
+  { id:'laksa_base',          cat:'sauces',     name:'Laksa Base',                      unit:'L',      days:[1,4] },
+  { id:'poke_sauce',          cat:'sauces',     name:'Poke Sauce',                      unit:'L',      days:[1] },
+  { id:'pork_belly_glaze',    cat:'sauces',     name:'Pork Belly Glaze',                unit:'L',      days:[1] },
+  { id:'soy_tare',            cat:'sauces',     name:'Soy Tare',                        unit:'L',      days:[1] },
+  { id:'sunomono_sauce',      cat:'sauces',     name:'Sunomono Sauce',                  unit:'L',      days:[1] },
+  { id:'sushi_vinegar',       cat:'sauces',     name:'Sushi Vinegar Making',            unit:'L',      days:[0,3] },
+  { id:'teriyaki_sauce',      cat:'sauces',     name:'Teriyaki Sauce',                  unit:'L',      days:[1] },
+
+  // ── FOODS ──
+  { id:'bamboo_cook',         cat:'foods',      name:'Bamboo Cook & Marinate',          unit:'kg',     days:[2,5] },
+  { id:'beef_stripes',        cat:'foods',      name:'Beef Stripes Cut & Marinate',     unit:'kg',     days:[0,2,4] },
+  { id:'chicken_miso',        cat:'foods',      name:'Chicken Miso',                    unit:'kg',     days:[2,5] },
+  { id:'chicken_stock',       cat:'foods',      name:'Chicken Soup Stock',              unit:'L',      days:[1,4] },
+  { id:'chicken_thighs',      cat:'foods',      name:'Chicken Thighs Cut & Marinate',   unit:'kg',     days:[0,1,2,3,4,5] },
+  { id:'coleslaw',            cat:'foods',      name:'Coleslaw Making',                 unit:'kg',     days:[0,2,4] },
+  { id:'crumble',             cat:'foods',      name:'Crumble Making',                  unit:'kg',     days:[1] },
+  { id:'dan_dan_pork',        cat:'foods',      name:'Dan Dan Black Bean Pork',         unit:'kg',     days:[0,3] },
+  { id:'egg_marinade',        cat:'foods',      name:'Egg Marinade',                    unit:'pcs',    days:[1] },
+  { id:'gyoza_pork',          cat:'foods',      name:'Gyoza Pork (Freeze)',             unit:'kg',     days:[2,5] },
+  { id:'icecream_takeaway',   cat:'foods',      name:'Ice Cream Takeaway (Freeze)',     unit:'pcs',    days:[2] },
+  { id:'katsu_chicken',       cat:'foods',      name:'Katsu Chicken Prep',              unit:'kg',     days:[0,1,2,3,4,5] },
+  { id:'kimchi',              cat:'foods',      name:'Kimchi Making',                   unit:'kg',     days:[0,3] },
+  { id:'lobster_salad',       cat:'foods',      name:'Lobster Salad',                   unit:'kg',     days:[1,3] },
+  { id:'tempura_roll',        cat:'foods',      name:'Making Tempura Roll',             unit:'pcs',    days:[0,2,4] },
+  { id:'peanuts_grind',       cat:'foods',      name:'Peanuts Grind',                   unit:'kg',     days:[1] },
+  { id:'pork_belly_prep',     cat:'foods',      name:'Pork Belly Prep & Rub',           unit:'kg',     days:[0,2,4] },
+  { id:'pork_belly_bake',     cat:'foods',      name:'Pork Belly Bake (Freeze)',        unit:'kg',     days:[0,2,4] },
+  { id:'pork_belly_cut',      cat:'foods',      name:'Pork Belly Cutting',              unit:'kg',     days:[1,3,5] },
+  { id:'ramen_eggs',          cat:'foods',      name:'Ramen Eggs Cook, Peel & Marinate',unit:'pcs',    days:[0,1,2,3,4,5] },
+  { id:'ramen_noodles',       cat:'foods',      name:'Ramen Noodles (Freeze)',          unit:'kg',     days:[0,3] },
+  { id:'ramen_soup',          cat:'foods',      name:'Ramen Soup Finish',               unit:'L',      days:[0,2,4] },
+  { id:'shiitake_soak',       cat:'foods',      name:'Shiitake Soaking & Cooking',      unit:'kg',     days:[2,5] },
+  { id:'sushi_rice',          cat:'foods',      name:'Sushi Rice Cooking',              unit:'kg',     days:[0,1,2,3,4,5] },
+  { id:'tofu_cutting',        cat:'foods',      name:'Tofu Cutting',                    unit:'kg',     days:[0,2,4] },
+  { id:'tofu_panko',          cat:'foods',      name:'Tofu Panko (Freeze)',             unit:'kg',     days:[3] },
+  { id:'tuna_poke',           cat:'foods',      name:'Tuna Cutting for Poke',           unit:'kg',     days:[0,1,2,3,4,5] },
+  { id:'vimixa_noodles',      cat:'foods',      name:'Vimixa Noodles Cooking',          unit:'kg',     days:[0,2,4] },
+  { id:'banana_bread',        cat:'foods',      name:'Banana Bread (Freeze)',           unit:'pcs',    days:[] },
+
+  // ── VEGETABLES ──
+  { id:'chilli_cutting',      cat:'vegetables', name:'Chilli Cutting',                  unit:'kg',     days:[0,1,2,3,4,5] },
+  { id:'cucumber_marinade',   cat:'vegetables', name:'Cucumber Marinade',               unit:'kg',     days:[1] },
+  { id:'cucumbers_cut',       cat:'vegetables', name:'Cucumbers Cutting',               unit:'kg',     days:[0,1,2,3,4,5] },
+  { id:'daikon_marinate',     cat:'vegetables', name:'Daikon Cut & Marinate',           unit:'kg',     days:[2,5] },
+  { id:'green_beans',         cat:'vegetables', name:'Green Beans Blanche',             unit:'kg',     days:[0,1,2,3,4,5] },
+  { id:'pak_choi',            cat:'vegetables', name:'Pak Choi Blanche',                unit:'kg',     days:[0,1,2,3,4,5] },
+  { id:'purple_onion',        cat:'vegetables', name:'Purple Onion Cutting',            unit:'kg',     days:[0,1,2,3,4,5] },
+  { id:'shiitake_cut',        cat:'vegetables', name:'Shiitake Cutting',                unit:'kg',     days:[0,1,2,3,4,5] },
+  { id:'spring_onion',        cat:'vegetables', name:'Spring Onion Cutting',            unit:'kg',     days:[0,1,2,3,4,5] },
+];
+
+const catLabel = id => (CATEGORIES.find(c => c.id===id) || {label:'Other'}).label;
+
+/* TASKS is the live, mutable schedule, loaded from storage if present */
+let TASKS = loadSchedule();
+let taskMap = {};
+function rebuildTaskMap() {
+  taskMap = {};
+  TASKS.forEach(t => { taskMap[t.id] = t; });
+}
+rebuildTaskMap();
+
+function loadSchedule() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return JSON.parse(JSON.stringify(DEFAULT_TASKS));
+    const saved = JSON.parse(raw);
+    if (!Array.isArray(saved)) throw new Error('bad shape');
+    // Merge: keep order from defaults, override days if a saved entry exists,
+    // ignore any unknown saved tasks.
+    const savedById = {};
+    saved.forEach(s => { if (s && s.id) savedById[s.id] = s; });
+    return DEFAULT_TASKS.map(d => {
+      const s = savedById[d.id];
+      if (!s) return { ...d, days: [...d.days] };
+      return {
+        id:   d.id,
+        cat:  d.cat,
+        name: d.name,
+        unit: d.unit,
+        days: Array.isArray(s.days) ? s.days.filter(x => x>=0 && x<=5) : [...d.days],
+      };
+    });
+  } catch (e) {
+    console.warn('Failed to load schedule, using defaults:', e);
+    return JSON.parse(JSON.stringify(DEFAULT_TASKS));
+  }
+}
+
+function saveSchedule() {
+  try {
+    const compact = TASKS.map(t => ({ id: t.id, days: t.days }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(compact));
+  } catch (e) {
+    console.warn('Failed to save schedule:', e);
+  }
+}
+
+/* Map JS getDay() (Sun=0..Sat=6) to our index (Mon=0..Sat=5).
+   Sunday returns -1 (kitchen closed). */
+function todayIndex(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  const js = d.getDay();
+  if (js === 0) return -1;
+  return js - 1;
+}
+
+/* ── STATE ── */
+let chefName = '', prepDate = '', dayIdx = -1;
+let checked = {};       // taskId -> { qty, unit }
+let extraIds = new Set(); // ids of off-schedule tasks the chef pulled in
+let lastPayload = null;
+
+/* ── INIT ── */
+document.getElementById('prep-date').value = new Date().toISOString().slice(0,10);
+['prep-name','prep-date'].forEach(id =>
+  document.getElementById(id).addEventListener('input', chkReady)
+);
+
+function chkReady() {
+  document.getElementById('start-btn').disabled =
+    !(document.getElementById('prep-name').value.trim() &&
+      document.getElementById('prep-date').value);
+}
+
+function startPrep() {
+  chefName  = document.getElementById('prep-name').value.trim();
+  prepDate  = document.getElementById('prep-date').value;
+  dayIdx    = todayIndex(prepDate);
+  checked   = {};
+  extraIds  = new Set();
+  launch();
+}
+
+/* ── LAUNCH CHECKLIST ── */
+function launch() {
+  const d = new Date(prepDate + 'T12:00:00');
+  const dayLabel = dayIdx === -1 ? 'Sunday — Closed' : DAY_FULL[dayIdx];
+  document.getElementById('check-day-tag').textContent = dayLabel;
+  document.getElementById('check-meta').textContent =
+    chefName + ' · ' + d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+
+  renderList();
+  go('s-checklist');
+}
+
+/* ── RENDER LIST ──
+   Shows today's scheduled items grouped by category (Sauces / Foods / Vegetables),
+   followed by any off-schedule items the chef has explicitly added via
+   the "Add other items" button. Off-schedule tasks not yet added stay hidden. */
+function renderList() {
+  const list = document.getElementById('items-list');
+  const isScheduled = (t) => dayIdx !== -1 && t.days.includes(dayIdx);
+
+  const scheduled = TASKS.filter(t => isScheduled(t));
+  const extras    = TASKS.filter(t => extraIds.has(t.id));
+
+  let html = '';
+
+  if (scheduled.length === 0 && extras.length === 0) {
+    html += `<div class="list-empty">
+      <span class="dash">—</span>
+      <div class="list-empty-title">${dayIdx === -1 ? 'Sunday — Closed' : 'Nothing Scheduled'}</div>
+      ${dayIdx === -1
+        ? 'No tasks scheduled. Use the button below to add anything you prepare today.'
+        : 'No tasks set for ' + DAY_FULL[dayIdx] + '. Use the button below to add items, or open Settings to assign tasks to this day.'}
+    </div>`;
+  } else {
+    // ── Scheduled items grouped by category ──
+    CATEGORIES.forEach(cat => {
+      const inCat = scheduled.filter(t => t.cat === cat.id);
+      if (inCat.length === 0) return;
+      html += `<div class="list-section">
+        <div class="list-section-label">${cat.label}</div>
+        <div class="list-section-count">${inCat.length} task${inCat.length!==1?'s':''}</div>
+      </div>`;
+      inCat.forEach(task => { html += taskRowHTML(task, true); });
+    });
+
+    // ── Added items — single section at the very bottom ──
+    if (extras.length > 0) {
+      html += `<div class="list-section extra-section">
+        <div class="list-section-label">Added</div>
+        <div class="list-section-count">${extras.length} item${extras.length!==1?'s':''}</div>
+      </div>`;
+      extras.forEach(task => { html += taskRowHTML(task, false); });
+    }
+  }
+
+  // ── Add-other-items button ──
+  const offCount = TASKS.filter(t => !isScheduled(t) && !extraIds.has(t.id)).length;
+  html += `<div class="add-other-wrap">
+    <button class="add-other-btn" onclick="openAddOther()" ${offCount===0?'disabled':''}>
+      <span class="plus">+</span> Add other items
+      <span class="add-other-count">${offCount} available</span>
+    </button>
+  </div>`;
+
+  list.innerHTML = html;
+}
+
+function taskRowHTML(task, isScheduled) {
+  const c = checked[task.id];
+  const isC = !!c;
+  const qty = c ? c.qty : '';
+  const unit = c ? c.unit : task.unit;
+  const isExtra = !isScheduled;
+
+  // Scheduled rows show today's day label (e.g. "Thu").
+  // Manually-added rows show "ADDED" so the chef sees it's off-schedule.
+  let meta = '';
+  if (isScheduled && dayIdx !== -1) meta = DAY_LABELS[dayIdx];
+  else if (isExtra)                 meta = 'Added';
+  const metaHTML = meta ? `<div class="item-meta">${meta}</div>` : '';
+
+  return `<div class="item-row${isC?' checked':''}${isExtra?' extra':''}" id="row-${task.id}">
+    <div class="item-main">
+      <div class="item-check" onclick="toggle('${task.id}')"></div>
+      <div class="item-info" onclick="toggle('${task.id}')">
+        <div class="item-name">${task.name}</div>
+        ${metaHTML}
+      </div>
+      <div class="item-qty-inline" onclick="event.stopPropagation()">
+        <input class="qty-input" type="number" id="qty-${task.id}"
+          value="${qty}" min="0" step="any" inputmode="decimal" placeholder="0"
+          oninput="qtyChange('${task.id}')" />
+        <input class="qty-unit-input" type="text" id="unit-${task.id}"
+          value="${unit}" maxlength="8"
+          oninput="qtyChange('${task.id}')" />
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggle(id) {
+  const row = document.getElementById('row-'+id);
+  const was = row.classList.contains('checked');
+  if (was) {
+    row.classList.remove('checked');
+    delete checked[id];
+  } else {
+    row.classList.add('checked');
+    // Focus the inline qty input once it becomes visible
+    setTimeout(() => {
+      const inp = document.getElementById('qty-'+id);
+      if (inp) { inp.focus(); inp.select(); }
+    }, 60);
+  }
+}
+
+function qtyChange(id) {
+  const inp = document.getElementById('qty-'+id);
+  const unitInp = document.getElementById('unit-'+id);
+  const v = parseFloat(inp.value);
+  const unit = (unitInp.value || taskMap[id].unit).trim();
+  if (!isNaN(v) && v > 0) {
+    checked[id] = { qty: v, unit };
+    document.getElementById('row-'+id).classList.add('checked');
+  } else {
+    delete checked[id];
+  }
+}
+
+/* ── REVIEW ── */
+function showReview() {
+  const d = new Date(prepDate+'T12:00:00');
+  const dateStr = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const dayLabel = dayIdx === -1 ? 'Sunday — Closed' : DAY_FULL[dayIdx];
+
+  const allChecked    = Object.keys(checked);
+  const scheduledIds  = (dayIdx === -1) ? [] : TASKS.filter(t => t.days.includes(dayIdx)).map(t=>t.id);
+  const totalSched    = scheduledIds.length;
+  const missed        = scheduledIds.filter(id => !checked[id]);
+
+  const btn = document.getElementById('rev-send-btn');
+
+  let html = `<div class="review-meta">
+    <div class="review-meta-row"><span class="rmeta-lbl">Day</span><span class="day-tag">${dayLabel}</span></div>
+    <div class="review-meta-row"><span class="rmeta-lbl">Date</span><span class="rmeta-val">${dateStr}</span></div>
+    <div class="review-meta-row"><span class="rmeta-lbl">Chef</span><span class="rmeta-val">${chefName}</span></div>
+    <div class="review-meta-row"><span class="rmeta-lbl">Prepared</span><span class="rmeta-val">${allChecked.length}</span></div>
+    <div class="review-meta-row"><span class="rmeta-lbl">Not Done</span><span class="rmeta-val" style="color:var(--amber);">${missed.length} / ${totalSched}</span></div>
+  </div>`;
+
+  if (allChecked.length === 0) {
+    html += '<div class="review-empty">No items prepared yet.<br>Go back and tick what you completed.</div>';
+    btn.disabled = true;
+  } else {
+    btn.disabled = false;
+
+    // ALL prepared items in one flat list (scheduled + extra together)
+    html += `<div class="review-cat-hdr scheduled">Prepared — ${allChecked.length}</div>`;
+    allChecked.forEach(id => {
+      const t = taskMap[id], c = checked[id];
+      html += `<div class="review-row">
+        <span class="review-iname">${t.name}</span>
+        <span class="review-iqty">${c.qty} ${c.unit}</span>
+      </div>`;
+    });
+
+    // NOT DONE — collapsed dropdown at the bottom
+    if (missed.length) {
+      const missedRows = missed.map(id => {
+        const t = taskMap[id];
+        return `<div class="review-row">
+          <span class="review-iname" style="color:var(--ink4);">${t.name}</span>
+          <span class="review-iqty" style="color:var(--amber);">—</span>
+        </div>`;
+      }).join('');
+      html += `<div class="review-cat-hdr missed" onclick="toggleMissed(this)">
+        <span>Not Done — ${missed.length}</span>
+        <span class="missed-chevron">▼</span>
+      </div>
+      <div class="missed-items" id="missed-items-list">${missedRows}</div>`;
+    }
+  }
+
+  document.getElementById('review-body').innerHTML = html;
+  btn.textContent = 'Confirm & Save →';
+  go('s-review');
+}
+
+/* ── MISSED DROPDOWN TOGGLE ── */
+function toggleMissed(hdr) {
+  const list    = document.getElementById('missed-items-list');
+  const chevron = hdr.querySelector('.missed-chevron');
+  const isOpen  = list.classList.contains('open');
+  list.classList.toggle('open', !isOpen);
+  chevron.classList.toggle('open', !isOpen);
+}
+
+/* ── SEND / SAVE ── */
+async function doSend() {
+  const btn = document.getElementById('rev-send-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const scheduledSet = new Set(
+    dayIdx === -1 ? [] : TASKS.filter(t => t.days.includes(dayIdx)).map(t => t.id)
+  );
+
+  const items = Object.keys(checked).map(id => ({
+    task_id: id,
+    name:    taskMap[id].name,
+    cat:     taskMap[id].cat,
+    qty:     checked[id].qty,
+    unit:    checked[id].unit,
+    scheduled_today: scheduledSet.has(id),
+  }));
+
+  const payload = {
+    type:         'prep_log',
+    chef_name:    chefName,
+    prep_date:    prepDate,
+    day_index:    dayIdx,
+    day_label:    dayIdx === -1 ? 'Sunday' : DAY_FULL[dayIdx],
+    items,
+    ts:           Date.now(),
+    submitted_at: new Date().toISOString(),
+  };
+  lastPayload = payload;
+
+  try {
+    // Write to TORI_PREP_LOG (history tab in kitchen system)
+    try {
+      const existing = JSON.parse(localStorage.getItem('TORI_PREP_LOG') || '[]');
+      existing.push(payload);
+      localStorage.setItem('TORI_PREP_LOG', JSON.stringify(existing));
+    } catch(e) { console.warn('localStorage write failed:', e); }
+
+    // Write to TORI_PREP — this is what the kitchen PREP LIST column reads live
+    // Format: { id, staffName, prepDate, ts, items: { task_id: qty } }
+    try {
+      const kitchenPrep = {
+        id:        payload.ts,
+        staffName: payload.chef_name,
+        prepDate:  payload.prep_date,
+        ts:        payload.ts,
+        items: Object.fromEntries(
+          payload.items.map(it => [it.task_id, it.qty])
+        ),
+      };
+      localStorage.setItem('TORI_PREP', JSON.stringify(kitchenPrep));
+    } catch(e) { console.warn('TORI_PREP write failed:', e); }
+
+    if (API_BASE) {
+      const res = await fetch(API_BASE + '/api/prep/submit', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+    } else {
+      await new Promise(r => setTimeout(r, 400));
+    }
+    showSuccess(payload);
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Confirm & Save →';
+    alert('Could not save prep log: ' + (err.message || 'unknown error'));
+  }
+}
+
+function showSuccess(p) {
+  const d = new Date(p.prep_date+'T12:00:00');
+  const dateStr = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('suc-body').innerHTML =
+    `Prep log for <strong>${dateStr}</strong> by <strong>${p.chef_name}</strong>.<br><br>` +
+    `<strong>${p.items.length}</strong> item${p.items.length!==1?'s':''} saved.`;
+  go('s-success');
+}
+
+function goHome() {
+  lastPayload = null;
+  checked = {};
+  document.getElementById('prep-name').value = '';
+  document.getElementById('prep-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('start-btn').disabled = true;
+  go('s-welcome');
+}
+
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id===id));
+  window.scrollTo(0,0);
+}
+
+/* ──────────────────────────────────────────────
+   SETTINGS — edit which days each task is prepared
+   ────────────────────────────────────────────── */
+function openSettings() {
+  renderSettings();
+  go('s-settings');
+}
+function closeSettings() { go('s-welcome'); }
+
+function summaryFor(task) {
+  if (task.days.length === 0) return 'Not scheduled';
+  if (task.days.length === 6) return 'Daily (Mon–Sat)';
+  return task.days.map(d => DAY_LABELS[d]).join(' · ');
+}
+
+function togglesFor(taskId) {
+  const task = taskMap[taskId];
+  let html = '';
+  for (let d = 0; d < 6; d++) {
+    const on = task.days.includes(d);
+    html += `<button class="day-toggle${on?' on':''}"
+      onclick="toggleTaskDay('${taskId}',${d})">${DAY_LABELS[d]}</button>`;
+  }
+  return html;
+}
+
+function renderSettings() {
+  const listEl = document.getElementById('settings-list');
+  let html = '';
+  TASKS.forEach(task => {
+    html += `<div class="setting-row">
+      <div class="setting-row-top">
+        <div class="setting-name">${task.name}</div>
+        <div class="setting-summary" id="summary-${task.id}">${summaryFor(task)}</div>
+      </div>
+      <div class="day-toggles" id="toggles-${task.id}">${togglesFor(task.id)}</div>
+    </div>`;
+  });
+  listEl.innerHTML = html;
+}
+
+function toggleTaskDay(taskId, day) {
+  const task = taskMap[taskId];
+  if (!task) return;
+  const idx = task.days.indexOf(day);
+  if (idx === -1) {
+    task.days.push(day);
+    task.days.sort((a,b) => a-b);
+  } else {
+    task.days.splice(idx, 1);
+  }
+  saveSchedule();
+
+  // Update affected row only
+  const togglesEl = document.getElementById('toggles-'+taskId);
+  if (togglesEl) togglesEl.innerHTML = togglesFor(taskId);
+  const sumEl = document.getElementById('summary-'+taskId);
+  if (sumEl) sumEl.textContent = summaryFor(task);
+}
+
+function resetSchedule() {
+  if (!confirm('Reset every task back to the default schedule? Your custom changes will be lost.')) return;
+  TASKS = JSON.parse(JSON.stringify(DEFAULT_TASKS));
+  rebuildTaskMap();
+  saveSchedule();
+  renderSettings();
+  showToast('Schedule reset to default');
+}
+
+/* ──────────────────────────────────────────────
+   ADD-OTHER-ITEMS PICKER
+   ────────────────────────────────────────────── */
+let pickerSelection = new Set(); // ids selected in the current picker session
+
+function openAddOther() {
+  pickerSelection = new Set();
+  renderPicker();
+  document.getElementById('picker-modal').classList.add('open');
+}
+
+function renderPicker() {
+  const isScheduled = (t) => dayIdx !== -1 && t.days.includes(dayIdx);
+  const offSchedule = TASKS.filter(t => !isScheduled(t) && !extraIds.has(t.id));
+  const body = document.getElementById('picker-body');
+
+  if (offSchedule.length === 0) {
+    body.innerHTML = `<div class="picker-empty">All tasks are already on the list.</div>`;
+  } else {
+    let html = '';
+    CATEGORIES.forEach(cat => {
+      const inCat = offSchedule.filter(t => t.cat === cat.id);
+      if (inCat.length === 0) return;
+      html += `<div class="picker-cat">${cat.label}</div>`;
+      inCat.forEach(task => {
+        const dayList = task.days.length === 0
+          ? 'Not scheduled'
+          : task.days.length === 6
+            ? 'Daily'
+            : task.days.map(d => DAY_LABELS[d]).join(' · ');
+        const sel = pickerSelection.has(task.id);
+        html += `<div class="picker-row${sel?' picker-selected':''}" id="prow-${task.id}" onclick="togglePickerItem('${task.id}')">
+          <div class="picker-check">${sel?'✓':''}</div>
+          <div class="picker-info">
+            <div class="picker-name">${task.name}</div>
+            <div class="picker-days">${dayList}</div>
+          </div>
+        </div>`;
+      });
+    });
+    body.innerHTML = html;
+  }
+
+  // Update confirm button
+  const count = pickerSelection.size;
+  const btn = document.getElementById('picker-confirm-btn');
+  btn.textContent = count === 0 ? 'Select items to add' : `Add ${count} item${count!==1?'s':''}`;
+  btn.disabled = count === 0;
+}
+
+function togglePickerItem(id) {
+  if (pickerSelection.has(id)) {
+    pickerSelection.delete(id);
+  } else {
+    pickerSelection.add(id);
+  }
+  // Update just the clicked row and the confirm button — no full re-render
+  const row = document.getElementById('prow-'+id);
+  if (row) {
+    const sel = pickerSelection.has(id);
+    row.classList.toggle('picker-selected', sel);
+    row.querySelector('.picker-check').textContent = sel ? '✓' : '';
+  }
+  const count = pickerSelection.size;
+  const btn = document.getElementById('picker-confirm-btn');
+  btn.textContent = count === 0 ? 'Select items to add' : `Add ${count} item${count!==1?'s':''}`;
+  btn.disabled = count === 0;
+}
+
+function confirmAddOther() {
+  pickerSelection.forEach(id => extraIds.add(id));
+  pickerSelection = new Set();
+  document.getElementById('picker-modal').classList.remove('open');
+  renderList();
+}
+
+function closeAddOther() {
+  pickerSelection = new Set();
+  document.getElementById('picker-modal').classList.remove('open');
+}
+
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+/* ── HISTORY ── */
+function showTab(tab) {
+  if (tab === 'history') { renderHistoryList(); go('s-history'); }
+  else { go('s-welcome'); }
+}
+
+function openHistory() { showTab('history'); }
+function closeHistory() { showTab('prep'); }
+
+function clearPrepHistory() {
+  if (!confirm('Clear preparation history from this device?\n\nThis only removes local data. Full history can be restored once the database is connected.')) return;
+  try { localStorage.removeItem('TORI_PREP_LOG'); } catch(e) {}
+  renderHistoryList();
+  showToast('Preparation history cleared');
+}
+
+function renderHistoryList() {
+  const logs = loadLocalPrepLogs();
+  const el = document.getElementById('hist-list');
+  if (!el) return;
+  if (!logs.length) {
+    el.innerHTML = `<div class="hist-empty">No submissions yet.<br>Complete a prep session and confirm to save it here.</div>`;
+    return;
+  }
+  const rows = [...logs].reverse().map((log, i) => {
+    const realIdx = logs.length - 1 - i;
+    const done    = (log.items || []).length;
+    const dateStr = (() => { try { return new Date(log.prep_date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); } catch(e){ return log.prep_date||'—'; } })();
+    const timeStr = log.submitted_at ? new Date(log.submitted_at).toTimeString().slice(0,5) : '—';
+    return `<tr onclick="openDetail(${realIdx})">
+      <td style="font-weight:900;color:var(--ink);">${dateStr}</td>
+      <td style="color:var(--ink4);">${log.day_label || '—'}</td>
+      <td style="color:var(--ink4);">${log.chef_name || '—'}</td>
+      <td style="color:var(--ink4);">${timeStr}</td>
+      <td style="color:var(--ink4);text-align:right;">${done}</td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `<table class="hist-table">
+    <thead><tr>
+      <th>Date</th><th>Day</th><th>Chef</th><th>Submitted</th><th style="text-align:right;">Items</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function loadLocalPrepLogs() {
+  try {
+    return JSON.parse(localStorage.getItem('TORI_PREP_LOG') || '[]');
+  } catch(e) { return []; }
+}
+
+function openDetail(idx) {
+  const logs = loadLocalPrepLogs();
+  const log = logs[idx];
+  if (!log) return;
+
+  const d = new Date(log.prep_date + 'T12:00:00');
+  const dateStr = d.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  const timeStr = log.submitted_at
+    ? new Date(log.submitted_at).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})
+    : '';
+
+  document.getElementById('detail-title').textContent = log.day_label + ' · ' + (log.prep_date || '');
+  document.getElementById('detail-sub').textContent =
+    log.chef_name + ' · ' + dateStr + (timeStr ? ' at ' + timeStr : '');
+
+  const items = log.items || [];
+  if (!items.length) {
+    document.getElementById('detail-body').innerHTML =
+      '<div class="hist-empty">No items recorded in this session.</div>';
+  } else {
+    const cats = { sauces:[], foods:[], vegetables:[], other:[] };
+    const CAT_LABELS = { sauces:'Sauces', foods:'Foods', vegetables:'Vegetables', other:'Other' };
+    items.forEach(item => {
+      const cat = item.cat || 'other';
+      (cats[cat] || cats.other).push(item);
+    });
+    let html = '';
+    Object.entries(cats).forEach(([cat, catItems]) => {
+      if (!catItems.length) return;
+      html += `<div class="detail-cat">${CAT_LABELS[cat]}</div>`;
+      catItems.forEach(item => {
+        html += `<div class="detail-item">
+          <span class="detail-item-name">${item.name}</span>
+          <span class="detail-item-qty">${item.qty ? item.qty + ' ' + (item.unit || '') : '—'}</span>
+        </div>`;
+      });
+    });
+    document.getElementById('detail-body').innerHTML = html;
+  }
+
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail-modal').classList.remove('open');
+}
+
+// Close detail modal on backdrop click
+document.getElementById('detail-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeDetail();
+});
+</script>
+</body>
+</html>
