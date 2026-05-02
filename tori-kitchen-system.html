@@ -1841,7 +1841,9 @@ function fmtDT(iso) {
   return d.toISOString().slice(0,10) + ' ' + d.toTimeString().slice(0,5);
 }
 
-// Demo data removed for production
+// ── BOOT ──
+fetchAll(false);
+setInterval(() => fetchAll(true), 15000);
 
 
 </script>
