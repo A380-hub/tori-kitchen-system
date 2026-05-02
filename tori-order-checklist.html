@@ -1872,7 +1872,7 @@ async function pollApiStatus() {
     });
     updateWelcomeStatusBadge();
     updateDeliveryTabDots();
-    refreshAllDeliveryViews();
+    // Don't call refreshAllDeliveryViews here — re-rendering every 3s swallows button clicks
   } catch(e) {}
 }
 if (API_BASE) { pollApiStatus(); setInterval(pollApiStatus, 3000); }
@@ -2068,7 +2068,8 @@ function confirmAcceptDelivery() {
     updateWelcomeStatusBadge();
     updateDeliveryTabDots();
     refreshAllDeliveryViews();
-    setTimeout(() => { go('s-welcome'); }, 1200);
+    // Switch to Order tab so user sees a clean state
+    setTimeout(() => { switchTab('home'); }, 1200);
     return;
   }
 
