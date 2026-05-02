@@ -112,7 +112,7 @@ async def get_active_orders():
             "ts": to_ms(row.get("created_at")),
             "status": row["status"],
         }
-    history_rows = await sb_get("orders", "status=in.(dispatched,delivered)&order=created_at.desc&limit=50&select=*")
+    history_rows = await sb_get("orders", "status=in.(dispatched,delivered,accepted)&order=created_at.desc&limit=50&select=*")
     history = []
     for row in history_rows:
         history.append({
