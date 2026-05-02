@@ -32,7 +32,7 @@
   --body:      'Barlow', sans-serif;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+*, *::before, *::after { touch-action: manipulation; box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 html, body {
   height: 100%;
@@ -609,7 +609,7 @@ body {
 
   <div class="nav-right">
     <button onclick="fetchAll(false)" style="background:var(--panel3);border:1px solid var(--line2);color:var(--ink3);font-family:var(--font);font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;" title="Sync now">↻ Sync</button>
-    <button onclick="document.getElementById('kitchen-settings-modal').classList.add('open')" style="background:var(--panel3);border:1px solid var(--line2);color:var(--ink3);font-size:18px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Settings">⚙</button>
+    <button onclick="document.getElementById('kitchen-settings-modal').style.display='flex'" style="background:var(--panel3);border:1px solid var(--line2);color:var(--ink3);font-size:18px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Settings">⚙</button>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
       <div class="clock" id="clock">00:00:00</div>
       <div id="kitchen-date" style="font-family:var(--body);font-size:11px;font-weight:400;color:var(--ink4);letter-spacing:0.04em;"></div>
@@ -1853,6 +1853,44 @@ function fmtDT(iso) {
 fetchAll(false);
 setInterval(() => fetchAll(true), 3000);
 
+// ── KITCHEN ADMIN MODE ──
+function toggleKitchenAdmin() {
+  const on = document.getElementById('kitchen-admin-toggle').checked;
+  document.getElementById('kitchen-admin-panel').style.display = on ? 'flex' : 'none';
+}
+
+async function importKitchenHistory() {
+  if (!API_BASE) { showToast('Only available in API mode'); return; }
+  try {
+    showToast('Importing history...');
+    const res = await fetch(API_BASE + '/api/orders/active', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    state.history = (data.history || []).map(h => ({
+      id: h.id, restaurant: h.restaurant, staffName: h.staff_name,
+      orderDate: h.order_date, items: h.items, status: h.status,
+      ts: new Date(h.created_at).getTime(),
+      dispatchedAt: h.dispatched_at, dispatchedBy: h.dispatched_by,
+      deliveredAt: h.delivered_at, deliveredBy: h.delivered_by,
+      missingItems: h.missing_items || {}, notDispatched: h.not_dispatched || {}
+    }));
+    renderHistory();
+    showToast('History imported — ' + state.history.length + ' entries');
+    document.getElementById('kitchen-settings-modal').style.display = 'none';
+  } catch(e) {
+    showToast('Import failed: ' + e.message);
+  }
+}
+
+function clearKitchenHistory() {
+  if (!confirm('Clear all delivery history?')) return;
+  state.history = [];
+  try { localStorage.removeItem('TORI_HISTORY'); } catch(e) {}
+  renderHistory();
+  showToast('History cleared');
+  document.getElementById('kitchen-settings-modal').style.display = 'none';
+}
+
 
 </script>
 <!-- KITCHEN HISTORY DETAIL SHEET -->
@@ -1928,7 +1966,7 @@ setInterval(() => fetchAll(true), 3000);
 <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:24px;width:90%;max-width:400px;">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
     <div style="font-size:20px;font-weight:900;text-transform:uppercase;">Settings</div>
-    <button onclick="document.getElementById('kitchen-settings-modal').classList.remove('open')" style="background:transparent;border:1px solid var(--line2);color:var(--ink4);font-size:18px;width:36px;height:36px;cursor:pointer;">✕</button>
+    <button onclick="document.getElementById('kitchen-settings-modal').style.display='none'" style="background:transparent;border:1px solid var(--line2);color:var(--ink4);font-size:18px;width:36px;height:36px;cursor:pointer;">✕</button>
   </div>
   <div style="font-size:11px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);margin-bottom:10px;">Admin</div>
   <label style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line2);cursor:pointer;user-select:none;">

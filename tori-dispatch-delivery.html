@@ -31,7 +31,7 @@
   --body:   'Barlow', sans-serif;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+*, *::before, *::after { touch-action: manipulation; box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--font); }
 
 body { display: flex; flex-direction: column; }
@@ -528,7 +528,7 @@ body { display: flex; flex-direction: column; }
       <span class="tab-badge live" id="badge-pack" style="display:none;">0</span>
     </button>
     <button class="tab" data-screen="s-log">
-      Delivery Log
+      History
       <span class="tab-badge green" id="badge-log" style="display:none;">0</span>
     </button>
   </div>
@@ -538,7 +538,7 @@ body { display: flex; flex-direction: column; }
       <div class="clock" id="clock">00:00:00</div>
       <div id="topbar-date" style="font-family:var(--body);font-size:11px;font-weight:400;color:var(--ink4);letter-spacing:0.04em;"></div>
     </div>
-    <button onclick="document.getElementById('dispatch-settings-modal').classList.add('open')" style="background:transparent;border:1px solid var(--line2);color:var(--ink4);font-size:18px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Settings">⚙</button>
+    <button onclick="document.getElementById('dispatch-settings-modal').style.display='flex'" style="background:transparent;border:1px solid var(--line2);color:var(--ink4);font-size:18px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Settings">⚙</button>
     <button class="close-btn" onclick="window.close()">✕ Close</button>
   </div>
 </header>
@@ -569,7 +569,7 @@ body { display: flex; flex-direction: column; }
 <div class="screen log-screen" id="s-log">
   <div class="log-header">
     <div>
-      <div class="log-title">Delivery Log</div>
+      <div class="log-title">Delivery History</div>
       <div class="log-sub">Full audit trail — order to delivery</div>
     </div>
     <div class="log-count">
@@ -984,6 +984,7 @@ function confirmDelivery() {
   const deliveredBy = dispatchBatch.driverName || '—';
 
   const order     = dispatchBatch[k];
+  if (!order) { showToast('No order data found'); closeDModal(); return; }
   const rName     = k === 'r1' ? 'Restaurant 1 — Špansko' : 'Restaurant 2 — Trnje';
   const now       = new Date().toISOString();
 
@@ -1306,7 +1307,7 @@ init();
 <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:24px;width:90%;max-width:400px;">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
     <div style="font-size:20px;font-weight:900;text-transform:uppercase;color:var(--ink);">Settings</div>
-    <button onclick="document.getElementById('dispatch-settings-modal').classList.remove('open')" style="background:transparent;border:1px solid var(--line2);color:var(--ink4);font-size:18px;width:36px;height:36px;cursor:pointer;">✕</button>
+    <button onclick="document.getElementById('dispatch-settings-modal').style.display='none'" style="background:transparent;border:1px solid var(--line2);color:var(--ink4);font-size:18px;width:36px;height:36px;cursor:pointer;">✕</button>
   </div>
   <div style="font-size:11px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);margin-bottom:10px;">Admin</div>
   <label style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line2);cursor:pointer;user-select:none;">
@@ -1318,13 +1319,59 @@ init();
   </label>
   <div id="dispatch-admin-panel" style="display:none;margin-top:12px;flex-direction:column;gap:8px;">
     <button onclick="importDispatchHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--ink);font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Import History from Database</button>
-    <button onclick="clearDispatchHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:#DE0000;font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Clear Delivery Log</button>
+    <button onclick="clearDispatchHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:#DE0000;font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Clear Delivery History</button>
   </div>
 </div>
 </div>
 <style>
 #dispatch-settings-modal.open { display:flex; }
 </style>
+
+<script>
+// ── DISPATCH ADMIN MODE ──
+function toggleDispatchAdmin() {
+  const on = document.getElementById('dispatch-admin-toggle').checked;
+  document.getElementById('dispatch-admin-panel').style.display = on ? 'flex' : 'none';
+}
+
+async function importDispatchHistory() {
+  if (!API_BASE) { showToast('Only available in API mode'); return; }
+  try {
+    showToast('Importing history...');
+    const res = await fetch(API_BASE + '/api/orders/active', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    deliveryLog = (data.history || []).filter(h => h.status === 'delivered' || h.status === 'accepted').map(h => ({
+      restaurant: h.restaurant,
+      restaurantName: h.restaurant === 'r1' ? 'Restaurant 1 — Špansko' : 'Restaurant 2 — Trnje',
+      orderedBy: h.staff_name || '',
+      orderedAt: h.created_at,
+      orderDate: h.order_date,
+      dispatchedBy: h.dispatched_by || '',
+      dispatchedAt: h.dispatched_at,
+      deliveredBy: h.delivered_by || '',
+      deliveredAt: h.delivered_at,
+      items: h.items || {},
+      status: h.status
+    }));
+    saveLog();
+    renderLog();
+    showToast('History imported — ' + deliveryLog.length + ' entries');
+    document.getElementById('dispatch-settings-modal').style.display = 'none';
+  } catch(e) {
+    showToast('Import failed: ' + e.message);
+  }
+}
+
+function clearDispatchHistory() {
+  if (!confirm('Clear all delivery log entries?')) return;
+  deliveryLog = [];
+  saveLog();
+  renderLog();
+  showToast('Delivery log cleared');
+  document.getElementById('dispatch-settings-modal').style.display = 'none';
+}
+</script>
 
 </body>
 </html>
