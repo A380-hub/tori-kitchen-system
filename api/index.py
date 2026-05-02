@@ -165,6 +165,20 @@ async def confirm_delivery(request: Request):
     return {"ok": True, "updated": len(result) if isinstance(result, list) else 0}
 
 
+@app.post("/api/orders/accepted")
+async def accept_delivery(request: Request):
+    """Restaurant confirms they received the delivery — marks order as accepted."""
+    body = await request.json()
+    restaurant = body.get("restaurant")
+    accepted_by = body.get("accepted_by", "")
+    if restaurant not in ("r1", "r2"):
+        raise HTTPException(400, "restaurant must be r1 or r2")
+    result = await sb_patch("orders", f"restaurant=eq.{restaurant}&status=eq.delivered", {
+        "status": "accepted",
+    })
+    return {"ok": True, "updated": len(result) if isinstance(result, list) else 0}
+
+
 @app.post("/api/prep/submit")
 async def submit_prep(request: Request):
     body = await request.json()
