@@ -1,23 +1,14 @@
 """
 TORI Kitchen Information System (KIS) — Backend API
-Vercel Serverless (FastAPI)
-
-Endpoints:
-  POST /api/orders/submit     — Restaurant staff submits new order
-  POST /api/orders/amend      — Restaurant staff amends existing order
-  GET  /api/orders/active     — Kitchen board fetches active orders
-  POST /api/orders/dispatch   — Kitchen dispatches order(s)
-  POST /api/orders/delivered  — Driver confirms delivery
-  POST /api/prep/submit       — Kitchen submits prep checklist
+Vercel Serverless (FastAPI) — Lightweight version
+Uses Supabase REST API directly via httpx (no heavy SDK)
 """
 
 import os
-import json
 from datetime import datetime, timezone
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from supabase import create_client, Client
+import httpx
 
 app = FastAPI(title="TORI KIS")
 
@@ -28,34 +19,55 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Supabase client ──
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+REST_URL = f"{SUPABASE_URL}/rest/v1"
+
+HEADERS = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": f"Bearer {SUPABASE_KEY}",
+    "Content-Type": "application/json",
+    "Prefer": "return=representation",
+}
 
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
 
 
-# ═══════════════════════════════════════
-# POST /api/orders/submit
-# ═══════════════════════════════════════
+async def sb_get(table, params=""):
+    async with httpx.AsyncClient() as client:
+        r = await client.get(f"{REST_URL}/{table}?{params}", headers=HEADERS)
+        r.raise_for_status()
+        return r.json()
+
+
+async def sb_post(table, data):
+    async with httpx.AsyncClient() as client:
+        r = await client.post(f"{REST_URL}/{table}", headers=HEADERS, json=data)
+        r.raise_for_status()
+        return r.json()
+
+
+async def sb_patch(table, params, data):
+    async with httpx.AsyncClient() as client:
+        r = await client.patch(f"{REST_URL}/{table}?{params}", headers=HEADERS, json=data)
+        r.raise_for_status()
+        return r.json()
+
+
+@app.get("/")
+async def root():
+    return {"service": "TORI KIS", "status": "online"}
+
+
 @app.post("/api/orders/submit")
 async def submit_order(request: Request):
     body = await request.json()
-    restaurant = body.get("restaurant")  # "r1" or "r2"
+    restaurant = body.get("restaurant")
     if restaurant not in ("r1", "r2"):
         raise HTTPException(400, "restaurant must be r1 or r2")
-
-    # Supersede any existing active order for this restaurant
-    supabase.table("orders") \
-        .update({"status": "superseded"}) \
-        .eq("restaurant", restaurant) \
-        .eq("status", "active") \
-        .execute()
-
-    # Insert new order
+    await sb_patch("orders", f"restaurant=eq.{restaurant}&status=eq.active", {"status": "superseded"})
     row = {
         "restaurant": restaurant,
         "staff_name": body.get("staff_name", ""),
@@ -63,28 +75,17 @@ async def submit_order(request: Request):
         "items": body.get("items", {}),
         "status": "active",
     }
-    result = supabase.table("orders").insert(row).execute()
-    return {"ok": True, "id": result.data[0]["id"] if result.data else None}
+    result = await sb_post("orders", row)
+    return {"ok": True, "id": result[0]["id"] if result else None}
 
 
-# ═══════════════════════════════════════
-# POST /api/orders/amend
-# ═══════════════════════════════════════
 @app.post("/api/orders/amend")
 async def amend_order(request: Request):
     body = await request.json()
     restaurant = body.get("restaurant")
     if restaurant not in ("r1", "r2"):
         raise HTTPException(400, "restaurant must be r1 or r2")
-
-    # Supersede old active order
-    supabase.table("orders") \
-        .update({"status": "superseded"}) \
-        .eq("restaurant", restaurant) \
-        .eq("status", "active") \
-        .execute()
-
-    # Insert amended order (same logic as submit, but flagged)
+    await sb_patch("orders", f"restaurant=eq.{restaurant}&status=eq.active", {"status": "superseded"})
     row = {
         "restaurant": restaurant,
         "staff_name": body.get("staff_name", ""),
@@ -92,22 +93,15 @@ async def amend_order(request: Request):
         "items": body.get("items", {}),
         "status": "active",
     }
-    result = supabase.table("orders").insert(row).execute()
-    return {"ok": True, "id": result.data[0]["id"] if result.data else None}
+    result = await sb_post("orders", row)
+    return {"ok": True, "id": result[0]["id"] if result else None}
 
 
-# ═══════════════════════════════════════
-# GET /api/orders/active
-# ═══════════════════════════════════════
 @app.get("/api/orders/active")
 async def get_active_orders():
-    result = supabase.table("orders") \
-        .select("*") \
-        .eq("status", "active") \
-        .execute()
-
+    active = await sb_get("orders", "status=eq.active&select=*")
     pending = {"r1": None, "r2": None}
-    for row in (result.data or []):
+    for row in active:
         rk = row["restaurant"]
         pending[rk] = {
             "id": row["id"],
@@ -118,17 +112,9 @@ async def get_active_orders():
             "ts": to_ms(row.get("created_at")),
             "status": row["status"],
         }
-
-    # Also fetch recent history (last 50 dispatched/delivered)
-    hist_result = supabase.table("orders") \
-        .select("*") \
-        .in_("status", ["dispatched", "delivered"]) \
-        .order("created_at", desc=True) \
-        .limit(50) \
-        .execute()
-
+    history_rows = await sb_get("orders", "status=in.(dispatched,delivered)&order=created_at.desc&limit=50&select=*")
     history = []
-    for row in (hist_result.data or []):
+    for row in history_rows:
         history.append({
             "id": row["id"],
             "restaurant": row["restaurant"],
@@ -144,90 +130,47 @@ async def get_active_orders():
             "missing_items": row.get("missing_items", {}),
             "not_dispatched": row.get("not_dispatched", {}),
         })
-
     return {"r1": pending["r1"], "r2": pending["r2"], "history": history}
 
 
-# ═══════════════════════════════════════
-# POST /api/orders/dispatch
-# ═══════════════════════════════════════
 @app.post("/api/orders/dispatch")
 async def dispatch_orders(request: Request):
     body = await request.json()
-    target = body.get("restaurant", "all")  # "r1", "r2", or "all"
+    target = body.get("restaurant", "all")
     dispatched_by = body.get("dispatched_by", "")
-    missing_items = body.get("missing_items", {})
-    not_dispatched = body.get("not_dispatched", {})
-
     targets = ["r1", "r2"] if target == "all" else [target]
     updated = 0
-
     for rk in targets:
-        update_data = {
-            "status": "dispatched",
-            "dispatched_at": now_iso(),
-            "dispatched_by": dispatched_by,
-        }
-        if missing_items:
-            update_data["missing_items"] = missing_items
-        if not_dispatched:
-            update_data["not_dispatched"] = not_dispatched
-
-        result = supabase.table("orders") \
-            .update(update_data) \
-            .eq("restaurant", rk) \
-            .eq("status", "active") \
-            .execute()
-        updated += len(result.data or [])
-
+        update_data = {"status": "dispatched", "dispatched_at": now_iso(), "dispatched_by": dispatched_by}
+        if body.get("missing_items"):
+            update_data["missing_items"] = body["missing_items"]
+        if body.get("not_dispatched"):
+            update_data["not_dispatched"] = body["not_dispatched"]
+        result = await sb_patch("orders", f"restaurant=eq.{rk}&status=eq.active", update_data)
+        updated += len(result) if isinstance(result, list) else 0
     return {"ok": True, "dispatched": updated}
 
 
-# ═══════════════════════════════════════
-# POST /api/orders/delivered
-# ═══════════════════════════════════════
 @app.post("/api/orders/delivered")
 async def confirm_delivery(request: Request):
     body = await request.json()
     restaurant = body.get("restaurant")
-    delivered_by = body.get("delivered_by", "")
-    delivered_at = body.get("delivered_at", now_iso())
-
     if restaurant not in ("r1", "r2"):
         raise HTTPException(400, "restaurant must be r1 or r2")
-
-    result = supabase.table("orders") \
-        .update({
-            "status": "delivered",
-            "delivered_at": delivered_at,
-            "delivered_by": delivered_by,
-        }) \
-        .eq("restaurant", restaurant) \
-        .eq("status", "dispatched") \
-        .execute()
-
-    return {"ok": True, "updated": len(result.data or [])}
+    result = await sb_patch("orders", f"restaurant=eq.{restaurant}&status=eq.dispatched", {
+        "status": "delivered",
+        "delivered_at": body.get("delivered_at", now_iso()),
+        "delivered_by": body.get("delivered_by", ""),
+    })
+    return {"ok": True, "updated": len(result) if isinstance(result, list) else 0}
 
 
-# ═══════════════════════════════════════
-# POST /api/prep/submit
-# ═══════════════════════════════════════
 @app.post("/api/prep/submit")
 async def submit_prep(request: Request):
     body = await request.json()
-    # For now, log prep data. Can be expanded to a prep_logs table later.
     return {"ok": True, "received": True}
 
 
-# ═══════════════════════════════════════
-# GET / — health check
-# ═══════════════════════════════════════
-@app.get("/")
-async def root():
-    return {"service": "TORI KIS", "status": "online"}
-
-
-# ── Helper ──
 def to_ms(iso_str):
     if not iso_str:
         return 0
