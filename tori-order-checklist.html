@@ -1782,27 +1782,26 @@ function saveSettings() {
 function getMyDeliveryStatus() {
   if (!selectedLocation) return null;
   const rk = selectedLocation;
+
+  // ── API MODE: use cached API status ──
+  if (API_BASE && _apiOrderStatus && _apiOrderStatus[rk]) {
+    return _apiOrderStatus[rk];
+  }
+
+  // ── FALLBACK: localStorage ──
   try {
-    // Primary: TORI_STATUS (written by kitchen on dispatch, updated by driver on delivery)
     const raw = localStorage.getItem('TORI_STATUS');
     if (raw) {
       const data = JSON.parse(raw);
       if (data[rk]) return data[rk];
     }
-    // Fallback: TORI_DISPATCH (written by kitchen) — means status is 'in_delivery'
     const disp = localStorage.getItem('TORI_DISPATCH');
     if (disp) {
       const d = JSON.parse(disp);
       if (d[rk] && d[rk].id) {
-        return {
-          status: 'in_delivery',
-          order: d[rk],
-          dispatchedAt: d.dispatchedAt,
-          dispatchedBy: d.dispatchedBy
-        };
+        return { status: 'in_delivery', order: d[rk], dispatchedAt: d.dispatchedAt, dispatchedBy: d.dispatchedBy };
       }
     }
-    // Also check TORI_ORDERS — order submitted but not yet dispatched = 'preparing'
     const orders = localStorage.getItem('TORI_ORDERS');
     if (orders) {
       const o = JSON.parse(orders);
@@ -1813,6 +1812,35 @@ function getMyDeliveryStatus() {
     return null;
   } catch(e){ return null; }
 }
+
+// ── API STATUS POLLING ──
+let _apiOrderStatus = {};
+async function pollApiStatus() {
+  if (!API_BASE) return;
+  try {
+    const res = await fetch(API_BASE + '/api/orders/active', { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = await res.json();
+    _apiOrderStatus = {};
+    ['r1','r2'].forEach(rk => {
+      if (data[rk]) {
+        _apiOrderStatus[rk] = { status: 'preparing', order: data[rk] };
+      }
+    });
+    // Check history for dispatched (in_delivery) orders
+    (data.history || []).forEach(h => {
+      if (h.status === 'dispatched') {
+        _apiOrderStatus[h.restaurant] = {
+          status: 'in_delivery', order: h,
+          dispatchedAt: h.dispatched_at, dispatchedBy: h.dispatched_by
+        };
+      }
+    });
+    updateWelcomeStatusBadge();
+    updateDeliveryTabDots();
+  } catch(e) {}
+}
+if (API_BASE) { pollApiStatus(); setInterval(pollApiStatus, 10000); }
 
 function updateWelcomeStatusBadge() {
   const st = getMyDeliveryStatus();
