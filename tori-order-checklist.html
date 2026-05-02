@@ -470,7 +470,7 @@ body {
 .anm-input { width: 100%; background: var(--panel2); border: 1px solid var(--line2); border-left: 3px solid var(--green2); color: var(--ink); font-family: var(--font); font-size: 20px; font-weight: 700; padding: 13px 15px; border-radius: 0; -webkit-appearance: none; margin-bottom: 4px; }
 .anm-input:focus { outline: none; border-left-color: var(--green); }
 .anm-input::placeholder { color: var(--ink4); font-weight: 600; }
-.anm-ok { background: var(--green2); border: none; color: var(--ink); font-family: var(--font); font-size: 15px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; touch-action: manipulation; }
+.anm-ok { background: #388E3C; border: none; color: #fff; font-family: var(--font); font-size: 15px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; touch-action: manipulation; border-radius: 6px; }
 .anm-ok:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
 .anm-cancel { background: transparent; border: 1px solid var(--line2); color: var(--ink3); font-family: var(--font); font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; touch-action: manipulation; }
 
@@ -1785,12 +1785,15 @@ function getMyDeliveryStatus() {
   if (!selectedLocation) return null;
   const rk = selectedLocation;
 
-  // ── API MODE: use cached API status ──
-  if (API_BASE && _apiOrderStatus && _apiOrderStatus[rk]) {
-    return _apiOrderStatus[rk];
+  // ── API MODE: use cached API status ONLY — never fall through to localStorage ──
+  if (API_BASE) {
+    if (_apiOrderStatus && _apiOrderStatus[rk]) {
+      return _apiOrderStatus[rk];
+    }
+    return null; // no active status from API = no delivery in progress
   }
 
-  // ── FALLBACK: localStorage ──
+  // ── FALLBACK: localStorage (local testing only) ──
   try {
     const raw = localStorage.getItem('TORI_STATUS');
     if (raw) {
