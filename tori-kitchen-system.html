@@ -933,6 +933,7 @@ const orderItemMeta = {};
 ORDER_CATS.forEach(c => c.items.forEach(i => { orderItemMeta[i.id] = { ...i, catId:c.id, catLabel:c.label }; }));
 
 // ── STATE ──
+let _historyCleared = false;
 let state = {
   // Preparation list (from tori-preparation-checklist)
   prep: null,           // { id, staff_name, role, prep_date, items:{id:qty}, ts }
@@ -969,7 +970,7 @@ async function fetchAll(quiet = true) {
       });
 
       state.pending     = newPending;
-      state.history     = data.history || [];
+      if (!_historyCleared) state.history = data.history || [];
       state.apiOnline   = true;
       state.lastRefresh = Date.now();
       renderAll();
@@ -1026,7 +1027,7 @@ async function fetchAll(quiet = true) {
     const histChanged = newHist.length !== state.history.length;
 
     state.pending     = newPending;
-    state.history     = newHist;
+    if (!_historyCleared) state.history = newHist;
     state.apiOnline   = true;
     state.lastRefresh = Date.now();
 
@@ -1862,6 +1863,7 @@ function toggleKitchenAdmin() {
 
 async function importKitchenHistory() {
   if (!API_BASE) { showToast('Only available in API mode'); return; }
+  _historyCleared = false;
   try {
     showToast('Importing history...');
     const res = await fetch(API_BASE + '/api/orders/active', { cache: 'no-store' });
@@ -1884,11 +1886,12 @@ async function importKitchenHistory() {
 }
 
 function clearKitchenHistory() {
-  if (!confirm('Clear all delivery history?')) return;
+  if (!confirm('Clear all delivery history from view?')) return;
+  _historyCleared = true;
   state.history = [];
   try { localStorage.removeItem('TORI_HISTORY'); } catch(e) {}
   renderHistory();
-  showToast('History cleared');
+  showToast('History cleared — use Import to restore');
   document.getElementById('kitchen-settings-modal').style.display = 'none';
 }
 

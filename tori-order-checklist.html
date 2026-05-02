@@ -1866,6 +1866,7 @@ function setAcceptedId(rk, id) {
   try { localStorage.setItem('TORI_ACCEPTED_IDS', JSON.stringify(acc)); } catch(e) {}
 }
 
+let _historyCleared = false;
 let _lastApiData = null;
 
 async function pollApiStatus() {
@@ -2529,7 +2530,7 @@ function renderDeliveryHistory() {
   let log = [];
 
   // ── API MODE: fetch history from API response ──
-  if (API_BASE && _lastApiData && _lastApiData.history) {
+  if (API_BASE && !_historyCleared && _lastApiData && _lastApiData.history) {
     const rk = selectedLocation;
     _lastApiData.history.forEach(h => {
       if (h.restaurant !== rk) return;
@@ -2769,6 +2770,7 @@ function toggleAdminMode() {
 
 async function importHistoryFromDB() {
   if (!API_BASE) { showToast('Only available in API mode'); return; }
+  _historyCleared = false;
   try {
     showToast('Importing history...');
     const res = await fetch(API_BASE + '/api/orders/active', { cache: 'no-store' });
@@ -2783,12 +2785,13 @@ async function importHistoryFromDB() {
 }
 
 function clearOrderHistory() {
-  if (!confirm('Clear all local delivery history?')) return;
+  if (!confirm('Clear all delivery history from view?')) return;
+  _historyCleared = true;
   try { localStorage.removeItem('TORI_RESTAURANT_LOG'); } catch(e) {}
   try { localStorage.removeItem('tori_delivery_log'); } catch(e) {}
   _lastApiData = null;
   renderDeliveryHistory();
-  showToast('History cleared');
+  showToast('History cleared — use Import to restore');
 }
 
 </script>
