@@ -2659,15 +2659,12 @@ function updateDeliveryTabDots() {
 }
 
 function updateStatusStepHighlight(st) {
-  // Re-render delivery views to pick up new status — lightweight
   const delivTab = document.getElementById('tab-delivery-content');
   const dashDTab = document.getElementById('dtab-delivery-content');
   const homeBody = document.getElementById('home-pending-body');
   const dashBody = document.getElementById('dash-pending-body');
-  const homeFooter = null;
-  const dashFooter = null;
-  if (homeBody && delivTab && delivTab.style.display !== 'none') renderDeliveryStatusInto(homeBody, homeFooter);
-  if (dashBody && dashDTab && dashDTab.style.display !== 'none') renderDeliveryStatusInto(dashBody, dashFooter);
+  if (homeBody && delivTab && delivTab.style.display !== 'none') renderDeliveryStatusIntoFull(homeBody, null);
+  if (dashBody && dashDTab && dashDTab.style.display !== 'none') renderDeliveryStatusIntoFull(dashBody, null);
 }
 
 </script>
