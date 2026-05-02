@@ -451,10 +451,11 @@ body {
 }
 .accept-all-btn {
   display: block; width: 100%;
-  background: var(--green2) !important; border: none; color: var(--ink) !important;
+  background: var(--green2); border: none; color: var(--ink);
   font-family: var(--font); font-size: 17px; font-weight: 900; letter-spacing: 0.12em;
   text-transform: uppercase; padding: 16px; cursor: pointer;
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  border-radius: 6px;
 }
 .accept-all-btn:disabled { background: var(--panel3) !important; color: var(--ink4) !important; cursor: not-allowed; }
 .accepted-notice { text-align:center; padding:14px; font-size:14px; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--green); border:1px solid rgba(76,175,80,0.35); background:rgba(76,175,80,0.08); }
@@ -1816,34 +1817,50 @@ function getMyDeliveryStatus() {
 
 // ── API STATUS POLLING ──
 let _apiOrderStatus = {};
-let _apiAccepted = {}; // tracks order IDs accepted locally so they don't re-appear
+
+// Persist accepted order IDs in localStorage so they survive page refresh
+function getAcceptedIds() {
+  try { return JSON.parse(localStorage.getItem('TORI_ACCEPTED_IDS') || '{}'); } catch(e) { return {}; }
+}
+function setAcceptedId(rk, id) {
+  const acc = getAcceptedIds();
+  acc[rk] = id;
+  try { localStorage.setItem('TORI_ACCEPTED_IDS', JSON.stringify(acc)); } catch(e) {}
+}
+
 async function pollApiStatus() {
   if (!API_BASE) return;
   try {
     const res = await fetch(API_BASE + '/api/orders/active', { cache: 'no-store' });
     if (!res.ok) return;
     const data = await res.json();
+    const accepted = getAcceptedIds();
     _apiOrderStatus = {};
+
+    // Active orders = preparing
     ['r1','r2'].forEach(rk => {
       if (data[rk]) {
         _apiOrderStatus[rk] = { status: 'preparing', order: data[rk] };
+        // New active order means old acceptance is stale — clear it
+        if (accepted[rk] && accepted[rk] !== data[rk].id) {
+          delete accepted[rk];
+          try { localStorage.setItem('TORI_ACCEPTED_IDS', JSON.stringify(accepted)); } catch(e) {}
+        }
       }
     });
-    // Check history for dispatched (in_delivery) and delivered orders
-    // Only show status for recent orders (last 30 min) not yet accepted locally
-    const thirtyMinAgo = Date.now() - 30 * 60 * 1000;
+
+    // History — only show dispatched/delivered if not already accepted
     (data.history || []).forEach(h => {
       const rk = h.restaurant;
-      if (_apiAccepted[rk] === h.id) return; // already accepted locally
-      const ts = h.dispatched_at ? new Date(h.dispatched_at).getTime() : 0;
-      if (ts < thirtyMinAgo) return; // too old
-      if (h.status === 'dispatched' && !_apiOrderStatus[rk]) {
+      if (_apiOrderStatus[rk]) return; // active order takes priority
+      if (accepted[rk] === h.id) return; // already accepted by this device
+      if (h.status === 'dispatched') {
         _apiOrderStatus[rk] = {
           status: 'in_delivery', order: h,
           dispatchedAt: h.dispatched_at, dispatchedBy: h.dispatched_by
         };
       }
-      if (h.status === 'delivered' && !_apiOrderStatus[rk]) {
+      if (h.status === 'delivered') {
         _apiOrderStatus[rk] = {
           status: 'delivered', order: h,
           dispatchedAt: h.dispatched_at, dispatchedBy: h.dispatched_by,
@@ -1855,6 +1872,7 @@ async function pollApiStatus() {
     });
     updateWelcomeStatusBadge();
     updateDeliveryTabDots();
+    refreshAllDeliveryViews();
   } catch(e) {}
 }
 if (API_BASE) { pollApiStatus(); setInterval(pollApiStatus, 3000); }
@@ -2040,10 +2058,10 @@ function confirmAcceptDelivery() {
 
   // ── API MODE ──
   if (API_BASE) {
-    // Remember the order ID so polling doesn't bring it back
+    // Persist the accepted order ID so polling never brings it back (survives refresh)
     const currentStatus = _apiOrderStatus[rk];
     if (currentStatus && currentStatus.order && currentStatus.order.id) {
-      _apiAccepted[rk] = currentStatus.order.id;
+      setAcceptedId(rk, currentStatus.order.id);
     }
     delete _apiOrderStatus[rk];
     showToast('Delivery accepted by ' + name);
