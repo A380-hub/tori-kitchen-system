@@ -1278,7 +1278,7 @@ async function doSend() {
           payload.items.map(it => [it.task_id, it.qty])
         ),
       };
-      localStorage.setItem('TORI_PREP', JSON.stringify(kitchenPrep));
+      if (!API_BASE) localStorage.setItem('TORI_PREP', JSON.stringify(kitchenPrep));
     } catch(e) { console.warn('TORI_PREP write failed:', e); }
 
     if (API_BASE) {

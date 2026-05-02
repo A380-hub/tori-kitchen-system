@@ -2110,8 +2110,9 @@ function showToast(msg) {
    INIT
    ═══════════════════════════════════════ */
 // Clear all order/delivery data on open — fresh start every time
-['TORI_ORDERS','TORI_DISPATCH','TORI_DISPATCH_BACKUP','TORI_STATUS','TORI_HISTORY','tori_delivery_log'].forEach(k => {
-  try { localStorage.removeItem(k); } catch(e) {}
+if (!API_BASE) {
+  ['TORI_ORDERS','TORI_DISPATCH','TORI_DISPATCH_BACKUP','TORI_STATUS','TORI_HISTORY','tori_delivery_log'].forEach(k => {
+    try { localStorage.removeItem(k); } catch(e) {}
 });
 
 loadSettings();
@@ -2133,6 +2134,7 @@ function switchTab(which) {
   if (which === 'delivery') renderHomeDeliveryStatus();
   if (which === 'history')  renderDeliveryHistory();
   if (which === 'home')     updateAmendHomeBtn();
+  updateDeliveryTabDots(); // re-evaluate pulsing based on active tab
 }
 
 function switchDeliverySub(which) { /* no-op, sub-tabs removed */ }
@@ -2628,7 +2630,6 @@ function updateDeliveryTabDots() {
   const st = getMyDeliveryStatus();
   const status = st && st.status && st.status !== 'none' && st.status !== 'accepted' ? st.status : null;
 
-  // Remove all status classes first
   const tabClasses = ['tab-live','tab-preparing','tab-in_delivery','tab-delivered'];
   const tabs = [
     document.getElementById('tab-delivery'),
@@ -2637,7 +2638,10 @@ function updateDeliveryTabDots() {
   tabs.forEach(tab => {
     if (!tab) return;
     tabClasses.forEach(c => tab.classList.remove(c));
-    if (status) tab.classList.add('tab-' + status);
+    // Only pulse when Status tab is NOT active — avoid double-pulsing
+    if (status && !tab.classList.contains('active')) {
+      tab.classList.add('tab-' + status);
+    }
   });
 
   updateStatusStepHighlight(st);

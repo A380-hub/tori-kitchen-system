@@ -1577,6 +1577,7 @@ async function doDispatchFull() {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       await fetchAll(true);
     }
+    if (!API_BASE) {
     // ── FALLBACK: localStorage ──
     // DEMO: write dispatch to localStorage, mark orders as dispatched
     targets.forEach(k => {
@@ -1646,6 +1647,7 @@ async function doDispatchFull() {
       });
       localStorage.setItem('TORI_STATUS', JSON.stringify(existingStatus));
     } catch(e){}
+    } // end !API_BASE fallback
 
     showToast('Dispatched by ' + _dispatcherName + ' — opening delivery window…');
     setTimeout(() => {
