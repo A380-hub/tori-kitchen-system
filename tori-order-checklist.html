@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+(function(){
+  var V='2026.05.03.001';
+  var k='TORI_APP_VERSION_'+location.pathname.split('/').pop();
+  if(localStorage.getItem(k)!==V){localStorage.setItem(k,V);location.reload(true);}
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -1054,6 +1061,7 @@ body {
       </label>
       <div id="admin-panel" style="display:none;margin-top:12px;flex-direction:column;gap:8px;">
         <button onclick="importHistoryFromDB()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--ink);font-family:var(--font);font-size:14px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Import History from Database</button>
+        <button onclick="location.reload(true)" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--ink);font-family:var(--font);font-size:14px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Force Refresh Page</button>
         <button onclick="clearOrderHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--red);font-family:var(--font);font-size:14px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Clear Local History</button>
       </div>
     </div>
