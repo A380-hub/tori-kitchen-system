@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>TORI Kitchen Ordering</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -1849,12 +1852,15 @@ function setAcceptedId(rk, id) {
   try { localStorage.setItem('TORI_ACCEPTED_IDS', JSON.stringify(acc)); } catch(e) {}
 }
 
+let _lastApiData = null;
+
 async function pollApiStatus() {
   if (!API_BASE) return;
   try {
     const res = await fetch(API_BASE + '/api/orders/active', { cache: 'no-store' });
     if (!res.ok) return;
     const data = await res.json();
+    _lastApiData = data;
     const accepted = getAcceptedIds();
     _apiOrderStatus = {};
 
@@ -2512,29 +2518,55 @@ function renderDeliveryHistory() {
   const el = document.getElementById('history-tab-body');
   if (!el) return;
 
-  // Read from restaurant's own log (written on acceptance)
   let log = [];
-  try { log = lsGet('TORI_RESTAURANT_LOG', []); } catch(e){}
 
-  // Also check driver delivery log as fallback
-  if (!log.length) {
-    try {
-      const dlog = lsGet('tori_delivery_log', []);
-      const rk = selectedLocation;
-      log = dlog.filter(e => e.restaurant === rk).map(e => ({
-        id:           e.id,
-        restaurant:   e.restaurant,
-        orderedBy:    e.orderedBy || '—',
-        orderedAt:    e.orderedAt || null,
-        dispatchedBy: e.dispatchedBy || '—',
-        dispatchedAt: e.dispatchedAt || null,
-        acceptedBy:   e.deliveredBy || '—',
-        acceptedAt:   e.deliveredAt || null,
-        items:        e.items || {},
-        missingItems: {},
-        notDispatched: {}
-      }));
-    } catch(e){}
+  // ── API MODE: fetch history from API response ──
+  if (API_BASE && _lastApiData && _lastApiData.history) {
+    const rk = selectedLocation;
+    _lastApiData.history.forEach(h => {
+      if (h.restaurant !== rk) return;
+      if (h.status === 'dispatched' || h.status === 'delivered' || h.status === 'accepted') {
+        log.push({
+          id:           h.id,
+          restaurant:   h.restaurant,
+          orderedBy:    h.staff_name || '—',
+          orderedAt:    h.created_at || null,
+          orderDate:    h.order_date || '',
+          dispatchedBy: h.dispatched_by || '—',
+          dispatchedAt: h.dispatched_at || null,
+          acceptedBy:   h.delivered_by || '—',
+          acceptedAt:   h.delivered_at || null,
+          items:        h.items || {},
+          missingItems: h.missing_items || {},
+          notDispatched: h.not_dispatched || {},
+          status:       h.status,
+        });
+      }
+    });
+  }
+
+  // ── FALLBACK: localStorage ──
+  if (!API_BASE) {
+    try { log = lsGet('TORI_RESTAURANT_LOG', []); } catch(e){}
+    if (!log.length) {
+      try {
+        const dlog = lsGet('tori_delivery_log', []);
+        const rk = selectedLocation;
+        log = dlog.filter(e => e.restaurant === rk).map(e => ({
+          id:           e.id,
+          restaurant:   e.restaurant,
+          orderedBy:    e.orderedBy || '—',
+          orderedAt:    e.orderedAt || null,
+          dispatchedBy: e.dispatchedBy || '—',
+          dispatchedAt: e.dispatchedAt || null,
+          acceptedBy:   e.deliveredBy || '—',
+          acceptedAt:   e.deliveredAt || null,
+          items:        e.items || {},
+          missingItems: {},
+          notDispatched: {}
+        }));
+      } catch(e){}
+    }
   }
 
   _historyEntries = log;
