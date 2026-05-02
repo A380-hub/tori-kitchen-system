@@ -1816,6 +1816,7 @@ function getMyDeliveryStatus() {
 
 // ── API STATUS POLLING ──
 let _apiOrderStatus = {};
+let _apiAccepted = {}; // tracks order IDs accepted locally so they don't re-appear
 async function pollApiStatus() {
   if (!API_BASE) return;
   try {
@@ -1829,9 +1830,13 @@ async function pollApiStatus() {
       }
     });
     // Check history for dispatched (in_delivery) and delivered orders
-    // Process in order so most recent status wins
+    // Only show status for recent orders (last 30 min) not yet accepted locally
+    const thirtyMinAgo = Date.now() - 30 * 60 * 1000;
     (data.history || []).forEach(h => {
       const rk = h.restaurant;
+      if (_apiAccepted[rk] === h.id) return; // already accepted locally
+      const ts = h.dispatched_at ? new Date(h.dispatched_at).getTime() : 0;
+      if (ts < thirtyMinAgo) return; // too old
       if (h.status === 'dispatched' && !_apiOrderStatus[rk]) {
         _apiOrderStatus[rk] = {
           status: 'in_delivery', order: h,
@@ -2035,7 +2040,12 @@ function confirmAcceptDelivery() {
 
   // ── API MODE ──
   if (API_BASE) {
-    if (_apiOrderStatus[rk]) delete _apiOrderStatus[rk];
+    // Remember the order ID so polling doesn't bring it back
+    const currentStatus = _apiOrderStatus[rk];
+    if (currentStatus && currentStatus.order && currentStatus.order.id) {
+      _apiAccepted[rk] = currentStatus.order.id;
+    }
+    delete _apiOrderStatus[rk];
     showToast('Delivery accepted by ' + name);
     updateWelcomeStatusBadge();
     updateDeliveryTabDots();
