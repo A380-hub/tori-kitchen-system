@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>TORI Central Kitchen Monitor</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -606,6 +609,7 @@ body {
 
   <div class="nav-right">
     <button onclick="fetchAll(false)" style="background:var(--panel3);border:1px solid var(--line2);color:var(--ink3);font-family:var(--font);font-size:11px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;" title="Sync now">↻ Sync</button>
+    <button onclick="document.getElementById('kitchen-settings-modal').classList.add('open')" style="background:var(--panel3);border:1px solid var(--line2);color:var(--ink3);font-size:18px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Settings">⚙</button>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
       <div class="clock" id="clock">00:00:00</div>
       <div id="kitchen-date" style="font-family:var(--body);font-size:11px;font-weight:400;color:var(--ink4);letter-spacing:0.04em;"></div>
@@ -1917,6 +1921,32 @@ setInterval(() => fetchAll(true), 3000);
   <div id="pd-meta"></div>
   <div id="pd-items" style="flex:1;overflow-y:auto;padding-bottom:40px;"></div>
 </div>
+
+
+<!-- SETTINGS MODAL -->
+<div id="kitchen-settings-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;align-items:center;justify-content:center;">
+<div style="background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:24px;width:90%;max-width:400px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <div style="font-size:20px;font-weight:900;text-transform:uppercase;">Settings</div>
+    <button onclick="document.getElementById('kitchen-settings-modal').classList.remove('open')" style="background:transparent;border:1px solid var(--line2);color:var(--ink4);font-size:18px;width:36px;height:36px;cursor:pointer;">✕</button>
+  </div>
+  <div style="font-size:11px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);margin-bottom:10px;">Admin</div>
+  <label style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line2);cursor:pointer;user-select:none;">
+    <input type="checkbox" id="kitchen-admin-toggle" onchange="toggleKitchenAdmin()" style="width:20px;height:20px;accent-color:#DE0000;">
+    <div>
+      <div style="font-size:15px;font-weight:800;text-transform:uppercase;color:var(--ink);">Admin Mode</div>
+      <div style="font-size:11px;color:var(--ink4);margin-top:2px;">Access import & clear functions</div>
+    </div>
+  </label>
+  <div id="kitchen-admin-panel" style="display:none;margin-top:12px;flex-direction:column;gap:8px;">
+    <button onclick="importKitchenHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--ink);font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Import History from Database</button>
+    <button onclick="clearKitchenHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:#DE0000;font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Clear Local History</button>
+  </div>
+</div>
+</div>
+<style>
+#kitchen-settings-modal.open { display:flex; }
+</style>
 
 </body>
 </html>

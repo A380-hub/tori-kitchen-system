@@ -906,7 +906,7 @@ body {
   <div id="tab-history-content" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
     <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line);flex-shrink:0;">
       <div style="font-size:11px;font-weight:900;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink4);">Delivery History</div>
-      <button class="clear-hist-btn" onclick="clearOrderHistory()">Clear History</button>
+      
     </div>
     <div id="history-tab-body" style="flex:1;overflow-y:auto;"></div>
   </div><!-- /tab-history-content -->
@@ -1041,6 +1041,20 @@ body {
             <div class="location-sub">Trnje</div>
           </div>
         </div>
+      </div>
+    </div>
+    <div style="margin-top:20px;">
+      <div class="settings-section-label">Admin</div>
+      <label style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line2);cursor:pointer;user-select:none;">
+        <input type="checkbox" id="admin-toggle" onchange="toggleAdminMode()" style="width:20px;height:20px;accent-color:var(--red);">
+        <div>
+          <div style="font-size:16px;font-weight:800;text-transform:uppercase;">Admin Mode</div>
+          <div style="font-size:12px;color:var(--ink4);margin-top:2px;">Access import & clear functions</div>
+        </div>
+      </label>
+      <div id="admin-panel" style="display:none;margin-top:12px;flex-direction:column;gap:8px;">
+        <button onclick="importHistoryFromDB()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--ink);font-family:var(--font);font-size:14px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Import History from Database</button>
+        <button onclick="clearOrderHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--red);font-family:var(--font);font-size:14px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Clear Local History</button>
       </div>
     </div>
     <button class="settings-save-btn" onclick="saveSettings()">Save Settings →</button>
@@ -2506,13 +2520,7 @@ function renderAmendTab() { /* moved to home tab */ }
 /* ─── Delivery history ─── */
 let _historyEntries = []; // cached for detail sheet
 
-function clearOrderHistory() {
-  if (!confirm('Clear delivery history from this device?\n\nThis only removes local data. Full history can be restored once the database is connected.')) return;
-  try { localStorage.removeItem('TORI_RESTAURANT_LOG'); } catch(e) {}
-  try { localStorage.removeItem('tori_delivery_log'); } catch(e) {}
-  renderDeliveryHistory();
-  showToast('Delivery history cleared');
-}
+
 
 function renderDeliveryHistory() {
   const el = document.getElementById('history-tab-body');
@@ -2750,6 +2758,37 @@ function updateStatusStepHighlight(st) {
   const dashBody = document.getElementById('dash-pending-body');
   if (homeBody && delivTab && delivTab.style.display !== 'none') renderDeliveryStatusIntoFull(homeBody, null);
   if (dashBody && dashDTab && dashDTab.style.display !== 'none') renderDeliveryStatusIntoFull(dashBody, null);
+}
+
+
+// ── ADMIN MODE ──
+function toggleAdminMode() {
+  const on = document.getElementById('admin-toggle').checked;
+  document.getElementById('admin-panel').style.display = on ? 'flex' : 'none';
+}
+
+async function importHistoryFromDB() {
+  if (!API_BASE) { showToast('Only available in API mode'); return; }
+  try {
+    showToast('Importing history...');
+    const res = await fetch(API_BASE + '/api/orders/active', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    _lastApiData = data;
+    renderDeliveryHistory();
+    showToast('History imported — ' + (data.history || []).length + ' entries');
+  } catch(e) {
+    showToast('Import failed: ' + e.message);
+  }
+}
+
+function clearOrderHistory() {
+  if (!confirm('Clear all local delivery history?')) return;
+  try { localStorage.removeItem('TORI_RESTAURANT_LOG'); } catch(e) {}
+  try { localStorage.removeItem('tori_delivery_log'); } catch(e) {}
+  _lastApiData = null;
+  renderDeliveryHistory();
+  showToast('History cleared');
 }
 
 </script>

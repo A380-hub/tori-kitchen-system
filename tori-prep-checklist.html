@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>TORI Preparation List</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -808,7 +811,21 @@ body {
     Tap a day for any task to add or remove it from that day's schedule. Changes save automatically.
   </div>
   <div class="settings-list" id="settings-list"></div>
-  <div class="settings-footer">
+  <div style="padding:0 20px 16px;">
+      <div style="font-size:11px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);margin-bottom:10px;">Admin</div>
+      <label style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line2);cursor:pointer;user-select:none;">
+        <input type="checkbox" id="prep-admin-toggle" onchange="togglePrepAdmin()" style="width:20px;height:20px;accent-color:#DE0000;">
+        <div>
+          <div style="font-size:15px;font-weight:800;text-transform:uppercase;color:var(--ink);">Admin Mode</div>
+          <div style="font-size:11px;color:var(--ink4);margin-top:2px;">Access import & clear functions</div>
+        </div>
+      </label>
+      <div id="prep-admin-panel" style="display:none;margin-top:12px;flex-direction:column;gap:8px;">
+        <button onclick="importPrepHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--ink);font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Import History from Database</button>
+        <button onclick="clearPrepHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:#DE0000;font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Clear Prep History</button>
+      </div>
+    </div>
+    <div class="settings-footer">
     <button class="settings-reset" onclick="resetSchedule()">Reset to Default</button>
   </div>
 </div>
@@ -1584,6 +1601,29 @@ function closeDetail() {
 document.getElementById('detail-modal').addEventListener('click', function(e) {
   if (e.target === this) closeDetail();
 });
+
+// ── PREP ADMIN MODE ──
+function togglePrepAdmin() {
+  const on = document.getElementById('prep-admin-toggle').checked;
+  document.getElementById('prep-admin-panel').style.display = on ? 'flex' : 'none';
+}
+
+function importPrepHistory() {
+  // Prep history is stored locally in TORI_PREP_LOG — no API endpoint yet
+  // For now just reload from localStorage
+  renderHistory();
+  showToast('Prep history reloaded');
+  closeSettings();
+}
+
+function clearPrepHistory() {
+  if (!confirm('Clear all prep history?')) return;
+  try { localStorage.removeItem('TORI_PREP_LOG'); } catch(e) {}
+  renderHistory();
+  showToast('Prep history cleared');
+  closeSettings();
+}
+
 </script>
 </body>
 </html>
