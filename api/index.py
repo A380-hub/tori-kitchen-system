@@ -171,6 +171,18 @@ async def submit_prep(request: Request):
     return {"ok": True, "received": True}
 
 
+@app.post("/api/admin/reset")
+async def admin_reset(request: Request):
+    """Clear all orders from the database. For testing/admin use only."""
+    async with httpx.AsyncClient() as client:
+        # Delete all orders
+        r = await client.delete(
+            f"{REST_URL}/orders?id=gt.0",
+            headers=HEADERS
+        )
+    return {"ok": True, "message": "All orders cleared"}
+
+
 def to_ms(iso_str):
     if not iso_str:
         return 0
