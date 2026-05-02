@@ -33,10 +33,12 @@
 }
 
 *, *::before, *::after { touch-action: manipulation; box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+button, input, select, textarea, a, label { touch-action: manipulation !important; }
 
 html, body {
   height: 100%;
   overflow: hidden;
+  touch-action: manipulation !important;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font);
@@ -744,7 +746,6 @@ body {
         <strong id="hist-total">0</strong>
         Total Orders
       </div>
-      <button class="clear-hist-btn" onclick="clearDeliveryHistory()">Clear History</button>
     </div>
   </div>
   <div id="hist-body"></div>
