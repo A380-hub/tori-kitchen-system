@@ -1649,11 +1649,12 @@ async function doDispatchFull() {
     } catch(e){}
     } // end !API_BASE fallback
 
-    showToast('Dispatched by ' + _dispatcherName + ' — opening delivery window…');
-    setTimeout(() => {
-      window.open('tori-dispatch-delivery.html', 'tori_delivery',
-        'width=' + screen.availWidth + ',height=' + screen.availHeight + ',left=0,top=0,toolbar=no,menubar=no');
-    }, 200);
+    showToast('Dispatched by ' + _dispatcherName);
+
+    // In API mode, re-fetch to clear the dispatched orders from screen
+    if (API_BASE) {
+      await fetchAll(true);
+    }
 
   } catch(e) {
     showToast('Dispatch failed — check connection');
