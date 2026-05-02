@@ -1870,11 +1870,18 @@ async function pollApiStatus() {
       }
     });
 
-    // History — only show dispatched/delivered if not already accepted
+    // History — only show the MOST RECENT entry per restaurant
+    // data.history is sorted by created_at desc, so first match per restaurant wins
+    const seenRestaurant = {};
     (data.history || []).forEach(h => {
       const rk = h.restaurant;
       if (_apiOrderStatus[rk]) return; // active order takes priority
-      if (accepted[rk] === h.id) return; // already accepted by this device
+      if (seenRestaurant[rk]) return; // already found the most recent for this restaurant
+      seenRestaurant[rk] = true;
+
+      // If this (most recent) order was accepted, skip it — nothing to show
+      if (accepted[rk] && accepted[rk] >= h.id) return;
+
       if (h.status === 'dispatched') {
         _apiOrderStatus[rk] = {
           status: 'in_delivery', order: h,
@@ -2079,7 +2086,14 @@ function confirmAcceptDelivery() {
 
   // ── API MODE ──
   if (API_BASE) {
-    // Persist the accepted order ID so polling never brings it back (survives refresh)
+    // Tell the backend to mark this order as accepted — removes it from API responses permanently
+    fetch(API_BASE + '/api/orders/accepted', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ restaurant: rk, accepted_by: name })
+    }).catch(e => {});
+
+    // Also persist locally as backup
     const currentStatus = _apiOrderStatus[rk];
     if (currentStatus && currentStatus.order && currentStatus.order.id) {
       setAcceptedId(rk, currentStatus.order.id);
@@ -2089,7 +2103,6 @@ function confirmAcceptDelivery() {
     updateWelcomeStatusBadge();
     updateDeliveryTabDots();
     refreshAllDeliveryViews();
-    // Switch to Order tab so user sees a clean state
     setTimeout(() => { switchTab('home'); }, 1200);
     return;
   }
