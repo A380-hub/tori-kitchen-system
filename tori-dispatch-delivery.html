@@ -794,7 +794,7 @@ function loadDispatchData() {
 
   if (d) {
     let statusData = {};
-    try { statusData = JSON.parse(localStorage.getItem('TORI_STATUS') || '{}'); } catch(e){}
+    try { statusData = API_BASE ? {} : JSON.parse(localStorage.getItem('TORI_STATUS') || '{}'); } catch(e){}
     ['r1','r2'].forEach(k => {
       const order = d[k];
       if (!order) return;
@@ -815,10 +815,11 @@ function loadDispatchData() {
 async function loadDispatchFromAPI() {
   try {
     const res = await fetch(API_BASE + '/api/orders/active', { cache: 'no-store' });
-    if (!res.ok) return;
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
 
     // Find dispatched orders in history
+    let found = false;
     (data.history || []).forEach(h => {
       if (h.status === 'dispatched') {
         const rk = h.restaurant;
@@ -829,12 +830,17 @@ async function loadDispatchFromAPI() {
         };
         dispatchBatch.dispatchedAt = h.dispatched_at;
         dispatchBatch.dispatchedBy = h.dispatched_by || 'Kitchen Staff';
+        found = true;
       }
     });
 
-    renderPackingArea();
-    renderLog();
-  } catch(e) { console.error('Dispatch API fetch failed:', e); }
+    if (found) {
+      renderPackingArea();
+      renderLog();
+    }
+  } catch(e) {
+    // Silently fail — will retry via init()
+  }
 }
 
 function saveLog() {
@@ -886,7 +892,7 @@ function buildPackCol(k) {
   const rName = k === 'r1' ? 'TORI — Špansko' : 'TORI — Trnje';
 
   let statusData = {};
-  try { statusData = JSON.parse(localStorage.getItem('TORI_STATUS') || '{}'); } catch(e){}
+  try { statusData = API_BASE ? {} : JSON.parse(localStorage.getItem('TORI_STATUS') || '{}'); } catch(e){}
   const kStatus     = statusData[k] || {};
   const transitAt   = dispatchBatch.transitAt ? new Date(dispatchBatch.transitAt) : null;
   const deliveredAt = kStatus.deliveredAt     ? new Date(kStatus.deliveredAt)     : null;
@@ -997,15 +1003,17 @@ function confirmDelivery() {
   saveLog();
 
   // Update TORI_STATUS to 'delivered' so restaurant knows to confirm
-  try {
-    const statusData = JSON.parse(localStorage.getItem('TORI_STATUS') || '{}');
-    if (statusData[k]) {
-      statusData[k].status = 'delivered';
-      statusData[k].deliveredAt = now;
-      statusData[k].deliveredBy = deliveredBy;
-    }
-    localStorage.setItem('TORI_STATUS', JSON.stringify(statusData));
-  } catch(e) {}
+  if (!API_BASE) {
+    try {
+      const statusData = JSON.parse(localStorage.getItem('TORI_STATUS') || '{}');
+      if (statusData[k]) {
+        statusData[k].status = 'delivered';
+        statusData[k].deliveredAt = now;
+        statusData[k].deliveredBy = deliveredBy;
+      }
+      localStorage.setItem('TORI_STATUS', JSON.stringify(statusData));
+    } catch(e) {}
+  }
 
   closeDModal();
   showToast(`Delivery confirmed — ${rName}`);
@@ -1159,7 +1167,7 @@ function renderDispatchTracker() {
   const allDelivered = !dispatchBatch.r1 && !dispatchBatch.r2;
 
   let statusData = {};
-  try { statusData = JSON.parse(localStorage.getItem('TORI_STATUS') || '{}'); } catch(e){}
+  try { statusData = API_BASE ? {} : JSON.parse(localStorage.getItem('TORI_STATUS') || '{}'); } catch(e){}
   const anyStatus = statusData.r1 || statusData.r2 || {};
   const deliveredAt = anyStatus.deliveredAt ? new Date(anyStatus.deliveredAt) : null;
   const acceptedAt  = anyStatus.acceptedAt  ? new Date(anyStatus.acceptedAt)  : null;

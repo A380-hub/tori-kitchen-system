@@ -1662,6 +1662,24 @@ function checkDispatchStatus(p) {
   const infoEl   = document.getElementById('suc-dispatch-info');
   const amendBtn = document.getElementById('amend-btn');
 
+  // ── API MODE ──
+  if (API_BASE) {
+    const rk = p.restaurant;
+    const st = _apiOrderStatus[rk];
+    if (st && (st.status === 'in_delivery' || st.status === 'delivered')) {
+      amendBtn.disabled = true;
+      amendBtn.title = 'Cannot amend — order has already been dispatched';
+      infoEl.style.display = 'block';
+      infoEl.innerHTML = `Dispatched at ${st.dispatchedAt ? fmtDTLocal(st.dispatchedAt) : '—'}`;
+    } else {
+      amendBtn.disabled = false;
+      amendBtn.title = '';
+      infoEl.style.display = 'none';
+    }
+    return;
+  }
+
+  // ── FALLBACK: localStorage ──
   let dispatchData = null;
   try {
     const raw = localStorage.getItem('TORI_DISPATCH');
