@@ -2123,7 +2123,8 @@ function showToast(msg) {
 if (!API_BASE) {
   ['TORI_ORDERS','TORI_DISPATCH','TORI_DISPATCH_BACKUP','TORI_STATUS','TORI_HISTORY','tori_delivery_log'].forEach(k => {
     try { localStorage.removeItem(k); } catch(e) {}
-});
+  });
+}
 
 loadSettings();
 updateWelcomeStatusBadge();
