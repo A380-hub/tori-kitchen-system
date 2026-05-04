@@ -976,20 +976,17 @@ async function fetchAll(quiet = true) {
         }
       });
 
-      // Read prep list from localStorage — tori-preparation-checklist writes here directly,
-      // so we always read locally regardless of API mode for orders
-      try {
-        const rawPrep = localStorage.getItem('TORI_PREP');
-        if (rawPrep) {
-          const newPrep = JSON.parse(rawPrep);
-          if (!state.prep || String(state.prep.id) !== String(newPrep.id)) {
-            state.prepDone = {};
-          }
-          state.prep = newPrep;
-        } else if (state.prep) {
-          state.prep = null;
+      // Read prep list from API response — backend returns latest prep submission as data.prep
+      // (tori-preparation-checklist POSTs to /api/prep/submit, backend exposes it via /api/orders/active)
+      const newPrep = data.prep || null;
+      if (newPrep && newPrep.id) {
+        if (!state.prep || String(state.prep.id) !== String(newPrep.id)) {
+          state.prepDone = {};
         }
-      } catch(e) {}
+        state.prep = newPrep;
+      } else if (state.prep) {
+        state.prep = null;
+      }
 
       state.pending     = newPending;
       if (!_historyCleared) state.history = data.history || [];
