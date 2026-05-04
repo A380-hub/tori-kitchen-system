@@ -47,7 +47,7 @@
   #app.visible { opacity: 1; pointer-events: all; }
   .app-inner { width: min(440px, 92vw); display: flex; flex-direction: column; align-items: center; gap: clamp(10px,2.5vh,22px); padding: clamp(12px,2.5vh,28px) 0; margin: auto; }
 
-  .user-chip { display: flex; align-items: center; gap: 8px; background: #111; border: 1px solid #222; border-radius: 20px; padding: 6px 14px 6px 10px; cursor: pointer; transition: border-color 0.15s; align-self: flex-end; }
+  .user-chip { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; background: #111; border: 1px solid #222; border-radius: 20px; padding: 6px 14px 6px 10px; cursor: pointer; transition: border-color 0.15s; z-index: 10; white-space: nowrap; }
   .user-chip:hover { border-color: #cc1010; }
   .user-chip-dot { width: 8px; height: 8px; border-radius: 50%; background: #22cc66; }
   .user-chip-name { font-size: 13px; font-weight: 700; color: #aaa; letter-spacing: 0.5px; text-transform: uppercase; }
@@ -115,11 +115,6 @@
 
 <div id="app">
   <div class="app-inner">
-    <div class="user-chip" onclick="logout()">
-      <div class="user-chip-dot"></div>
-      <div class="user-chip-name" id="userName">—</div>
-      <div class="user-chip-logout">LOG OUT</div>
-    </div>
     <div class="logo-wrap"><img class="logo-img" id="app-logo" alt="Tori Street Food"/></div>
     <div class="menu-grid">
 
@@ -163,6 +158,11 @@
         <span class="tile-label">Delivery</span>
       </div>
 
+    </div>
+    <div class="user-chip" onclick="logout()">
+      <div class="user-chip-dot"></div>
+      <div class="user-chip-name" id="userName">—</div>
+      <div class="user-chip-logout">LOG OUT</div>
     </div>
   </div>
 </div>
