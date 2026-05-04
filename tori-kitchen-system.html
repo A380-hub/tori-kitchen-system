@@ -1486,13 +1486,11 @@ function openPrepHistoryDetail(idx) {
       const tickedAt = clearedItems[id]
         ? new Date(clearedItems[id]).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})
         : null;
-      itemsHtml += `<div class="kd-row">
-        <span class="kd-name" style="display:flex;align-items:center;gap:10px;">
-          <span style="color:var(--green);font-weight:900;">✓</span>
-          ${m.name}
-          ${tickedAt ? `<span style="font-size:11px;font-weight:700;color:var(--ink4);letter-spacing:0.06em;">ticked ${tickedAt}</span>` : ''}
-        </span>
-        <span class="kd-qty">${items[id]} <span class="kd-unit">${m.unit || ''}</span></span>
+      itemsHtml += `<div class="kd-row" style="justify-content:flex-start;gap:16px;">
+        <span style="color:var(--green);font-weight:900;font-size:18px;">✓</span>
+        <span class="kd-name">${m.name}</span>
+        <span class="kd-qty" style="font-size:18px;">${items[id]} <span class="kd-unit">${m.unit || ''}</span></span>
+        ${tickedAt ? `<span style="font-size:11px;font-weight:700;color:var(--ink4);letter-spacing:0.06em;margin-left:auto;">ticked ${tickedAt}</span>` : ''}
       </div>`;
     });
   });
@@ -1506,13 +1504,11 @@ function openPrepHistoryDetail(idx) {
       const tickedAt = clearedItems[id]
         ? new Date(clearedItems[id]).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})
         : null;
-      itemsHtml += `<div class="kd-row">
-        <span class="kd-name" style="display:flex;align-items:center;gap:10px;">
-          <span style="color:var(--green);font-weight:900;">✓</span>
-          ${m.name}
-          ${tickedAt ? `<span style="font-size:11px;font-weight:700;color:var(--ink4);letter-spacing:0.06em;">ticked ${tickedAt}</span>` : ''}
-        </span>
-        <span class="kd-qty">${items[id]} <span class="kd-unit">${m.unit || ''}</span></span>
+      itemsHtml += `<div class="kd-row" style="justify-content:flex-start;gap:16px;">
+        <span style="color:var(--green);font-weight:900;font-size:18px;">✓</span>
+        <span class="kd-name">${m.name}</span>
+        <span class="kd-qty" style="font-size:18px;">${items[id]} <span class="kd-unit">${m.unit || ''}</span></span>
+        ${tickedAt ? `<span style="font-size:11px;font-weight:700;color:var(--ink4);letter-spacing:0.06em;margin-left:auto;">ticked ${tickedAt}</span>` : ''}
       </div>`;
     });
   }
