@@ -976,18 +976,6 @@ async function fetchAll(quiet = true) {
         }
       });
 
-      // Read prep list from API response — backend returns latest prep submission as data.prep
-      // (tori-preparation-checklist POSTs to /api/prep/submit, backend exposes it via /api/orders/active)
-      const newPrep = data.prep || null;
-      if (newPrep && newPrep.id) {
-        if (!state.prep || String(state.prep.id) !== String(newPrep.id)) {
-          state.prepDone = {};
-        }
-        state.prep = newPrep;
-      } else if (state.prep) {
-        state.prep = null;
-      }
-
       state.pending     = newPending;
       if (!_historyCleared) state.history = data.history || [];
       state.apiOnline   = true;
@@ -1342,7 +1330,7 @@ function clearPrepList() {
   const prep = state.prep;
   if (!prep) return;
 
-  // Save to TORI_PREP_LOG so it appears in Preparation History
+  // Save to local TORI_PREP_LOG for legacy/local history (kept for compatibility)
   try {
     const items = Object.entries(prep.items).map(([id, qty]) => {
       const m = buildAllItemMeta()[id] || { name: id, unit: '' };
@@ -1363,12 +1351,108 @@ function clearPrepList() {
     localStorage.setItem('TORI_PREP_LOG', JSON.stringify(existing));
   } catch(e) { console.warn('Could not save to prep log:', e); }
 
-  // Clear TORI_PREP and reset state
+  // Tell the backend this prep is done — won't appear on next /api/orders/active poll
+  if (API_BASE) {
+    fetch(API_BASE + '/api/prep/clear', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: prep.id })
+    }).catch(e => console.warn('Could not notify backend of prep clear:', e));
+  }
+
+  // Clear local copy and reset state
   try { localStorage.removeItem('TORI_PREP'); } catch(e) {}
   state.prep     = null;
   state.prepDone = {};
   renderAll();
   showToast('Prep list cleared — saved to Preparation History');
+}
+
+// ── PREPARATION HISTORY TAB ──
+let _prepHistory = [];
+let _prepHistoryHiddenIds = new Set(JSON.parse(localStorage.getItem('TORI_PREP_HIST_HIDDEN') || '[]'));
+
+async function renderPrepLog() {
+  const body  = document.getElementById('prep-log-body');
+  const total = document.getElementById('prep-log-total');
+  if (!body) return;
+
+  if (API_BASE) {
+    try {
+      const res = await fetch(API_BASE + '/api/prep/history', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      _prepHistory = (data.history || []).filter(e => !_prepHistoryHiddenIds.has(String(e.id)));
+    } catch(e) {
+      console.warn('Failed to fetch prep history:', e);
+      _prepHistory = [];
+    }
+  } else {
+    // Fallback: localStorage
+    try {
+      const raw = JSON.parse(localStorage.getItem('TORI_PREP_LOG') || '[]');
+      _prepHistory = raw.map(r => ({
+        id:           r.ts,
+        ts:           r.ts,
+        staff_name:   r.chef_name,
+        prep_date:    r.prep_date,
+        day_label:    r.day_label,
+        items:        Object.fromEntries((r.items || []).map(it => [it.task_id, it.qty])),
+        items_detail: r.items || [],
+        created_at:   r.submitted_at,
+      })).filter(e => !_prepHistoryHiddenIds.has(String(e.id))).reverse();
+    } catch(e) { _prepHistory = []; }
+  }
+
+  total.textContent = _prepHistory.length;
+
+  if (!_prepHistory.length) {
+    body.innerHTML = '<div style="padding:60px 24px;text-align:center;color:var(--ink4);font-size:13px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;">No preparation submissions yet</div>';
+    return;
+  }
+
+  const meta = buildAllItemMeta();
+  body.innerHTML = _prepHistory.map(entry => {
+    const date = entry.created_at
+      ? new Date(entry.created_at).toLocaleString('en-GB', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+      : '—';
+    const items = entry.items || {};
+    const itemEntries = Object.entries(items);
+    const totalItems = itemEntries.length;
+
+    let chips = '';
+    itemEntries.forEach(([id, qty]) => {
+      const m = meta[id] || { name: id, unit: '' };
+      chips += `<div class="log-item-chip">
+        <span class="log-item-chip-qty">${qty}</span>
+        <span class="log-item-chip-unit">${m.unit || ''}</span>
+        ${m.name}
+      </div>`;
+    });
+
+    const clearedBadge = entry.cleared_at
+      ? `<span style="font-size:10px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:var(--green);background:rgba(76,175,80,0.12);padding:3px 8px;margin-left:8px;">✓ Cleared</span>`
+      : `<span style="font-size:10px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);background:rgba(245,158,11,0.12);padding:3px 8px;margin-left:8px;">Pending</span>`;
+
+    return `<div class="log-entry">
+      <div class="log-entry-head">
+        <div class="log-entry-time">${date}${clearedBadge}</div>
+        <div class="log-entry-meta"><strong>${entry.staff_name || '—'}</strong> · ${totalItems} item${totalItems!==1?'s':''}</div>
+      </div>
+      <div class="log-items">${chips}</div>
+    </div>`;
+  }).join('');
+}
+
+function clearPrepHistory() {
+  if (!_prepHistory.length) { showToast('No history to clear'); return; }
+  if (!confirm('Hide all preparation history from this device?\n\n(History will remain on the server and visible to other devices.)')) return;
+  _prepHistory.forEach(e => _prepHistoryHiddenIds.add(String(e.id)));
+  try { localStorage.setItem('TORI_PREP_HIST_HIDDEN', JSON.stringify([..._prepHistoryHiddenIds])); } catch(e) {}
+  // Also clear local TORI_PREP_LOG so localStorage fallback agrees
+  try { localStorage.removeItem('TORI_PREP_LOG'); } catch(e) {}
+  renderPrepLog();
+  showToast('Preparation history hidden on this device');
 }
 
 // ── ORDER COLUMNS (R1 / R2) ──
