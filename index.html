@@ -76,9 +76,6 @@
 
   .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 10px 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #888; text-transform: uppercase; opacity: 0; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; z-index: 50; }
   .toast.show { opacity: 1; }
-  /* ── NAV LOADER (shown when opening a module) ── */
-  #nav-loader { position: fixed; inset: 0; z-index: 999; background: #000; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
-  #nav-loader.show { opacity: 1; pointer-events: all; }
 </style>
 </head>
 <body>
@@ -168,16 +165,6 @@
 
     </div>
   </div>
-</div>
-
-
-<!-- NAV LOADER -->
-<div id="nav-loader">
-  <svg width="160" height="160" viewBox="0 0 200 200">
-    <ellipse class="orbit-drop" cx="100" cy="100" rx="10" ry="14"/>
-    <ellipse class="orbit-drop" cx="100" cy="100" rx="10" ry="14"/>
-    <ellipse class="orbit-drop" cx="100" cy="100" rx="10" ry="14"/>
-  </svg>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -346,13 +333,7 @@
     localStorage.setItem('TORI_USER_NAME', name);
     localStorage.setItem('TORI_USER_GROUPS', JSON.stringify(parseGroups(currentUser.groups)));
     const url = MODULE_URLS[mod] + '?user=' + encodeURIComponent(name);
-    // Hide splash instantly so it never flashes on the way out
-    const splash = document.getElementById('splash');
-    splash.style.transition = 'none';
-    splash.style.opacity = '0';
-    splash.style.pointerEvents = 'none';
-    document.getElementById('nav-loader').classList.add('show');
-    setTimeout(() => { window.location.href = url; }, 600);
+    window.location.href = url;
   }
 
   // ── LOGOUT ──
