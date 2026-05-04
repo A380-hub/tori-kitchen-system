@@ -233,6 +233,8 @@ body {
 .nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 .nav-btn.fwd  { background: var(--red2); border-color: var(--red2); flex: 2; }
 .nav-btn.fwd:hover { background: var(--red); border-color: var(--red); }
+.nav-btn.review { background: var(--panel2); border-color: var(--line2); color: var(--ink3); flex: 0 0 auto; white-space: nowrap; }
+.nav-btn.review:hover { background: var(--panel3); color: var(--ink); }
 
 /* ══════════ REVIEW ══════════ */
 .review-header {
@@ -953,8 +955,9 @@ body {
   <div class="items-list" id="items-list"></div>
 
   <div class="bottom-nav">
-    <button class="nav-btn" id="prev-btn" onclick="prevCat()">← Prev</button>
-    <button class="nav-btn fwd" id="next-btn" onclick="nextOrReview()">Next →</button>
+    <button class="nav-btn" id="prev-btn" onclick="prevCat()" style="flex:0 0 auto;min-width:80px;">← Prev</button>
+    <button class="nav-btn fwd" id="next-btn" onclick="nextCat()">Next →</button>
+    <button class="nav-btn review" id="review-btn" onclick="showReview()">Review →</button>
   </div>
 </div>
 
@@ -1477,9 +1480,12 @@ function showCat(idx) {
 
   document.getElementById('prev-btn').disabled = idx===0;
   const nb = document.getElementById('next-btn');
-  if (isLast) { nb.textContent='Review Order →'; nb.className='nav-btn fwd'; }
-  else        { nb.textContent='Next →';          nb.className='nav-btn fwd'; }
+  nb.disabled = isLast;
+  nb.style.opacity = isLast ? '0.25' : '';
 }
+
+function nextCat(){ if(catIdx<CATS.length-1) showCat(catIdx+1); }
+function nextOrReview(){ catIdx<CATS.length-1 ? showCat(catIdx+1) : showReview(); }
 
 function toggle(id) {
   const row = document.getElementById('row-'+id);
