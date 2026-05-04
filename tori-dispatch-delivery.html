@@ -1256,8 +1256,8 @@ setInterval(() => {
 }, 5000);
 
 // ── START DELIVERY MODAL ──
-function confirmStartDelivery() {
-  const name = document.getElementById('start-modal-name').value.trim();
+function confirmStartDelivery(nameOverride) {
+  const name = nameOverride || document.getElementById('start-modal-name').value.trim();
   if (!name) return;
   // Save driver name for future use
   try { localStorage.setItem('TORI_DRIVER_NAME', name); } catch(e) {}
@@ -1297,13 +1297,18 @@ function init() {
     // Show start delivery modal if driver hasn't confirmed yet
     if (!dispatchBatch.transitAt) {
       setTimeout(() => {
-        var _skipName = localStorage.getItem('TORI_SKIP_NAME') === '1';
-        var _savedName = localStorage.getItem('TORI_DRIVER_NAME') || '';
-        if (_skipName && _savedName) {
+        // 1. Try URL param ?user= (set by index.html when navigating)
+        var _urlName = new URLSearchParams(location.search).get('user') || '';
+        // 2. Fall back to localStorage set by index.html login
+        var _lsName  = localStorage.getItem('TORI_USER_NAME') || '';
+        // 3. Fall back to previously saved driver name
+        var _savedName = _urlName || _lsName || localStorage.getItem('TORI_DRIVER_NAME') || '';
+        if (_savedName) {
+          // Name known — skip modal entirely
           document.getElementById('start-modal-name').value = _savedName;
-          confirmStartDelivery();
+          confirmStartDelivery(_savedName);
         } else {
-          document.getElementById('start-modal-name').value = _savedName;
+          // No name found — show modal as fallback
           document.getElementById('start-modal').classList.add('open');
           document.getElementById('start-modal-name').focus();
         }
@@ -1320,8 +1325,16 @@ function init() {
         renderLog();
         if (!dispatchBatch.transitAt) {
           setTimeout(() => {
-            document.getElementById('start-modal').classList.add('open');
-            document.getElementById('start-modal-name').focus();
+            var _urlName   = new URLSearchParams(location.search).get('user') || '';
+            var _lsName    = localStorage.getItem('TORI_USER_NAME') || '';
+            var _savedName = _urlName || _lsName || localStorage.getItem('TORI_DRIVER_NAME') || '';
+            if (_savedName) {
+              document.getElementById('start-modal-name').value = _savedName;
+              confirmStartDelivery(_savedName);
+            } else {
+              document.getElementById('start-modal').classList.add('open');
+              document.getElementById('start-modal-name').focus();
+            }
           }, 300);
         }
       }
