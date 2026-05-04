@@ -138,11 +138,12 @@ async def get_active_orders():
         if prep_rows:
             row = prep_rows[0]
             prep = {
-                "id":        row.get("id"),
-                "ts":        to_ms(row.get("created_at")),
-                "staffName": row.get("staff_name", ""),
-                "prepDate":  row.get("prep_date", ""),
-                "items":     row.get("items", {}),
+                "id":          row.get("id"),
+                "ts":          to_ms(row.get("created_at")),
+                "staffName":   row.get("staff_name", ""),
+                "prepDate":    row.get("prep_date", ""),
+                "items":       row.get("items", {}),
+                "items_order": row.get("items_order") or list((row.get("items") or {}).keys()),
             }
     except Exception:
         prep = None
@@ -198,23 +199,60 @@ async def accept_delivery(request: Request):
 
 @app.post("/api/prep/submit")
 async def submit_prep(request: Request):
-    """Head chef submits prep log — stored in prep_logs and exposed as data.prep on /api/orders/active."""
+    """Head chef submits prep log. If an active (non-cleared) prep exists, merge into it.
+    Otherwise create a new one. Active prep is exposed as data.prep on /api/orders/active."""
     body = await request.json()
     items = body.get("items", {})
     # Normalise items to {task_id: qty} dict in case caller sent the verbose array shape
     if isinstance(items, list):
         items = {it.get("task_id"): it.get("qty") for it in items if it.get("task_id")}
 
-    row = {
-        "staff_name":   body.get("staffName") or body.get("chef_name", ""),
-        "prep_date":    body.get("prepDate")  or body.get("prep_date", ""),
-        "day_index":    body.get("day_index"),
-        "day_label":    body.get("day_label", ""),
-        "items":        items,
-        "items_detail": body.get("items_detail", []),
-    }
-    result = await sb_post("prep_logs", row)
-    return {"ok": True, "id": result[0]["id"] if result else None}
+    staff_name = body.get("staffName") or body.get("chef_name", "")
+    prep_date  = body.get("prepDate")  or body.get("prep_date", "")
+
+    # Look for existing active prep
+    existing = await sb_get("prep_logs", "cleared_at=is.null&order=created_at.desc&limit=1&select=*")
+
+    if existing:
+        # Merge — overwrite qty for any duplicate task IDs, append new ones
+        row = existing[0]
+        merged_items = dict(row.get("items") or {})
+        merged_items.update(items)  # new submission overwrites duplicates
+
+        # Track newest-first ordering of items (for "new items at top of unticked list")
+        merged_order = list((row.get("items_order") or [])) if row.get("items_order") else list(merged_items.keys())
+        # Move newly-submitted IDs to the front (newest first)
+        new_ids = list(items.keys())
+        for nid in reversed(new_ids):
+            if nid in merged_order:
+                merged_order.remove(nid)
+            merged_order.insert(0, nid)
+        # Make sure every item in merged_items is somewhere in merged_order
+        for k in merged_items.keys():
+            if k not in merged_order:
+                merged_order.append(k)
+
+        update = {
+            "items":        merged_items,
+            "items_order":  merged_order,
+            "staff_name":   staff_name or row.get("staff_name", ""),
+            "prep_date":    prep_date  or row.get("prep_date", ""),
+            "last_merge_at": now_iso(),
+        }
+        result = await sb_patch("prep_logs", f"id=eq.{row['id']}", update)
+        return {"ok": True, "id": row["id"], "merged": True}
+    else:
+        new_row = {
+            "staff_name":   staff_name,
+            "prep_date":    prep_date,
+            "day_index":    body.get("day_index"),
+            "day_label":    body.get("day_label", ""),
+            "items":        items,
+            "items_order":  list(items.keys()),
+            "items_detail": body.get("items_detail", []),
+        }
+        result = await sb_post("prep_logs", new_row)
+        return {"ok": True, "id": result[0]["id"] if result else None, "merged": False}
 
 
 @app.post("/api/prep/clear")
@@ -234,23 +272,52 @@ async def clear_prep(request: Request):
     return {"ok": True, "cleared": len(result) if isinstance(result, list) else 0}
 
 
+@app.post("/api/prep/tick")
+async def tick_prep_item(request: Request):
+    """Kitchen ticks an individual item as prepared — records ticked_at timestamp.
+    Body: {id: prep_log_id, item_id: 'task_id', ticked: true|false}
+    When ticked=false, removes the timestamp."""
+    body = await request.json()
+    prep_id = body.get("id")
+    item_id = body.get("item_id")
+    ticked  = body.get("ticked", True)
+    if not prep_id or not item_id:
+        raise HTTPException(400, "id and item_id required")
+
+    # Read current cleared_items
+    rows = await sb_get("prep_logs", f"id=eq.{prep_id}&select=cleared_items")
+    if not rows:
+        raise HTTPException(404, "prep log not found")
+    cleared_items = dict(rows[0].get("cleared_items") or {})
+
+    if ticked:
+        cleared_items[item_id] = now_iso()
+    else:
+        cleared_items.pop(item_id, None)
+
+    await sb_patch("prep_logs", f"id=eq.{prep_id}", {"cleared_items": cleared_items})
+    return {"ok": True, "cleared_items": cleared_items}
+
+
 @app.get("/api/prep/history")
 async def get_prep_history():
-    """All prep submissions for the Preparation History tab (includes cleared ones)."""
-    rows = await sb_get("prep_logs", "order=created_at.desc&limit=200&select=*")
+    """Cleared prep submissions only — pending ones live on /api/orders/active as data.prep."""
+    rows = await sb_get("prep_logs", "cleared_at=not.is.null&order=cleared_at.desc&limit=200&select=*")
     history = []
     for row in rows:
         history.append({
-            "id":           row.get("id"),
-            "ts":           to_ms(row.get("created_at")),
-            "staff_name":   row.get("staff_name", ""),
-            "prep_date":    row.get("prep_date", ""),
-            "day_index":    row.get("day_index"),
-            "day_label":    row.get("day_label", ""),
-            "items":        row.get("items", {}),
-            "items_detail": row.get("items_detail", []),
-            "created_at":   row.get("created_at"),
-            "cleared_at":   row.get("cleared_at"),
+            "id":            row.get("id"),
+            "ts":            to_ms(row.get("created_at")),
+            "staff_name":    row.get("staff_name", ""),
+            "prep_date":     row.get("prep_date", ""),
+            "day_index":     row.get("day_index"),
+            "day_label":     row.get("day_label", ""),
+            "items":         row.get("items", {}),
+            "items_order":   row.get("items_order") or list((row.get("items") or {}).keys()),
+            "items_detail":  row.get("items_detail", []),
+            "cleared_items": row.get("cleared_items", {}),
+            "created_at":    row.get("created_at"),
+            "cleared_at":    row.get("cleared_at"),
         })
     return {"history": history}
 
