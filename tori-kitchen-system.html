@@ -1436,7 +1436,7 @@ async function renderPrepLog() {
       ? clearedDate.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' ' + clearedDate.toTimeString().slice(0,5)
       : '—';
     return `<tr style="cursor:pointer;" onclick="openPrepHistoryDetail(${idx})">
-      <td style="font-size:12px;color:var(--ink4);">${dateStr}</td>
+      <td style="font-weight:900;color:var(--ink);text-transform:uppercase;letter-spacing:0.04em;">${dateStr}</td>
       <td style="color:var(--ink4);font-size:12px;">${shortId}</td>
       <td style="font-size:12px;color:var(--ink4);">${clearedAtStr}</td>
       <td><span class="pill" style="background:rgba(76,175,80,0.12);color:var(--green);">✓ Cleared</span></td>
