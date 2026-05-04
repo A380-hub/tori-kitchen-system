@@ -131,10 +131,10 @@ async def get_active_orders():
             "not_dispatched": row.get("not_dispatched", {}),
         })
 
-    # Latest prep submission — kitchen system reads this as data.prep
+    # Latest non-cleared prep submission — kitchen reads this as data.prep
     prep = None
     try:
-        prep_rows = await sb_get("prep_logs", "order=created_at.desc&limit=1&select=*")
+        prep_rows = await sb_get("prep_logs", "cleared_at=is.null&order=created_at.desc&limit=1&select=*")
         if prep_rows:
             row = prep_rows[0]
             prep = {
@@ -217,11 +217,42 @@ async def submit_prep(request: Request):
     return {"ok": True, "id": result[0]["id"] if result else None}
 
 
+@app.post("/api/prep/clear")
+async def clear_prep(request: Request):
+    """Mark latest active prep as cleared — kitchen has finished preparing the items."""
+    body = await request.json() if await request.body() else {}
+    prep_id = body.get("id")
+    if prep_id:
+        result = await sb_patch("prep_logs", f"id=eq.{prep_id}", {"cleared_at": now_iso()})
+    else:
+        # Clear the latest non-cleared prep
+        latest = await sb_get("prep_logs", "cleared_at=is.null&order=created_at.desc&limit=1&select=id")
+        if latest:
+            result = await sb_patch("prep_logs", f"id=eq.{latest[0]['id']}", {"cleared_at": now_iso()})
+        else:
+            result = []
+    return {"ok": True, "cleared": len(result) if isinstance(result, list) else 0}
+
+
 @app.get("/api/prep/history")
 async def get_prep_history():
-    """All prep submissions for the Preparation History tab."""
-    rows = await sb_get("prep_logs", "order=created_at.desc&limit=100&select=*")
-    return {"history": rows}
+    """All prep submissions for the Preparation History tab (includes cleared ones)."""
+    rows = await sb_get("prep_logs", "order=created_at.desc&limit=200&select=*")
+    history = []
+    for row in rows:
+        history.append({
+            "id":           row.get("id"),
+            "ts":           to_ms(row.get("created_at")),
+            "staff_name":   row.get("staff_name", ""),
+            "prep_date":    row.get("prep_date", ""),
+            "day_index":    row.get("day_index"),
+            "day_label":    row.get("day_label", ""),
+            "items":        row.get("items", {}),
+            "items_detail": row.get("items_detail", []),
+            "created_at":   row.get("created_at"),
+            "cleared_at":   row.get("cleared_at"),
+        })
+    return {"history": history}
 
 
 @app.post("/api/admin/reset")
