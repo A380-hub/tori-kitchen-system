@@ -1173,9 +1173,14 @@ function renderPrepColumn() {
   doneHd.textContent = done;
   leftHd.textContent = left;
 
-  // Separate: undone first (sorted by original order), done at bottom (newest tick last)
+  // Separate: undone first (sorted by items_order — newest submission at top), done at bottom (newest tick last)
   // Group by category for undone; done items append at bottom sorted by tick time asc
   let html = '';
+
+  // Order map for "newest submission first" — items_order from backend lists newest IDs first
+  const itemsOrder = Array.isArray(prep.items_order) ? prep.items_order : Object.keys(prep.items);
+  const orderRank = {};
+  itemsOrder.forEach((id, i) => { orderRank[id] = i; });
 
   // Build undone items grouped by category
   // (We only know item IDs from the prep list, not categories — use ORDER_CATS as reference,
@@ -1277,15 +1282,18 @@ function renderPrepColumn() {
     }
   });
 
-  // Render undone groups
+  // Render undone groups — keep category order as defined, sort items WITHIN each category
+  // by orderRank (lowest = newest submission) so newly-submitted items appear at top of their category
   Object.entries(catGroups).forEach(([label, items]) => {
     if (!items.length) return;
+    items.sort((a, b) => (orderRank[a.id] ?? 999) - (orderRank[b.id] ?? 999));
     html += `<div class="cat-label">${label}</div>`;
     items.forEach(item => {
       html += buildPrepRow(item.id, item.name, item.qty, item.unit, false);
     });
   });
   if (uncategorised.length) {
+    uncategorised.sort((a, b) => (orderRank[a.id] ?? 999) - (orderRank[b.id] ?? 999));
     html += `<div class="cat-label">Other</div>`;
     uncategorised.forEach(item => {
       html += buildPrepRow(item.id, item.name, item.qty, item.unit, false);
@@ -1326,10 +1334,19 @@ function buildPrepRow(id, name, qty, unit, done) {
 }
 
 function togglePrep(id) {
-  if (state.prepDone[id]) {
+  const wasTicked = !!state.prepDone[id];
+  if (wasTicked) {
     delete state.prepDone[id];
   } else {
     state.prepDone[id] = Date.now();
+  }
+  // Notify backend so per-item timestamp is recorded for the history detail view
+  if (API_BASE && state.prep && state.prep.id) {
+    fetch(API_BASE + '/api/prep/tick', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: state.prep.id, item_id: id, ticked: !wasTicked })
+    }).catch(e => console.warn('Could not record tick:', e));
   }
   renderPrepColumn();
   renderInfoStrip();
@@ -1399,60 +1416,119 @@ async function renderPrepLog() {
       _prepHistory = [];
     }
   } else {
-    // Fallback: localStorage
-    try {
-      const raw = JSON.parse(localStorage.getItem('TORI_PREP_LOG') || '[]');
-      _prepHistory = raw.map(r => ({
-        id:           r.ts,
-        ts:           r.ts,
-        staff_name:   r.chef_name,
-        prep_date:    r.prep_date,
-        day_label:    r.day_label,
-        items:        Object.fromEntries((r.items || []).map(it => [it.task_id, it.qty])),
-        items_detail: r.items || [],
-        created_at:   r.submitted_at,
-      })).filter(e => !_prepHistoryHiddenIds.has(String(e.id))).reverse();
-    } catch(e) { _prepHistory = []; }
+    _prepHistory = [];
   }
 
   total.textContent = _prepHistory.length;
 
   if (!_prepHistory.length) {
-    body.innerHTML = '<div style="padding:60px 24px;text-align:center;color:var(--ink4);font-size:13px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;">No preparation submissions yet</div>';
+    body.innerHTML = '<div class="hist-empty">No preparation history yet</div>';
     return;
   }
 
-  const meta = buildAllItemMeta();
-  body.innerHTML = _prepHistory.map(entry => {
-    const date = entry.created_at
-      ? new Date(entry.created_at).toLocaleString('en-GB', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+  const rows = _prepHistory.map((entry, idx) => {
+    const shortId = '#' + String(entry.id || '').slice(-6);
+    const clearedDate = entry.cleared_at ? new Date(entry.cleared_at) : null;
+    const dateStr = clearedDate
+      ? clearedDate.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' ' + clearedDate.toTimeString().slice(0,5)
       : '—';
-    const items = entry.items || {};
-    const itemEntries = Object.entries(items);
-    const totalItems = itemEntries.length;
+    const clearedAtStr = clearedDate
+      ? clearedDate.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' ' + clearedDate.toTimeString().slice(0,5)
+      : '—';
+    return `<tr style="cursor:pointer;" onclick="openPrepHistoryDetail(${idx})">
+      <td style="font-size:12px;color:var(--ink4);">${dateStr}</td>
+      <td style="color:var(--ink4);font-size:12px;">${shortId}</td>
+      <td style="font-size:12px;color:var(--ink4);">${clearedAtStr}</td>
+      <td><span class="pill" style="background:rgba(76,175,80,0.12);color:var(--green);">✓ Cleared</span></td>
+    </tr>`;
+  }).join('');
 
-    let chips = '';
-    itemEntries.forEach(([id, qty]) => {
-      const m = meta[id] || { name: id, unit: '' };
-      chips += `<div class="log-item-chip">
-        <span class="log-item-chip-qty">${qty}</span>
-        <span class="log-item-chip-unit">${m.unit || ''}</span>
-        ${m.name}
+  body.innerHTML = `<table class="hist-table">
+    <thead><tr>
+      <th>Date</th><th>ID</th><th>Cleared At</th><th>Status</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function openPrepHistoryDetail(idx) {
+  const entry = _prepHistory[idx];
+  if (!entry) return;
+
+  const shortId = '#' + String(entry.id || '').slice(-6);
+  const submTime  = entry.created_at ? new Date(entry.created_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+  const clearedTime = entry.cleared_at ? new Date(entry.cleared_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+  const fullDate  = entry.cleared_at
+    ? new Date(entry.cleared_at).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+    : (entry.created_at ? new Date(entry.created_at).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—');
+
+  const items = entry.items || {};
+  const clearedItems = entry.cleared_items || {};
+
+  // Group items by category, same as renderPrepColumn does
+  const allItemMeta = buildAllItemMeta();
+  const PREP_CAT_DEFS = [
+    { label:'Sauces',     ids: ['dan_dan_sauce','goma_tare','gyoza_sauce','kimchi_paste','kungpao_sauce','laksa_base','poke_sauce','pork_belly_glaze','soy_tare','sunomono_sauce','sushi_vinegar','teriyaki_sauce'] },
+    { label:'Foods',      ids: ['bamboo_cook','beef_stripes','chicken_miso','chicken_stock','chicken_thighs','coleslaw','crumble','dan_dan_pork','egg_marinade','gyoza_pork','icecream_takeaway','katsu_chicken','kimchi','lobster_salad','tempura_roll','peanuts_grind','pork_belly_prep','pork_belly_bake','pork_belly_cut','ramen_eggs','ramen_noodles','ramen_soup','shiitake_soak','sushi_rice','tofu_cutting','tofu_panko','tuna_poke','vimixa_noodles','banana_bread'] },
+    { label:'Vegetables', ids: ['chilli_cutting','cucumber_marinade','cucumbers_cut','daikon_marinate','green_beans','pak_choi','purple_onion','shiitake_cut','spring_onion'] },
+  ];
+
+  let itemsHtml = '';
+  const placedIds = new Set();
+
+  PREP_CAT_DEFS.forEach(cat => {
+    const catItems = cat.ids.filter(id => items[id] !== undefined);
+    if (!catItems.length) return;
+    itemsHtml += `<div class="kd-cat">${cat.label}</div>`;
+    catItems.forEach(id => {
+      placedIds.add(id);
+      const m = allItemMeta[id] || { name: id, unit: '' };
+      const tickedAt = clearedItems[id]
+        ? new Date(clearedItems[id]).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})
+        : null;
+      itemsHtml += `<div class="kd-row">
+        <span class="kd-name" style="display:flex;align-items:center;gap:10px;">
+          <span style="color:var(--green);font-weight:900;">✓</span>
+          ${m.name}
+          ${tickedAt ? `<span style="font-size:11px;font-weight:700;color:var(--ink4);letter-spacing:0.06em;">ticked ${tickedAt}</span>` : ''}
+        </span>
+        <span class="kd-qty">${items[id]} <span class="kd-unit">${m.unit || ''}</span></span>
       </div>`;
     });
+  });
 
-    const clearedBadge = entry.cleared_at
-      ? `<span style="font-size:10px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:var(--green);background:rgba(76,175,80,0.12);padding:3px 8px;margin-left:8px;">✓ Cleared</span>`
-      : `<span style="font-size:10px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);background:rgba(245,158,11,0.12);padding:3px 8px;margin-left:8px;">Pending</span>`;
+  // Anything else (uncategorised)
+  const otherIds = Object.keys(items).filter(id => !placedIds.has(id));
+  if (otherIds.length) {
+    itemsHtml += `<div class="kd-cat">Other</div>`;
+    otherIds.forEach(id => {
+      const m = allItemMeta[id] || { name: id, unit: '' };
+      const tickedAt = clearedItems[id]
+        ? new Date(clearedItems[id]).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})
+        : null;
+      itemsHtml += `<div class="kd-row">
+        <span class="kd-name" style="display:flex;align-items:center;gap:10px;">
+          <span style="color:var(--green);font-weight:900;">✓</span>
+          ${m.name}
+          ${tickedAt ? `<span style="font-size:11px;font-weight:700;color:var(--ink4);letter-spacing:0.06em;">ticked ${tickedAt}</span>` : ''}
+        </span>
+        <span class="kd-qty">${items[id]} <span class="kd-unit">${m.unit || ''}</span></span>
+      </div>`;
+    });
+  }
 
-    return `<div class="log-entry">
-      <div class="log-entry-head">
-        <div class="log-entry-time">${date}${clearedBadge}</div>
-        <div class="log-entry-meta"><strong>${entry.staff_name || '—'}</strong> · ${totalItems} item${totalItems!==1?'s':''}</div>
-      </div>
-      <div class="log-items">${chips}</div>
+  document.getElementById('pd-title').textContent = 'Preparation Log — ' + fullDate;
+  document.getElementById('pd-meta').innerHTML = `
+    <div class="kd-meta-grid">
+      <div class="kd-meta-item"><div class="kd-meta-label">Submission ID</div><div class="kd-meta-val">${shortId}</div></div>
+      <div class="kd-meta-item"><div class="kd-meta-label">Submitted by</div><div class="kd-meta-val">${entry.staff_name||'—'}</div></div>
+      <div class="kd-meta-item"><div class="kd-meta-label">Submitted</div><div class="kd-meta-val">${submTime}</div></div>
+      <div class="kd-meta-item"><div class="kd-meta-label">Cleared by</div><div class="kd-meta-val">—</div></div>
+      <div class="kd-meta-item"><div class="kd-meta-label">Cleared at</div><div class="kd-meta-val">${clearedTime}</div></div>
+      <div class="kd-meta-item"><div class="kd-meta-label">Status</div><div class="kd-meta-val" style="color:var(--green);">✓ Cleared</div></div>
     </div>`;
-  }).join('');
+  document.getElementById('pd-items').innerHTML = itemsHtml || '<div style="padding:30px;text-align:center;color:var(--ink4);">No item details</div>';
+  document.getElementById('prep-detail-sheet').classList.add('open');
 }
 
 function clearPrepHistory() {
