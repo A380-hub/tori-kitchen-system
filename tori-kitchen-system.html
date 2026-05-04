@@ -976,6 +976,21 @@ async function fetchAll(quiet = true) {
         }
       });
 
+      // Read prep list from localStorage — tori-preparation-checklist writes here directly,
+      // so we always read locally regardless of API mode for orders
+      try {
+        const rawPrep = localStorage.getItem('TORI_PREP');
+        if (rawPrep) {
+          const newPrep = JSON.parse(rawPrep);
+          if (!state.prep || String(state.prep.id) !== String(newPrep.id)) {
+            state.prepDone = {};
+          }
+          state.prep = newPrep;
+        } else if (state.prep) {
+          state.prep = null;
+        }
+      } catch(e) {}
+
       state.pending     = newPending;
       if (!_historyCleared) state.history = data.history || [];
       state.apiOnline   = true;
