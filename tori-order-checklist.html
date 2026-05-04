@@ -2580,9 +2580,19 @@ function renderDeliveryHistory() {
   // ── API MODE: fetch history from API response ──
   if (API_BASE && !_historyCleared && _lastApiData && _lastApiData.history) {
     const rk = selectedLocation;
+    // Build a lookup from local log so we can enrich API entries with missingItems
+    const localLog = lsGet('TORI_RESTAURANT_LOG', []);
+    const localByOrderId = {};
+    localLog.forEach(e => { if (e.id) localByOrderId[String(e.id)] = e; });
+
     _lastApiData.history.forEach(h => {
       if (h.restaurant !== rk) return;
       if (h.status === 'dispatched' || h.status === 'delivered' || h.status === 'accepted') {
+        // Prefer local missingItems if backend hasn't stored them yet
+        const localEntry = localByOrderId[String(h.id)];
+        const missingItems = (localEntry && Object.keys(localEntry.missingItems || {}).length)
+          ? localEntry.missingItems
+          : (h.missing_items || {});
         log.push({
           id:           h.id,
           restaurant:   h.restaurant,
@@ -2594,7 +2604,7 @@ function renderDeliveryHistory() {
           acceptedBy:   h.delivered_by || '—',
           acceptedAt:   h.delivered_at || null,
           items:        h.items || {},
-          missingItems: h.missing_items || {},
+          missingItems,
           notDispatched: h.not_dispatched || {},
           status:       h.status,
         });
