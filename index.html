@@ -346,6 +346,11 @@
     localStorage.setItem('TORI_USER_NAME', name);
     localStorage.setItem('TORI_USER_GROUPS', JSON.stringify(parseGroups(currentUser.groups)));
     const url = MODULE_URLS[mod] + '?user=' + encodeURIComponent(name);
+    // Hide splash instantly so it never flashes on the way out
+    const splash = document.getElementById('splash');
+    splash.style.transition = 'none';
+    splash.style.opacity = '0';
+    splash.style.pointerEvents = 'none';
     document.getElementById('nav-loader').classList.add('show');
     setTimeout(() => { window.location.href = url; }, 600);
   }
