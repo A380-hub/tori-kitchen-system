@@ -1362,14 +1362,7 @@ init();
   <div id="dispatch-admin-panel" style="display:none;margin-top:12px;flex-direction:column;gap:8px;">
     <button onclick="importDispatchHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--ink);font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Import History from Database</button>
     <button onclick="location.reload(true)" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--ink);font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Force Refresh Page</button>
-    <div style="margin-top:12px;font-size:11px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);margin-bottom:8px;">Driver Settings</div>
-    <label style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line2);cursor:pointer;user-select:none;margin-bottom:8px;">
-      <input type="checkbox" id="skip-name-toggle" onchange="toggleSkipName()" style="width:20px;height:20px;accent-color:#3B82F6;">
-      <div>
-        <div style="font-size:14px;font-weight:800;text-transform:uppercase;color:var(--ink);">Skip Name Entry</div>
-        <div style="font-size:11px;color:var(--ink4);margin-top:2px;">Auto-use saved name for new deliveries</div>
-      </div>
-    </label>
+
     <button onclick="clearDispatchHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:#DE0000;font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Clear Delivery History</button>
   </div>
 <div style="margin-top:16px;padding:12px 14px;background:var(--panel);border:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center;">
@@ -1384,18 +1377,6 @@ init();
 
 <script>
 // ── DISPATCH ADMIN MODE ──
-function toggleSkipName() {
-  const on = document.getElementById('skip-name-toggle').checked;
-  localStorage.setItem('TORI_SKIP_NAME', on ? '1' : '');
-}
-
-// Load skip name preference on init
-(function(){
-  const skip = localStorage.getItem('TORI_SKIP_NAME') === '1';
-  const savedName = localStorage.getItem('TORI_DRIVER_NAME') || '';
-  const el = document.getElementById('skip-name-toggle');
-  if (el) el.checked = skip;
-})();
 
 function toggleDispatchAdmin() {
   const on = document.getElementById('dispatch-admin-toggle').checked;
