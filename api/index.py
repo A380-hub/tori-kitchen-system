@@ -130,7 +130,24 @@ async def get_active_orders():
             "missing_items": row.get("missing_items", {}),
             "not_dispatched": row.get("not_dispatched", {}),
         })
-    return {"r1": pending["r1"], "r2": pending["r2"], "history": history}
+
+    # Latest prep submission — kitchen system reads this as data.prep
+    prep = None
+    try:
+        prep_rows = await sb_get("prep_logs", "order=created_at.desc&limit=1&select=*")
+        if prep_rows:
+            row = prep_rows[0]
+            prep = {
+                "id":        row.get("id"),
+                "ts":        to_ms(row.get("created_at")),
+                "staffName": row.get("staff_name", ""),
+                "prepDate":  row.get("prep_date", ""),
+                "items":     row.get("items", {}),
+            }
+    except Exception:
+        prep = None
+
+    return {"r1": pending["r1"], "r2": pending["r2"], "history": history, "prep": prep}
 
 
 @app.post("/api/orders/dispatch")
@@ -181,8 +198,30 @@ async def accept_delivery(request: Request):
 
 @app.post("/api/prep/submit")
 async def submit_prep(request: Request):
+    """Head chef submits prep log — stored in prep_logs and exposed as data.prep on /api/orders/active."""
     body = await request.json()
-    return {"ok": True, "received": True}
+    items = body.get("items", {})
+    # Normalise items to {task_id: qty} dict in case caller sent the verbose array shape
+    if isinstance(items, list):
+        items = {it.get("task_id"): it.get("qty") for it in items if it.get("task_id")}
+
+    row = {
+        "staff_name":   body.get("staffName") or body.get("chef_name", ""),
+        "prep_date":    body.get("prepDate")  or body.get("prep_date", ""),
+        "day_index":    body.get("day_index"),
+        "day_label":    body.get("day_label", ""),
+        "items":        items,
+        "items_detail": body.get("items_detail", []),
+    }
+    result = await sb_post("prep_logs", row)
+    return {"ok": True, "id": result[0]["id"] if result else None}
+
+
+@app.get("/api/prep/history")
+async def get_prep_history():
+    """All prep submissions for the Preparation History tab."""
+    rows = await sb_get("prep_logs", "order=created_at.desc&limit=100&select=*")
+    return {"history": rows}
 
 
 @app.post("/api/admin/reset")
