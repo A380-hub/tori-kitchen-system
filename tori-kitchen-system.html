@@ -302,6 +302,8 @@ body {
 /* ── AMENDED item highlight ── */
 .order-row.amended { background: rgba(222,0,0,0.07); border-left: 3px solid var(--red); padding-left: 13px; }
 .order-row.amended .order-qty { color: #E87070; }
+.order-row.amended.qty-update { background: rgba(138,96,0,0.12); border-left-color: #C17F00; }
+.order-row.amended.qty-update .order-qty { color: #C17F00; }
 .order-row.amended.dispatched { background: rgba(76,175,80,0.05); border-left: none; padding-left: 16px; }
 .order-row.amended.dispatched .order-qty { color: var(--ink4); }
 .amended-badge {
@@ -311,7 +313,7 @@ body {
   animation: amended-pulse 1.2s ease-in-out infinite; touch-action: manipulation;
 }
 .amended-badge.update {
-  background: rgba(245,158,11,0.12); color: var(--amber); border-color: rgba(245,158,11,0.35);
+  background: rgba(138,96,0,0.35); color: #C17F00; border-color: rgba(138,96,0,0.6);
   animation: amended-pulse-amber 1.2s ease-in-out infinite;
 }
 .order-row.dispatched .amended-badge { display: none; }
@@ -1661,7 +1663,7 @@ function renderOrderColumn(k) {
       const qty     = order.items[item.id];
       const isDone  = !!ticked[item.id];
       const amend   = order.amendedItems && order.amendedItems[item.id];
-      const classes = ['order-row', isDone ? 'dispatched' : '', amend ? 'amended' : ''].filter(Boolean).join(' ');
+      const classes = ['order-row', isDone ? 'dispatched' : '', amend ? 'amended' : '', (amend && isQtyChange) ? 'qty-update' : ''].filter(Boolean).join(' ');
       const isQtyChange = amend && amend.oldQty !== null && amend.oldQty !== undefined;
       const badge   = amend
         ? `<span class="amended-badge${isQtyChange ? ' update' : ''}" onclick="event.stopPropagation();openAmendPopup('${item.name}',${amend.oldQty !== null && amend.oldQty !== undefined ? amend.oldQty : 'null'},${amend.newQty},'${item.unit}')">${isQtyChange ? 'UPDATE' : 'NEW'}</span>`
