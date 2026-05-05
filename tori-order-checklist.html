@@ -1063,10 +1063,10 @@ body {
     <div class="anm-label">Accepted by (name &amp; surname)</div>
     <input class="anm-input" id="anm-input" type="text"
       placeholder="e.g. Ana Kovač" autocomplete="off"
-      oninput="document.getElementById('anm-ok').disabled = !this.value.trim()" />
+      oninput="const b=document.getElementById('anm-ok');const v=this.value.trim();b.disabled=!v;b.style.background=v?'#388E3C':'';" />
     <div class="anm-acts">
       <button class="anm-cancel" onclick="closeAcceptModal()">Cancel</button>
-      <button class="anm-ok" id="anm-ok" disabled onclick="confirmAcceptDelivery()">Delivery Accepted →</button>
+      <button class="anm-ok" id="anm-ok" disabled onclick="confirmAcceptDelivery()" style="background:#388E3C;">Delivery Accepted →</button>
     </div>
   </div>
 </div>
@@ -2186,7 +2186,7 @@ function renderDeliveryStatusInto(bodyEl, footerEl) {
         <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:8px;">
           Delivered by <strong style="color:var(--ink3)">${dispBy}</strong>
         </div>
-        <button class="accept-all-btn" style="background:var(--green2);color:#fff;" onclick="openAcceptModal()">Delivery Accepted →</button>
+        <button style="width:100%;background:#388E3C;border:none;color:#fff;font-family:var(--font);font-size:17px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;padding:16px;cursor:pointer;" onclick="openAcceptModal()">Delivery Accepted →</button>
       </div>`;
       footerEl.innerHTML = '';
     }
@@ -2294,7 +2294,7 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
         <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:8px;">
           Delivered by <strong style="color:var(--ink3)">${dispBy}</strong>
         </div>
-        <button class="accept-all-btn" style="background:var(--green2);color:#fff;" onclick="openAcceptModal()">Delivery Accepted →</button>
+        <button style="width:100%;background:#388E3C;border:none;color:#fff;font-family:var(--font);font-size:17px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;padding:16px;cursor:pointer;" onclick="openAcceptModal()">Delivery Accepted →</button>
       </div>`;
       footerEl.innerHTML = '';
     }
