@@ -1662,9 +1662,9 @@ function renderOrderColumn(k) {
     sorted.forEach(item => {
       const qty     = order.items[item.id];
       const isDone  = !!ticked[item.id];
-      const amend   = order.amendedItems && order.amendedItems[item.id];
-      const classes = ['order-row', isDone ? 'dispatched' : '', amend ? 'amended' : '', (amend && isQtyChange) ? 'qty-update' : ''].filter(Boolean).join(' ');
+      const amend      = order.amendedItems && order.amendedItems[item.id];
       const isQtyChange = amend && amend.oldQty !== null && amend.oldQty !== undefined;
+      const classes    = ['order-row', isDone ? 'dispatched' : '', amend ? 'amended' : '', isQtyChange ? 'qty-update' : ''].filter(Boolean).join(' ');
       const badge   = amend
         ? `<span class="amended-badge${isQtyChange ? ' update' : ''}" onclick="event.stopPropagation();openAmendPopup('${item.name}',${amend.oldQty !== null && amend.oldQty !== undefined ? amend.oldQty : 'null'},${amend.newQty},'${item.unit}')">${isQtyChange ? 'UPDATE' : 'NEW'}</span>`
         : '';
