@@ -257,6 +257,8 @@ body { display: flex; flex-direction: column; }
   width: 100%; flex: none; border-top: 1px solid var(--line2); flex-shrink: 0;
 }
 .deliver-btn:hover:not(:disabled) { background: var(--green); }
+@keyframes green-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(76,175,80,0.5)} 50%{box-shadow:0 0 0 10px rgba(76,175,80,0)} }
+.deliver-btn.pulsing { animation: green-pulse 1.6s ease-in-out infinite; }
 .deliver-btn:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
 .deliver-btn.delivered {
   background: var(--panel3); border: 1px solid var(--green2); color: var(--green);
@@ -838,6 +840,9 @@ function loadDispatchData() {
     });
     dispatchBatch.dispatchedAt = d.dispatchedAt || new Date().toISOString();
     dispatchBatch.dispatchedBy = d.dispatchedBy || 'Kitchen Staff';
+    // Restore transit state so amber button shows correctly after navigation
+    if (d.transitAt)   dispatchBatch.transitAt  = d.transitAt;
+    if (d.driverName)  dispatchBatch.driverName = d.driverName;
   }
 
   try {
@@ -985,7 +990,7 @@ function buildPackCol(k) {
     </div>`;
     btnHtml = '';
   } else {
-    btnHtml = `<button class="deliver-btn col-deliver-btn" onclick="openLoadCheckModal()">✓ Check and Confirm All Items Are Loaded for Delivery</button>`;
+    btnHtml = `<button class="deliver-btn col-deliver-btn pulsing" onclick="openLoadCheckModal()">Confirm All Items Are Loaded for Delivery</button>`;
   }
 
   return `<div class="pack-col">
