@@ -310,10 +310,18 @@ body {
   background: rgba(222,0,0,0.12); color: #E87070; border: 1px solid rgba(222,0,0,0.35);
   animation: amended-pulse 1.2s ease-in-out infinite; touch-action: manipulation;
 }
+.amended-badge.update {
+  background: rgba(245,158,11,0.12); color: var(--amber); border-color: rgba(245,158,11,0.35);
+  animation: amended-pulse-amber 1.2s ease-in-out infinite;
+}
 .order-row.dispatched .amended-badge { display: none; }
 @keyframes amended-pulse {
   0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(222,0,0,0); }
   50%      { opacity:0.6; box-shadow: 0 0 0 3px rgba(222,0,0,0.22); }
+}
+@keyframes amended-pulse-amber {
+  0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+  50%      { opacity:0.6; box-shadow: 0 0 0 3px rgba(245,158,11,0.25); }
 }
 
 /* Empty states */
@@ -1654,8 +1662,9 @@ function renderOrderColumn(k) {
       const isDone  = !!ticked[item.id];
       const amend   = order.amendedItems && order.amendedItems[item.id];
       const classes = ['order-row', isDone ? 'dispatched' : '', amend ? 'amended' : ''].filter(Boolean).join(' ');
+      const isQtyChange = amend && amend.oldQty !== null && amend.oldQty !== undefined;
       const badge   = amend
-        ? `<span class="amended-badge" onclick="event.stopPropagation();openAmendPopup('${item.name}',${amend.oldQty !== null && amend.oldQty !== undefined ? amend.oldQty : 'null'},${amend.newQty},'${item.unit}')">NEW</span>`
+        ? `<span class="amended-badge${isQtyChange ? ' update' : ''}" onclick="event.stopPropagation();openAmendPopup('${item.name}',${amend.oldQty !== null && amend.oldQty !== undefined ? amend.oldQty : 'null'},${amend.newQty},'${item.unit}')">${isQtyChange ? 'UPDATE' : 'NEW'}</span>`
         : '';
       html += `<div class="${classes}" onclick="toggleDispatch('${k}','${item.id}')">
         <div class="dispatch-cb"></div>
