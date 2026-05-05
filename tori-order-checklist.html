@@ -2229,8 +2229,14 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
   let html = '';
 
   // Order info card (preparing + in_delivery only)
-  if (showInfo && lastPayload) {
-    const p = lastPayload;
+  if (showInfo) {
+    const p = lastPayload || (st.order ? {
+      restaurant: selectedLocation,
+      staff_name: st.order.staffName,
+      order_date: st.order.orderDate || new Date(st.order.ts).toISOString().slice(0,10),
+      items: st.order.items || {}
+    } : null);
+    if (p) {
     const restName = p.restaurant==='r1' ? 'Tori 1 — Špansko' : 'Tori 2 — Trnje';
     const itemCount = Object.keys(p.items || {}).length;
     const d = new Date((p.order_date||'')+'T12:00:00');
@@ -2241,7 +2247,8 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
       <div class="soc-row"><span class="soc-label">Submitted by</span><span class="soc-val">${p.staff_name || '—'}</span></div>
       <div class="soc-row"><span class="soc-label">Items</span><span class="soc-val green">${itemCount}</span></div>
     </div>`;
-  }
+    } // close if(p)
+  } // close if(showInfo)
 
   // Status bar
   html += buildStatusBadge(st);
