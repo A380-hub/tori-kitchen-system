@@ -909,21 +909,6 @@ body {
   <div style="padding:0 18px 8px;">
     <button class="settings-reset" onclick="resetSchedule()" style="width:100%;">Reset to Default</button>
   </div>
-  <div style="padding:0 20px 16px;">
-      <div style="font-size:11px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);margin-bottom:10px;">Admin</div>
-      <label style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line2);cursor:pointer;user-select:none;">
-        <input type="checkbox" id="prep-admin-toggle" onchange="togglePrepAdmin()" style="width:20px;height:20px;accent-color:#DE0000;">
-        <div>
-          <div style="font-size:15px;font-weight:800;text-transform:uppercase;color:var(--ink);">Admin Mode</div>
-          <div style="font-size:11px;color:var(--ink4);margin-top:2px;">Access import & clear functions</div>
-        </div>
-      </label>
-      <div id="prep-admin-panel" style="display:none;margin-top:12px;flex-direction:column;gap:8px;">
-        <button onclick="importPrepHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--ink);font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Import History from Database</button>
-        <button onclick="location.reload(true)" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--ink);font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Force Refresh Page</button>
-        <button onclick="clearPrepHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:#DE0000;font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Clear Prep History</button>
-      </div>
-    </div>
 </div>
 
 
@@ -942,7 +927,6 @@ body {
   </div>
   <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px 12px;border-bottom:1px solid var(--line);">
     <div style="font-size:11px;font-weight:900;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink4);">Preparation History</div>
-    <button class="clear-hist-btn" onclick="clearPrepHistory()">Clear History</button>
   </div>
   <div class="hist-list" id="hist-list"></div>
 </div>
