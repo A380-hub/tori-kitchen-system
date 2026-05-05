@@ -1059,7 +1059,7 @@ function loadSchedule() {
     // ignore any unknown saved tasks.
     const savedById = {};
     saved.forEach(s => { if (s && s.id) savedById[s.id] = s; });
-    return DEFAULT_TASKS.map(d => {
+    const defaultList = DEFAULT_TASKS.map(d => {
       const s = savedById[d.id];
       if (!s) return { ...d, days: [...d.days] };
       return {
@@ -1070,6 +1070,8 @@ function loadSchedule() {
         days: Array.isArray(s.days) ? s.days.filter(x => x>=0 && x<=5) : [...d.days],
       };
     });
+    const customTasks = saved.filter(s => s && s.id && s.id.startsWith('custom_'));
+    return [...defaultList, ...customTasks];
   } catch (e) {
     console.warn('Failed to load schedule, using defaults:', e);
     return JSON.parse(JSON.stringify(DEFAULT_TASKS));
