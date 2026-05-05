@@ -312,7 +312,6 @@ body {
   padding-left: 16px;
 }
 .order-row.amended.dispatched .order-qty { color: var(--ink4); }
-
 .amended-badge {
   font-size: 9px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase;
   padding: 2px 6px; flex-shrink: 0; cursor: pointer;
@@ -982,6 +981,8 @@ ORDER_CATS.forEach(c => c.items.forEach(i => { orderItemMeta[i.id] = { ...i, cat
 
 // ── STATE ──
 let _historyCleared = false;
+// Snapshot of items from the PREVIOUS order per restaurant — used to detect amendments
+let _prevOrderItems = { r1: {}, r2: {} };
 let state = {
   // Preparation list (from tori-preparation-checklist)
   prep: null,           // { id, staff_name, role, prep_date, items:{id:qty}, ts }
@@ -1011,9 +1012,21 @@ async function fetchAll(quiet = true) {
         if (data[k]) {
           const normalized = normalizeOrder(data[k], k);
           const prev = state.pending[k];
+          // New order ID arrived — save current items as previous snapshot, reset ticks
           if (!prev || String(prev.id) !== String(normalized.id)) {
+            if (prev && prev.items) _prevOrderItems[k] = JSON.parse(JSON.stringify(prev.items));
             state.dispatchTicked[k] = {};
           }
+          // Detect amendments: compare current items vs snapshot
+          const prevItems = _prevOrderItems[k] || {};
+          const amendedItems = {};
+          Object.entries(normalized.items).forEach(([id, qty]) => {
+            const oldQty = prevItems[id] !== undefined ? prevItems[id] : null;
+            if (oldQty === null || oldQty !== qty) {
+              amendedItems[id] = { oldQty, newQty: qty };
+            }
+          });
+          normalized.amendedItems = Object.keys(amendedItems).length > 0 ? amendedItems : {};
           newPending[k] = normalized;
         }
       });
@@ -1046,12 +1059,22 @@ async function fetchAll(quiet = true) {
     ['r1','r2'].forEach(k => {
       const order = ordersData[k];
       if (order && !order.dispatched) {
+        const normalized = normalizeOrder(order, k);
         const prev = state.pending[k];
-        const next = order;
-        if (!prev || String(prev.id) !== String(next.id)) {
+        if (!prev || String(prev.id) !== String(normalized.id)) {
+          if (prev && prev.items) _prevOrderItems[k] = JSON.parse(JSON.stringify(prev.items));
           state.dispatchTicked[k] = {};
         }
-        newPending[k] = next;
+        const prevItems = _prevOrderItems[k] || {};
+        const amendedItems = {};
+        Object.entries(normalized.items).forEach(([id, qty]) => {
+          const oldQty = prevItems[id] !== undefined ? prevItems[id] : null;
+          if (oldQty === null || oldQty !== qty) {
+            amendedItems[id] = { oldQty, newQty: qty };
+          }
+        });
+        normalized.amendedItems = Object.keys(amendedItems).length > 0 ? amendedItems : {};
+        newPending[k] = normalized;
       }
     });
 
@@ -1125,37 +1148,12 @@ function normalizeOrder(raw, k) {
   } else {
     Object.entries(src).forEach(([id,q]) => { if(Number(q)>0) items[id]=Number(q); });
   }
-
-  // Previous items (original qtys before amendment)
-  const previousItems = {};
-  const src2 = raw.previous_items || raw.previousItems || {};
-  if (Array.isArray(src2)) {
-    src2.forEach(l => { if(l.id) previousItems[l.id] = Number(l.qty||l.quantity||0); });
-  } else {
-    Object.entries(src2).forEach(([id,q]) => { previousItems[id] = Number(q)||0; });
-  }
-
-  // Build amendedItems map: itemId -> { oldQty, newQty }
-  const isAmendment = !!(raw.is_amendment || raw.isAmendment);
-  const amendedItems = {};
-  if (isAmendment) {
-    Object.entries(items).forEach(([id, qty]) => {
-      const oldQty = previousItems[id] !== undefined ? previousItems[id] : null;
-      if (oldQty === null || oldQty !== qty) {
-        amendedItems[id] = { oldQty, newQty: qty };
-      }
-    });
-  }
-
   return {
-    id:           raw.id || Date.now(),
-    restaurant:   k,
-    staffName:    raw.staff_name || raw.staffName || '—',
-    orderDate:    raw.order_date || raw.orderDate || null,
-    ts:           toMs(raw.ts || raw.submittedAt || raw.created_at),
-    isAmendment,
-    amendedItems,
-    previousItems,
+    id:        raw.id || Date.now(),
+    restaurant: k,
+    staffName: raw.staff_name || raw.staffName || '—',
+    orderDate: raw.order_date || raw.orderDate || null,
+    ts:        toMs(raw.ts || raw.submittedAt || raw.created_at),
     items
   };
 }
@@ -1637,12 +1635,12 @@ function renderOrderColumn(k) {
 
     html += `<div class="cat-label">${cat.label}</div>`;
     sorted.forEach(item => {
-      const qty      = order.items[item.id];
-      const isDone   = !!ticked[item.id];
-      const amend    = order.amendedItems && order.amendedItems[item.id];
-      const classes  = ['order-row', isDone ? 'dispatched' : '', amend ? 'amended' : ''].filter(Boolean).join(' ');
-      const badge    = amend
-        ? `<span class="amended-badge" onclick="event.stopPropagation();openAmendPopup('${item.name}',${amend.oldQty !== null ? amend.oldQty : 'null'},${amend.newQty},'${item.unit}')">NEW</span>`
+      const qty     = order.items[item.id];
+      const isDone  = !!ticked[item.id];
+      const amend   = order.amendedItems && order.amendedItems[item.id];
+      const classes = ['order-row', isDone ? 'dispatched' : '', amend ? 'amended' : ''].filter(Boolean).join(' ');
+      const badge   = amend
+        ? `<span class="amended-badge" onclick="event.stopPropagation();openAmendPopup('${item.name}',${amend.oldQty !== null && amend.oldQty !== undefined ? amend.oldQty : 'null'},${amend.newQty},'${item.unit}')">NEW</span>`
         : '';
       html += `<div class="${classes}" onclick="toggleDispatch('${k}','${item.id}')">
         <div class="dispatch-cb"></div>
@@ -2079,6 +2077,7 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
+
 // ── AMENDMENT POPUP ──
 function openAmendPopup(name, oldQty, newQty, unit) {
   document.getElementById('amend-popup-name').textContent = name;
@@ -2086,18 +2085,17 @@ function openAmendPopup(name, oldQty, newQty, unit) {
   const newEl = document.getElementById('amend-popup-new');
   if (oldQty === null || oldQty === undefined) {
     oldEl.textContent = '— not on original order';
-    oldEl.style.fontSize = '14px';
-    oldEl.style.textDecoration = 'none';
+    oldEl.style.fontSize = '13px';
     oldEl.style.color = 'var(--ink4)';
+    oldEl.style.textDecoration = 'none';
   } else {
     oldEl.textContent = oldQty + ' ' + unit;
     oldEl.style.fontSize = '28px';
-    oldEl.style.textDecoration = 'line-through';
     oldEl.style.color = 'var(--ink4)';
+    oldEl.style.textDecoration = 'line-through';
   }
   newEl.textContent = newQty + ' ' + unit;
-  const back = document.getElementById('amend-popup-back');
-  back.style.display = 'flex';
+  document.getElementById('amend-popup-back').style.display = 'flex';
 }
 function closeAmendPopup(e) {
   if (e && e.type === 'click' && e.target !== document.getElementById('amend-popup-back')) return;
@@ -2279,25 +2277,6 @@ function clearKitchenHistory() {
 #kitchen-settings-modal.open { display:flex; }
 </style>
 
-<!-- AMENDMENT DETAIL POPUP -->
-<div id="amend-popup-back" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:500;align-items:center;justify-content:center;padding:24px;" onclick="closeAmendPopup(event)">
-  <div id="amend-popup" style="background:var(--panel);border:1px solid var(--line2);border-top:3px solid var(--red);width:100%;max-width:340px;padding:22px 22px 18px;">
-    <div style="font-size:10px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);margin-bottom:4px;">Amended Order</div>
-    <div id="amend-popup-name" style="font-size:22px;font-weight:900;text-transform:uppercase;color:var(--ink);letter-spacing:0.02em;margin-bottom:16px;line-height:1.1;"></div>
-    <div style="border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:0;">
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(84,84,84,0.35);">
-        <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink4);">Original</div>
-        <div id="amend-popup-old" style="font-size:28px;font-weight:900;color:var(--ink4);text-decoration:line-through;text-decoration-color:var(--line2);letter-spacing:-0.01em;"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
-        <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink4);">New</div>
-        <div id="amend-popup-new" style="font-size:28px;font-weight:900;color:#E87070;letter-spacing:-0.01em;"></div>
-      </div>
-    </div>
-    <button onclick="closeAmendPopup()" style="width:100%;margin-top:14px;padding:10px;background:transparent;border:1px solid var(--line2);color:var(--ink4);font-family:var(--font);font-size:11px;font-weight:900;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;" >Dismiss</button>
-  </div>
-</div>
-
 <!-- TORI BLOB LOADER -->
 <div id="tori-blob-splash">
   <svg width="140" height="140" viewBox="0 0 200 200">
@@ -2312,6 +2291,26 @@ setTimeout(function(){
   if(s){s.classList.add('hide');setTimeout(function(){s.style.display='none';},400);}
 },1200);
 </script>
+
+
+<!-- AMENDMENT DETAIL POPUP -->
+<div id="amend-popup-back" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:500;align-items:center;justify-content:center;padding:24px;" onclick="closeAmendPopup(event)">
+  <div id="amend-popup" style="background:var(--panel);border:1px solid var(--line2);border-top:3px solid var(--red);width:100%;max-width:340px;padding:22px 22px 18px;">
+    <div style="font-size:10px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);margin-bottom:4px;">Amended Order</div>
+    <div id="amend-popup-name" style="font-size:22px;font-weight:900;text-transform:uppercase;color:var(--ink);letter-spacing:0.02em;margin-bottom:16px;line-height:1.1;"></div>
+    <div style="border-top:1px solid var(--line);padding-top:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(84,84,84,0.35);">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink4);">Original</div>
+        <div id="amend-popup-old" style="font-size:28px;font-weight:900;letter-spacing:-0.01em;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink4);">New</div>
+        <div id="amend-popup-new" style="font-size:28px;font-weight:900;color:#E87070;letter-spacing:-0.01em;"></div>
+      </div>
+    </div>
+    <button onclick="closeAmendPopup()" style="width:100%;margin-top:14px;padding:10px;background:transparent;border:1px solid var(--line2);color:var(--ink4);font-family:var(--font);font-size:11px;font-weight:900;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;touch-action:manipulation;">Dismiss</button>
+  </div>
+</div>
 
 </body>
 </html>
