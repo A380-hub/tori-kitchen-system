@@ -840,9 +840,11 @@ function loadDispatchData() {
     });
     dispatchBatch.dispatchedAt = d.dispatchedAt || new Date().toISOString();
     dispatchBatch.dispatchedBy = d.dispatchedBy || 'Kitchen Staff';
-    // Restore transit state so amber button shows correctly after navigation
-    if (d.transitAt)   dispatchBatch.transitAt  = d.transitAt;
-    if (d.driverName)  dispatchBatch.driverName = d.driverName;
+    // Only restore transitAt if it belongs to THIS dispatch (must be after dispatchedAt)
+    if (d.transitAt && d.dispatchedAt && d.transitAt > d.dispatchedAt) {
+      dispatchBatch.transitAt  = d.transitAt;
+      dispatchBatch.driverName = d.driverName || '';
+    }
   }
 
   try {
