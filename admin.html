@@ -36,6 +36,9 @@
   .group-pill.management { background: #1a2d4a; color: #5b9bd5; }
   .group-pill.delivery   { background: #3d3010; color: #d4a847; }
   .group-pill.admin      { background: #3d0a0a; color: #ff6666; }
+  .group-pill.order      { background: #1a3d22; color: #4caf74; }
+  .group-pill.display    { background: #1a2d4a; color: #5b9bd5; }
+  .group-pill.prep       { background: #2a1a3d; color: #b57fd4; }
 
   .user-actions { display: flex; gap: 6px; flex-shrink: 0; }
   .btn-icon { background: #1a1a1a; border: 1px solid #252525; border-radius: 8px; color: #888; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; padding: 6px 10px; cursor: pointer; transition: all 0.15s; text-transform: uppercase; }
@@ -65,6 +68,10 @@
   .role-name.management { color: #5b9bd5; }
   .role-name.delivery   { color: #d4a847; }
   .role-name.admin      { color: #ff6666; }
+  .role-name.order      { color: #4caf74; }
+  .role-name.display    { color: #5b9bd5; }
+  .role-name.prep       { color: #b57fd4; }
+  .role-name.delivery2  { color: #d4a847; }
 
   .form-actions { display: flex; gap: 10px; margin-top: 18px; }
   .btn-primary { flex: 1; background: #cc1010; border: none; border-radius: 8px; color: #fff; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; padding: 12px; cursor: pointer; transition: background 0.15s; }
@@ -152,19 +159,19 @@
       <div class="role-grid">
         <div class="role-check" id="rc-order" onclick="toggleRole('order')">
           <div class="role-checkmark"></div>
-          <span class="role-name kitchen">Order</span>
+          <span class="role-name order">Order</span>
         </div>
         <div class="role-check" id="rc-display" onclick="toggleRole('display')">
           <div class="role-checkmark"></div>
-          <span class="role-name management">Kitchen Display</span>
+          <span class="role-name display">Kitchen Display</span>
         </div>
         <div class="role-check" id="rc-prep" onclick="toggleRole('prep')">
           <div class="role-checkmark"></div>
-          <span class="role-name delivery">Prep List</span>
+          <span class="role-name prep">Prep List</span>
         </div>
         <div class="role-check" id="rc-delivery" onclick="toggleRole('delivery')">
           <div class="role-checkmark"></div>
-          <span class="role-name management">Delivery</span>
+          <span class="role-name delivery">Delivery</span>
         </div>
         <div class="role-check" id="rc-admin" onclick="toggleRole('admin')">
           <div class="role-checkmark"></div>
