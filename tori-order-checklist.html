@@ -1416,8 +1416,25 @@ async function doSend() {
   };
   lastPayload=payload;
 
+  const API_BASE = 'https://tori-kitchen-system-tv6b.vercel.app';
+
   try {
-    // DEMO: write order directly to localStorage for kitchen system to read
+    // POST to Vercel API so kitchen display picks up the order
+    const apiRes = await fetch(API_BASE + '/api/orders/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        restaurant:   payload.restaurant,
+        staff_name:   payload.staff_name,
+        order_date:   payload.order_date,
+        items:        payload.items,
+        is_amendment: payload.is_amendment,
+        ts:           payload.ts
+      })
+    });
+    if (!apiRes.ok) throw new Error('API error ' + apiRes.status);
+
+    // Also write to localStorage for local status tracking
     const orders = lsGet('TORI_ORDERS', {});
     const rk = payload.restaurant;
     const prevId = orders[rk] ? orders[rk].id : null;
