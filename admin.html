@@ -174,6 +174,17 @@
   <div class="section"><div class="section-title">All Users</div><div id="list-all"><div class="empty-state">Loading...</div></div></div>
 
   <button class="btn-add" onclick="showAddForm()">+ Add New User</button>
+
+  <!-- Order System -->
+  <div class="section" style="margin-top:32px;">
+    <div class="section-title">Order System</div>
+    <div style="background:#111;border:1px solid #1e1e1e;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="font-family:'Barlow',sans-serif;font-size:13px;color:#555;line-height:1.5;">Orders delivered but not yet accepted by the restaurant. Use this to manually clear them.</div>
+      <div id="pending-orders-status" style="font-family:'Barlow',sans-serif;font-size:13px;color:#888;">Checking…</div>
+      <button class="btn-primary" id="clear-pending-btn" onclick="clearAllPendingOrders()" style="margin-top:4px;">Clear All Pending Orders</button>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -211,6 +222,7 @@
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('admin-app').classList.add('visible');
         loadUsers();
+        checkPendingOrders();
       }, 400);
     } else {
       updateAuthDots('error'); authBusy = true;
@@ -339,6 +351,74 @@
     t.textContent = msg; t.className = 'toast' + (type ? ' ' + type : ''); t.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  // ── ORDER SYSTEM ──
+  const VERCEL_API = 'https://tori-kitchen-system-tv6b.vercel.app';
+
+  async function checkPendingOrders() {
+    const statusEl = document.getElementById('pending-orders-status');
+    const btn = document.getElementById('clear-pending-btn');
+    if (!statusEl) return;
+    try {
+      const res = await fetch(VERCEL_API + '/api/orders/active', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const pending = (data.history || []).filter(h => h.status === 'delivered');
+      if (pending.length === 0) {
+        statusEl.textContent = '✓ No pending orders — all clear.';
+        statusEl.style.color = '#22cc66';
+        btn.disabled = true;
+        btn.style.opacity = '0.4';
+      } else {
+        statusEl.textContent = pending.length + ' order' + (pending.length !== 1 ? 's' : '') + ' pending acceptance.';
+        statusEl.style.color = '#d4a847';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      }
+    } catch(e) {
+      statusEl.textContent = 'Could not reach order system.';
+      statusEl.style.color = '#ff4444';
+    }
+  }
+
+  async function clearAllPendingOrders() {
+    if (!confirm('Clear all pending delivered orders?\nThis will mark them as accepted.')) return;
+    const btn = document.getElementById('clear-pending-btn');
+    const statusEl = document.getElementById('pending-orders-status');
+    btn.disabled = true;
+    btn.textContent = 'Clearing…';
+    try {
+      const res = await fetch(VERCEL_API + '/api/orders/active', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const pending = (data.history || []).filter(h => h.status === 'delivered');
+      if (!pending.length) {
+        showToast('No pending orders found', 'success');
+        btn.textContent = 'Clear All Pending Orders';
+        await checkPendingOrders();
+        return;
+      }
+      let cleared = 0;
+      for (const order of pending) {
+        const r = await fetch(VERCEL_API + '/api/orders/delivered', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            restaurant:   order.restaurant,
+            delivered_by: order.delivered_by || 'Admin',
+            accepted_by:  'Admin',
+            missing_items: {}
+          })
+        });
+        if (r.ok) cleared++;
+      }
+      showToast('Cleared ' + cleared + ' order' + (cleared !== 1 ? 's' : ''), 'success');
+      await checkPendingOrders();
+    } catch(e) {
+      showToast('Error: ' + (e.message || 'unknown'), 'error');
+    }
+    btn.textContent = 'Clear All Pending Orders';
   }
 
   document.addEventListener('keydown', e => {
