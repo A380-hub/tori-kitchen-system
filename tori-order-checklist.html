@@ -1681,25 +1681,26 @@ async function syncStatusFromAPI() {
     const myHistory = (data.history || []).filter(h => h.restaurant === rk);
     if (myHistory.length) {
       const latest = myHistory[0]; // history is newest-first
-      // If local status is 'preparing' and was set from a NEW order (newer than API history), keep it
-      const localPreparing = existing[rk] && existing[rk].status === 'preparing';
-      const localOrderTs   = localPreparing && existing[rk].order ? (existing[rk].order.ts || 0) : 0;
-      const apiLatestTs    = latest.created_at ? new Date(latest.created_at).getTime() : 0;
-      const localIsNewer   = localOrderTs > apiLatestTs;
-      if (localIsNewer) { /* local fresh submit — do not overwrite */ }
+      const localStatus  = existing[rk] ? existing[rk].status : null;
+      const localOrderId = existing[rk] && existing[rk].order ? existing[rk].order.id : null;
+      const localOrderTs = existing[rk] && existing[rk].order ? (existing[rk].order.ts || 0) : 0;
+      const apiLatestTs  = latest.created_at ? new Date(latest.created_at).getTime() : 0;
+
+      // Never overwrite a fresh local 'preparing' with old API history
+      // A local preparing is "fresh" if its ts is newer than the API history entry
+      const localIsNewer = localStatus === 'preparing' && localOrderTs > apiLatestTs;
+
+      if (localIsNewer) { /* fresh local submit — do not overwrite with old history */ }
+      else if (localStatus === 'accepted') { /* keep — already accepted */ }
       else if (latest.status === 'dispatched') {
-        // Don't overwrite if already locally accepted
-        if (existing[rk] && existing[rk].status === 'accepted') { /* keep */ }
-        else existing[rk] = {
-          status:       'in_delivery',
+        existing[rk] = {
+          status:       'preparing',
           order:        { id: latest.id, staffName: latest.staff_name, items: latest.items, ts: new Date(latest.created_at).getTime() },
           dispatchedAt: latest.dispatched_at,
           dispatchedBy: latest.dispatched_by
         };
       } else if (latest.status === 'delivered') {
-        // Don't overwrite if already locally accepted
-        if (existing[rk] && existing[rk].status === 'accepted') { /* keep */ }
-        else existing[rk] = {
+        existing[rk] = {
           status:      'delivered',
           order:       { id: latest.id, staffName: latest.staff_name, items: latest.items, ts: new Date(latest.created_at).getTime() },
           dispatchedAt: latest.dispatched_at,
@@ -1720,14 +1721,12 @@ async function syncStatusFromAPI() {
       }
     }
 
-    // If no active order and no recent history entry, clear stale status
-    // But never clear a locally-set 'preparing' that is newer than any API history
-    const localTs = existing[rk] && existing[rk].order ? (existing[rk].order.ts || 0) : 0;
-    const latestApiTs = myHistory.length ? new Date(myHistory[0].created_at).getTime() : 0;
-    if (!data[rk] && myHistory.length === 0) {
+    // If no active order and no history at all, clear stale status
+    // But never clear a fresh local 'preparing' (it may not be in API yet)
+    const localTs2 = existing[rk] && existing[rk].order ? (existing[rk].order.ts || 0) : 0;
+    const latestApiTs2 = myHistory.length ? new Date(myHistory[0].created_at).getTime() : 0;
+    if (!data[rk] && myHistory.length === 0 && !(existing[rk] && existing[rk].status === 'preparing')) {
       delete existing[rk];
-    } else if (!data[rk] && existing[rk] && existing[rk].status === 'preparing' && localTs > latestApiTs) {
-      /* keep — local fresh submit not yet visible in API */
     }
 
     localStorage.setItem('TORI_STATUS', JSON.stringify(existing));

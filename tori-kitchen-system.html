@@ -1842,7 +1842,7 @@ async function doDispatchFull() {
             }
           });
           existingStatus[k] = {
-            status:        'in_delivery',
+            status:        'preparing',
             order:         { id:src.id, staffName:src.staffName, items:src.items, ts:src.ts },
             dispatchedAt:  delivSnapshot.dispatchedAt,
             dispatchedBy:  _dispatcherName,
