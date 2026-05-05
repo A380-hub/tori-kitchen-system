@@ -808,7 +808,7 @@ body {
         </div>
       </div>
     </div>
-    <button class="start-btn" id="start-btn" onclick="startPrep()" disabled>Start Preparation →</button>
+    <button class="start-btn" id="start-btn" onclick="startPrep()">Start Preparation →</button>
   </div>
 </div>
 
@@ -1127,9 +1127,7 @@ if (_savedUser) document.getElementById('prep-name').value = _savedUser;
 );
 
 function chkReady() {
-  document.getElementById('start-btn').disabled =
-    !(document.getElementById('prep-name').value.trim() &&
-      document.getElementById('prep-date').value);
+  document.getElementById('start-btn').disabled = false;
 }
 
 function startPrep() {
@@ -1410,7 +1408,6 @@ function goHome() {
   checked = {};
   document.getElementById('prep-name').value = '';
   prepDatePicker.setDate(getDefaultPrepDate(), false);
-  document.getElementById('start-btn').disabled = true;
   go('s-welcome');
 }
 
