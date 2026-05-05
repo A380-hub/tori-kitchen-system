@@ -1080,7 +1080,12 @@ function loadSchedule() {
         days: Array.isArray(s.days) ? s.days.filter(x => x>=0 && x<=5) : [...d.days],
       };
     });
-    const customTasks = saved.filter(s => s && s.id && s.id.startsWith('custom_') && s.name);
+    const customTasks = saved
+      .filter(s => s && s.id && s.id.startsWith('custom_') && s.name)
+      .map(s => ({
+        ...s,
+        defaultDays: s.defaultDays ? s.defaultDays : [...(s.days || [])],
+      }));
     return [...defaultList, ...customTasks];
   } catch (e) {
     console.warn('Failed to load schedule, using defaults:', e);
@@ -1090,7 +1095,7 @@ function loadSchedule() {
 
 function saveSchedule() {
   try {
-    const compact = TASKS.map(t => ({ id: t.id, days: t.days }));
+    const compact = TASKS.map(t => ({ id: t.id, days: t.days, ...(t.defaultDays ? { defaultDays: t.defaultDays } : {}), ...(t.name && t.id.startsWith('custom_') ? { name: t.name, cat: t.cat, unit: t.unit } : {}) }));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(compact));
   } catch (e) {
     console.warn('Failed to save schedule:', e);
