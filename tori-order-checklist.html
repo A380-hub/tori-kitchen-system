@@ -447,10 +447,9 @@ body {
 .pending-item-row.missing .missing-cb::after { opacity:1; transform:scale(1); }
 .missing-reason-tag { font-size:11px; font-family:var(--body); color: var(--red); margin-left: 4px; font-style:italic; }
 .pending-footer {
-  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 100%; max-width: 480px; background: rgba(15,19,20,0.98);
+  width: 100%; background: rgba(15,19,20,0.98);
   border-top: 1px solid var(--line2); padding: 12px 16px;
-  display: flex; flex-direction: column; gap: 8px; z-index: 100; backdrop-filter: blur(10px);
+  display: flex; flex-direction: column; gap: 8px; flex-shrink: 0;
 }
 .accept-all-btn {
   width: 100%; background: var(--green2); border: none; color: var(--ink);
@@ -1678,14 +1677,18 @@ async function syncStatusFromAPI() {
     if (myHistory.length) {
       const latest = myHistory[0]; // history is newest-first
       if (latest.status === 'dispatched') {
-        existing[rk] = {
+        // Don't overwrite if already locally accepted
+        if (existing[rk] && existing[rk].status === 'accepted') { /* keep */ }
+        else existing[rk] = {
           status:       'in_delivery',
           order:        { id: latest.id, staffName: latest.staff_name, items: latest.items, ts: new Date(latest.created_at).getTime() },
           dispatchedAt: latest.dispatched_at,
           dispatchedBy: latest.dispatched_by
         };
       } else if (latest.status === 'delivered') {
-        existing[rk] = {
+        // Don't overwrite if already locally accepted
+        if (existing[rk] && existing[rk].status === 'accepted') { /* keep */ }
+        else existing[rk] = {
           status:      'delivered',
           order:       { id: latest.id, staffName: latest.staff_name, items: latest.items, ts: new Date(latest.created_at).getTime() },
           dispatchedAt: latest.dispatched_at,
@@ -1963,6 +1966,19 @@ function confirmAcceptDelivery() {
 
   missingItems = {};
   showToast('Delivery accepted by ' + name);
+
+  // POST to Vercel API so syncStatusFromAPI won't overwrite the accepted status
+  fetch(_API_BASE + '/api/orders/delivered', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      restaurant:    selectedLocation,
+      delivered_by:  name,
+      accepted_by:   name,
+      missing_items: {}
+    })
+  }).catch(e => console.warn('Could not post accept to API:', e));
+
   // Stay on STATUS tab — refresh to show accepted state, then user can navigate freely
   updateWelcomeStatusBadge();
   updateDeliveryTabDots();
@@ -2471,6 +2487,31 @@ function closeHistoryDetail() {
    STATUS CHANGE NOTIFICATIONS & SOUNDS
    ═══════════════════════════════════════ */
 let _lastKnownStatus = null;
+
+/* ═══════════════════════════════════════
+   AUDIO UNLOCK — iOS/Chrome require a user
+   gesture before AudioContext will play.
+   We unlock silently on first tap/click.
+   ═══════════════════════════════════════ */
+let _audioUnlocked = false;
+let _unlockedAC = null;
+
+function unlockAudio() {
+  if (_audioUnlocked) return;
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    const buf = ac.createBuffer(1, 1, 22050);
+    const src = ac.createBufferSource();
+    src.buffer = buf;
+    src.connect(ac.destination);
+    src.start(0);
+    _unlockedAC = ac;
+    _audioUnlocked = true;
+  } catch(e) {}
+}
+
+document.addEventListener('touchstart', unlockAudio, { once: false, passive: true });
+document.addEventListener('click', unlockAudio, { once: false, passive: true });
 
 function playSoundA() {
   try {
