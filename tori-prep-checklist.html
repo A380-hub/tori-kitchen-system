@@ -449,6 +449,13 @@ body {
 .setting-row.no-days .setting-summary { color: var(--line2); }
 .setting-row.no-days .day-toggle:not(.on) { opacity: 0.35; }
 .setting-row-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.delete-task-btn {
+  background: transparent; border: none; color: var(--ink4);
+  font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px;
+  flex-shrink: 0; touch-action: manipulation;
+  transition: color 0.15s;
+}
+.delete-task-btn:hover { color: var(--red); }
 .setting-name {
   font-size: 16px; font-weight: 800; text-transform: uppercase;
   letter-spacing: 0.02em; color: var(--ink); flex: 1;
@@ -873,6 +880,11 @@ body {
       font-family:var(--font);font-size:11px;font-weight:900;letter-spacing:0.14em;
       text-transform:uppercase;padding:6px 12px;cursor:pointer;white-space:nowrap;
       touch-action:manipulation;flex-shrink:0;">A–Z</button>
+    <button id="edit-toggle" onclick="toggleEdit()"
+      style="background:transparent;border:1px solid var(--line2);color:var(--ink4);
+      font-family:var(--font);font-size:11px;font-weight:900;letter-spacing:0.14em;
+      text-transform:uppercase;padding:6px 12px;cursor:pointer;white-space:nowrap;
+      touch-action:manipulation;flex-shrink:0;">Edit</button>
   </div>
   <div class="settings-info">
     Tap a day for any task to add or remove it from that day's schedule. Changes save automatically.
@@ -988,6 +1000,7 @@ const CATEGORIES = [
   { id:'sauces',     label:'Sauces' },
   { id:'foods',      label:'Foods' },
   { id:'vegetables', label:'Vegetables' },
+  { id:'other',      label:'Other' },
 ];
 
 const DEFAULT_TASKS = [
@@ -1438,7 +1451,10 @@ function openSettings() {
   renderSettings();
   go('s-settings');
 }
-function closeSettings() { go('s-welcome'); }
+function closeSettings() {
+  editMode = false;
+  go('s-welcome');
+}
 
 function summaryFor(task) {
   if (task.days.length === 0) return 'Not scheduled';
@@ -1458,6 +1474,12 @@ function togglesFor(taskId) {
 }
 
 let currentSort = 'default'; // 'default' | 'az'
+let editMode = false;
+let deletedIds = new Set(JSON.parse(localStorage.getItem('tori_deleted_ids') || '[]'));
+
+function saveDeletedIds() {
+  try { localStorage.setItem('tori_deleted_ids', JSON.stringify([...deletedIds])); } catch(e) {}
+}
 
 function toggleSort() {
   currentSort = currentSort === 'default' ? 'az' : 'default';
@@ -1489,10 +1511,12 @@ function renderSettings() {
   let html = '';
   tasks.forEach(task => {
     const noDays = !task.days || task.days.length === 0;
+    const showDelete = editMode;
     html += `<div class="setting-row${noDays ? ' no-days' : ''}" id="row-${task.id}">
       <div class="setting-row-top">
         <div class="setting-name">${task.name}</div>
         <div class="setting-summary" id="summary-${task.id}">${summaryFor(task)}</div>
+        ${showDelete ? `<button class="delete-task-btn" onclick="deleteTask('${task.id}')" title="Delete task">×</button>` : ''}
       </div>
       <div class="day-toggles" id="toggles-${task.id}">${togglesFor(task.id)}</div>
     </div>`;
@@ -1521,7 +1545,27 @@ function toggleTaskDay(taskId, day) {
   if (rowEl) rowEl.classList.toggle('no-days', task.days.length === 0);
 }
 
-/* ── ADD NEW TASK ── */
+function toggleEdit() {
+  editMode = !editMode;
+  const btn = document.getElementById('edit-toggle');
+  btn.textContent = editMode ? 'Edit ✓' : 'Edit';
+  btn.style.color = editMode ? 'var(--ink)' : 'var(--ink4)';
+  btn.style.borderColor = editMode ? 'var(--ink4)' : 'var(--line2)';
+  renderSettings();
+}
+
+function deleteTask(taskId) {
+  // Track deleted default tasks so reset can restore them
+  if (!taskId.startsWith('custom_')) deletedIds.add(taskId);
+  saveDeletedIds();
+  TASKS = TASKS.filter(t => t.id !== taskId);
+  rebuildTaskMap();
+  saveSchedule();
+  renderSettings();
+  showToast('Task deleted');
+}
+
+
 let newTaskDays = [];
 
 function showAddTaskForm() {
@@ -1566,13 +1610,25 @@ function saveNewTask() {
 }
 
 function resetSchedule() {
+  // Restore any deleted default tasks
+  const existingIds = new Set(TASKS.map(t => t.id));
   DEFAULT_TASKS.forEach(def => {
-    const t = taskMap[def.id];
+    if (!existingIds.has(def.id)) {
+      TASKS.push(JSON.parse(JSON.stringify(def)));
+    }
+  });
+  deletedIds.clear();
+  saveDeletedIds();
+  // Reset all default task days
+  DEFAULT_TASKS.forEach(def => {
+    const t = taskMap[def.id] || TASKS.find(t => t.id === def.id);
     if (t) t.days = [...def.days];
   });
+  // Reset custom tasks to their defaultDays
   TASKS.filter(t => t.id.startsWith('custom_')).forEach(t => {
     if (t.defaultDays) t.days = [...t.defaultDays];
   });
+  rebuildTaskMap();
   saveSchedule();
   renderSettings();
   showToast('Schedule reset to default');
