@@ -701,23 +701,17 @@ body {
 .amend-home-btn:hover { background: var(--panel4); }
 
 /* ══ HISTORY TABLE ══ */
-.hist-table {
-  width: 100%; border-collapse: collapse; font-size: 13px;
+.hist-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid rgba(84,84,84,0.3);
+  cursor: pointer; transition: background 0.12s;
 }
-.hist-table th {
-  text-align: left; padding: 9px 12px;
-  background: var(--panel3); border-bottom: 1px solid var(--line2);
-  font-size: 10px; font-weight: 900; letter-spacing: 0.18em;
-  text-transform: uppercase; color: var(--ink4); white-space: nowrap;
-}
-.hist-table td {
-  padding: 12px 12px; border-bottom: 1px solid rgba(84,84,84,0.3);
-  font-family: var(--font); font-size: 14px; font-weight: 700;
-  color: var(--ink2); vertical-align: middle;
-}
-.hist-row { cursor: pointer; transition: background 0.12s; }
-.hist-row:hover td { background: rgba(255,255,255,0.04); }
-.hist-row:active td { background: rgba(255,255,255,0.07); }
+.hist-row:hover { background: rgba(255,255,255,0.04); }
+.hist-row:active { background: rgba(255,255,255,0.07); }
+.hist-row-main { display: flex; flex-direction: column; gap: 4px; }
+.hist-row-date { font-size: 13px; font-weight: 900; color: var(--ink2); text-transform: uppercase; letter-spacing: 0.06em; }
+.hist-row-rest { font-size: 12px; font-weight: 700; color: var(--ink4); text-transform: uppercase; letter-spacing: 0.08em; }
+.hist-row-chevron { font-size: 22px; color: var(--ink4); font-weight: 300; }
 
 /* ══ HISTORY DETAIL SHEET ══ */
 .history-detail-sheet {
@@ -2192,7 +2186,7 @@ function renderDeliveryStatusInto(bodyEl, footerEl) {
         <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:8px;">
           Delivered by <strong style="color:var(--ink3)">${dispBy}</strong>
         </div>
-        <button class="accept-all-btn" onclick="openAcceptModal()">Delivery Accepted →</button>
+        <button class="accept-all-btn" style="background:var(--green2);color:#fff;" onclick="openAcceptModal()">Delivery Accepted →</button>
       </div>`;
       footerEl.innerHTML = '';
     }
@@ -2300,7 +2294,7 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
         <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:8px;">
           Delivered by <strong style="color:var(--ink3)">${dispBy}</strong>
         </div>
-        <button class="accept-all-btn" onclick="openAcceptModal()">Delivery Accepted →</button>
+        <button class="accept-all-btn" style="background:var(--green2);color:#fff;" onclick="openAcceptModal()">Delivery Accepted →</button>
       </div>`;
       footerEl.innerHTML = '';
     }
@@ -2387,39 +2381,19 @@ function renderDeliveryHistory() {
 
   const RNAMES = { r1:'Tori 1 — Špansko', r2:'Tori 2 — Trnje' };
 
-  el.innerHTML = `<table class="hist-table">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Restaurant</th>
-        <th>ID</th>
-        <th>Staff</th>
-        <th>Submitted</th>
-        <th>Dispatched by</th>
-        <th>Delivered</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${log.map((entry, idx) => {
-        const date       = entry.acceptedAt ? new Date(entry.acceptedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—';
-        const rest       = RNAMES[entry.restaurant] || entry.restaurant || '—';
-        const shortId    = '#' + String(entry.id || '').slice(-6);
-        const staff      = entry.orderedBy || '—';
-        const submitted  = entry.orderedAt ? new Date(entry.orderedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
-        const dispBy     = entry.dispatchedBy || '—';
-        const delivered  = entry.acceptedAt ? new Date(entry.acceptedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
-        return `<tr class="hist-row" onclick="openHistoryDetail(${idx})">
-          <td>${date}</td>
-          <td>${rest}</td>
-          <td style="font-family:var(--body);letter-spacing:0.04em;color:var(--ink4);">${shortId}</td>
-          <td>${staff}</td>
-          <td style="font-family:var(--body);">${submitted}</td>
-          <td>${dispBy}</td>
-          <td style="font-family:var(--body);">${delivered}</td>
-        </tr>`;
-      }).join('')}
-    </tbody>
-  </table>`;
+  el.innerHTML = log.map((entry, idx) => {
+    const date = entry.acceptedAt
+      ? new Date(entry.acceptedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})
+      : (entry.orderedAt ? new Date(entry.orderedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—');
+    const rest = RNAMES[entry.restaurant] || entry.restaurant || '—';
+    return `<div class="hist-row" onclick="openHistoryDetail(${idx})">
+      <div class="hist-row-main">
+        <div class="hist-row-date">${date}</div>
+        <div class="hist-row-rest">${rest}</div>
+      </div>
+      <div class="hist-row-chevron">›</div>
+    </div>`;
+  }).join('');
 }
 
 function openHistoryDetail(idx) {
