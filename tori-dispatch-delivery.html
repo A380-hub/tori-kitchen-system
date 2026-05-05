@@ -264,6 +264,22 @@ body { display: flex; flex-direction: column; }
 }
 .deliver-check { font-size: 18px; }
 
+/* Amber "Confirm Delivered" button — centered in column after transit starts */
+.confirm-delivered-wrap {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 32px 24px;
+}
+.confirm-delivered-btn {
+  background: var(--amber); border: none; color: #000;
+  font-family: var(--font); font-size: 18px; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 24px 36px; cursor: pointer; transition: background 0.15s;
+  width: 260px; height: 120px;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  line-height: 1.2;
+}
+.confirm-delivered-btn:hover { background: #FBBF24; }
+
 /* ══ HISTORY TABLE ══ */
 .hist-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .hist-table th {
@@ -609,16 +625,12 @@ body { display: flex; flex-direction: column; }
   <div id="dld-items" style="flex:1;overflow-y:auto;"></div>
 </div>
 
-<!-- Delivery confirm modal -->
-<div class="start-modal-back" id="start-modal">
+<!-- Load Check Modal — triggered by green button -->
+<div class="start-modal-back" id="load-check-modal">
   <div class="start-modal">
-    <div class="start-modal-title">New Delivery Task</div>
-    <div class="start-modal-sub">Please enter your name and surname to start</div>
-    <div class="start-modal-label">Your name and surname</div>
-    <input class="start-modal-input" id="start-modal-name" type="text"
-      placeholder="e.g. Vladimir Filakovac" autocomplete="off" autocorrect="off"
-      oninput="document.getElementById('start-modal-confirm').disabled = !this.value.trim()" />
-    <button class="start-modal-confirm" id="start-modal-confirm" disabled onclick="confirmStartDelivery()">
+    <div class="start-modal-title">Start Delivery</div>
+    <div class="start-modal-sub" id="load-check-modal-sub">Confirm all items are loaded and ready for delivery.</div>
+    <button class="start-modal-confirm" id="load-check-confirm" onclick="confirmStartDelivery()">
       Start Delivery →
     </button>
   </div>
@@ -631,7 +643,7 @@ body { display: flex; flex-direction: column; }
     <div class="dmodal-acts">
       <button class="dmodal-cancel" onclick="closeDModal()">Cancel</button>
       <button class="dmodal-confirm" id="dmodal-confirm" onclick="confirmDelivery()">
-        ✓ Mark as Delivered
+        ✓ Confirm Delivery
       </button>
     </div>
   </div>
@@ -962,12 +974,18 @@ function buildPackCol(k) {
   });
 
   let btnHtml = '';
+  let scrollContent = `<div class="pack-col-scroll">${rows}</div>`;
+
   if (isDelivered) {
     btnHtml = `<button class="deliver-btn delivered col-deliver-btn" disabled>✓ Order for ${rName} is Delivered</button>`;
   } else if (isInTransit) {
-    btnHtml = `<button class="deliver-btn col-deliver-btn" onclick="openDeliveryModal('${k}')">Order Delivered — ${rName}</button>`;
+    // Hide item list — show amber Confirm Delivered button centered
+    scrollContent = `<div class="confirm-delivered-wrap">
+      <button class="confirm-delivered-btn" onclick="openDeliveryModal('${k}')">Confirm<br>Delivered</button>
+    </div>`;
+    btnHtml = '';
   } else {
-    btnHtml = `<button class="deliver-btn col-deliver-btn" disabled style="background:var(--panel3);color:var(--ink4);cursor:not-allowed;">Waiting for driver to start…</button>`;
+    btnHtml = `<button class="deliver-btn col-deliver-btn" onclick="openLoadCheckModal()">✓ Check and Confirm All Items Are Loaded for Delivery</button>`;
   }
 
   return `<div class="pack-col">
@@ -975,7 +993,7 @@ function buildPackCol(k) {
       <div class="pack-col-title ${k}">${rName}</div>
       ${trackerHtml}
     </div>
-    <div class="pack-col-scroll">${rows}</div>
+    ${scrollContent}
     ${btnHtml}
   </div>`;
 }
@@ -983,10 +1001,10 @@ function buildPackCol(k) {
 // ── DELIVERY MODAL ──
 function openDeliveryModal(k) {
   pendingDeliveryKey = k;
-  const rName = k === 'r1' ? 'Restaurant 1 — Špansko' : 'Restaurant 2 — Trnje';
+  const rName = k === 'r1' ? 'TORI — Špansko' : 'TORI — Trnje';
   document.getElementById('dmodal-title').textContent = 'Confirm Delivery';
   document.getElementById('dmodal-sub').textContent   =
-    `Confirm that the order for ${rName} has been delivered.`;
+    `Confirm delivery for ${rName}?`;
   document.getElementById('dmodal-confirm').disabled = false;
   document.getElementById('dmodal').classList.add('open');
 }
@@ -1255,9 +1273,15 @@ setInterval(() => {
 }, 5000);
 
 // ── START DELIVERY MODAL ──
-function confirmStartDelivery(nameOverride) {
-  const name = nameOverride || document.getElementById('start-modal-name').value.trim();
-  if (!name) return;
+function openLoadCheckModal() {
+  document.getElementById('load-check-modal').classList.add('open');
+}
+
+function confirmStartDelivery() {
+  const name = new URLSearchParams(location.search).get('user')
+    || localStorage.getItem('TORI_USER_NAME')
+    || localStorage.getItem('TORI_DRIVER_NAME')
+    || 'Driver';
   // Save driver name for future use
   try { localStorage.setItem('TORI_DRIVER_NAME', name); } catch(e) {}
 
@@ -1282,7 +1306,7 @@ function confirmStartDelivery(nameOverride) {
     localStorage.setItem('TORI_STATUS', JSON.stringify(statusData));
   } catch(e) {}
 
-  document.getElementById('start-modal').classList.remove('open');
+  document.getElementById('load-check-modal').classList.remove('open');
   showToast('Delivery started — ' + name);
   renderPackingArea();
 }
@@ -1293,26 +1317,6 @@ function init() {
   if (dispatchBatch.r1 || dispatchBatch.r2) {
     renderPackingArea();
     renderLog();
-    // Show start delivery modal if driver hasn't confirmed yet
-    if (!dispatchBatch.transitAt) {
-      setTimeout(() => {
-        // 1. Try URL param ?user= (set by index.html when navigating)
-        var _urlName = new URLSearchParams(location.search).get('user') || '';
-        // 2. Fall back to localStorage set by index.html login
-        var _lsName  = localStorage.getItem('TORI_USER_NAME') || '';
-        // 3. Fall back to previously saved driver name
-        var _savedName = _urlName || _lsName || localStorage.getItem('TORI_DRIVER_NAME') || '';
-        if (_savedName) {
-          // Name known — skip modal entirely
-          document.getElementById('start-modal-name').value = _savedName;
-          confirmStartDelivery(_savedName);
-        } else {
-          // No name found — show modal as fallback
-          document.getElementById('start-modal').classList.add('open');
-          document.getElementById('start-modal-name').focus();
-        }
-      }, 300);
-    }
   } else {
     let attempts = 0;
     const retry = setInterval(() => {
@@ -1322,20 +1326,6 @@ function init() {
         clearInterval(retry);
         renderPackingArea();
         renderLog();
-        if (!dispatchBatch.transitAt) {
-          setTimeout(() => {
-            var _urlName   = new URLSearchParams(location.search).get('user') || '';
-            var _lsName    = localStorage.getItem('TORI_USER_NAME') || '';
-            var _savedName = _urlName || _lsName || localStorage.getItem('TORI_DRIVER_NAME') || '';
-            if (_savedName) {
-              document.getElementById('start-modal-name').value = _savedName;
-              confirmStartDelivery(_savedName);
-            } else {
-              document.getElementById('start-modal').classList.add('open');
-              document.getElementById('start-modal-name').focus();
-            }
-          }, 300);
-        }
       }
     }, 100);
   }
