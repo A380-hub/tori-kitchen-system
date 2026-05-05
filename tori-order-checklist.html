@@ -703,15 +703,15 @@ body {
 /* ══ HISTORY TABLE ══ */
 .hist-row {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 20px; border-bottom: 1px solid rgba(84,84,84,0.3);
+  padding: 14px 20px; border-bottom: 1px solid rgba(84,84,84,0.3);
   cursor: pointer; transition: background 0.12s;
 }
 .hist-row:hover { background: rgba(255,255,255,0.04); }
 .hist-row:active { background: rgba(255,255,255,0.07); }
-.hist-row-main { display: flex; flex-direction: column; gap: 4px; }
-.hist-row-date { font-size: 13px; font-weight: 900; color: var(--ink2); text-transform: uppercase; letter-spacing: 0.06em; }
-.hist-row-rest { font-size: 12px; font-weight: 700; color: var(--ink4); text-transform: uppercase; letter-spacing: 0.08em; }
-.hist-row-chevron { font-size: 22px; color: var(--ink4); font-weight: 300; }
+.hist-row-main { display: flex; align-items: center; gap: 0; flex: 1; }
+.hist-row-date { font-size: 13px; font-weight: 900; color: var(--ink2); text-transform: uppercase; letter-spacing: 0.06em; width: 50%; }
+.hist-row-rest { font-size: 13px; font-weight: 700; color: var(--ink4); text-transform: uppercase; letter-spacing: 0.06em; width: 50%; }
+.hist-row-chevron { font-size: 20px; color: var(--ink4); font-weight: 300; flex-shrink: 0; }
 
 /* ══ HISTORY DETAIL SHEET ══ */
 .history-detail-sheet {
