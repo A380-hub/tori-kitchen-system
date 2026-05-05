@@ -300,25 +300,15 @@ body {
 .order-unit { font-size: 12px; font-weight: 700; color: var(--ink4); letter-spacing: 0.1em; text-transform: uppercase; }
 
 /* ── AMENDED item highlight ── */
-.order-row.amended {
-  background: rgba(222,0,0,0.07);
-  border-left: 3px solid var(--red);
-  padding-left: 13px;
-}
+.order-row.amended { background: rgba(222,0,0,0.07); border-left: 3px solid var(--red); padding-left: 13px; }
 .order-row.amended .order-qty { color: #E87070; }
-.order-row.amended.dispatched {
-  background: rgba(76,175,80,0.05);
-  border-left: none;
-  padding-left: 16px;
-}
+.order-row.amended.dispatched { background: rgba(76,175,80,0.05); border-left: none; padding-left: 16px; }
 .order-row.amended.dispatched .order-qty { color: var(--ink4); }
 .amended-badge {
   font-size: 9px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase;
   padding: 2px 6px; flex-shrink: 0; cursor: pointer;
-  background: rgba(222,0,0,0.12); color: #E87070;
-  border: 1px solid rgba(222,0,0,0.35);
-  animation: amended-pulse 1.2s ease-in-out infinite;
-  touch-action: manipulation;
+  background: rgba(222,0,0,0.12); color: #E87070; border: 1px solid rgba(222,0,0,0.35);
+  animation: amended-pulse 1.2s ease-in-out infinite; touch-action: manipulation;
 }
 .order-row.dispatched .amended-badge { display: none; }
 @keyframes amended-pulse {
@@ -981,8 +971,48 @@ ORDER_CATS.forEach(c => c.items.forEach(i => { orderItemMeta[i.id] = { ...i, cat
 
 // ── STATE ──
 let _historyCleared = false;
-// Snapshot of items from the PREVIOUS order per restaurant — used to detect amendments
-let _prevOrderItems = { r1: {}, r2: {} };
+
+// ── AMENDMENT TRACKING ──
+// Stores { r1: { orderId, items:{} }, r2: { orderId, items:{} } }
+// Persisted in localStorage so amendment highlights survive page reload
+const AMEND_KEY = 'TORI_PREV_ORDER';
+let _prevOrder = { r1: null, r2: null };
+try {
+  const raw = localStorage.getItem(AMEND_KEY);
+  if (raw) _prevOrder = JSON.parse(raw);
+} catch(e) {}
+
+function savePrevOrder() {
+  try { localStorage.setItem(AMEND_KEY, JSON.stringify(_prevOrder)); } catch(e) {}
+}
+
+// Returns amendedItems map for an incoming order vs stored previous snapshot.
+// Returns {} (no amendments) if no previous order existed for this restaurant.
+function detectAmendments(k, incomingId, incomingItems) {
+  const prev = _prevOrder[k];
+  // No previous order stored → first order ever for this restaurant, no badges
+  if (!prev) return {};
+  // Same order ID as what we stored as "previous" → this is a re-fetch of the SAME
+  // order that was already active; no amendments to show yet.
+  // Amendments only show when the active order ID differs from prev.orderId,
+  // meaning a NEW submission replaced the old one.
+  if (String(prev.orderId) === String(incomingId)) return {};
+  // New order arrived — compare against prev items
+  const amendedItems = {};
+  Object.entries(incomingItems).forEach(([id, qty]) => {
+    const oldQty = prev.items[id] !== undefined ? prev.items[id] : null;
+    if (oldQty === null || oldQty !== qty) {
+      amendedItems[id] = { oldQty, newQty: qty };
+    }
+  });
+  return amendedItems;
+}
+
+// Called when a new order ID arrives — save current active order as "previous"
+function snapshotAsPrev(k, order) {
+  _prevOrder[k] = { orderId: String(order.id), items: JSON.parse(JSON.stringify(order.items || {})) };
+  savePrevOrder();
+}
 let state = {
   // Preparation list (from tori-preparation-checklist)
   prep: null,           // { id, staff_name, role, prep_date, items:{id:qty}, ts }
@@ -1012,21 +1042,13 @@ async function fetchAll(quiet = true) {
         if (data[k]) {
           const normalized = normalizeOrder(data[k], k);
           const prev = state.pending[k];
-          // New order ID arrived — save current items as previous snapshot, reset ticks
-          if (!prev || String(prev.id) !== String(normalized.id)) {
-            if (prev && prev.items) _prevOrderItems[k] = JSON.parse(JSON.stringify(prev.items));
+          const isNewId = !prev || String(prev.id) !== String(normalized.id);
+          if (isNewId) {
+            // New order ID arrived — snapshot the outgoing order as "previous" before replacing
+            if (prev) snapshotAsPrev(k, prev);
             state.dispatchTicked[k] = {};
           }
-          // Detect amendments: compare current items vs snapshot
-          const prevItems = _prevOrderItems[k] || {};
-          const amendedItems = {};
-          Object.entries(normalized.items).forEach(([id, qty]) => {
-            const oldQty = prevItems[id] !== undefined ? prevItems[id] : null;
-            if (oldQty === null || oldQty !== qty) {
-              amendedItems[id] = { oldQty, newQty: qty };
-            }
-          });
-          normalized.amendedItems = Object.keys(amendedItems).length > 0 ? amendedItems : {};
+          normalized.amendedItems = detectAmendments(k, normalized.id, normalized.items);
           newPending[k] = normalized;
         }
       });
@@ -1061,19 +1083,12 @@ async function fetchAll(quiet = true) {
       if (order && !order.dispatched) {
         const normalized = normalizeOrder(order, k);
         const prev = state.pending[k];
-        if (!prev || String(prev.id) !== String(normalized.id)) {
-          if (prev && prev.items) _prevOrderItems[k] = JSON.parse(JSON.stringify(prev.items));
+        const isNewId = !prev || String(prev.id) !== String(normalized.id);
+        if (isNewId) {
+          if (prev) snapshotAsPrev(k, prev);
           state.dispatchTicked[k] = {};
         }
-        const prevItems = _prevOrderItems[k] || {};
-        const amendedItems = {};
-        Object.entries(normalized.items).forEach(([id, qty]) => {
-          const oldQty = prevItems[id] !== undefined ? prevItems[id] : null;
-          if (oldQty === null || oldQty !== qty) {
-            amendedItems[id] = { oldQty, newQty: qty };
-          }
-        });
-        normalized.amendedItems = Object.keys(amendedItems).length > 0 ? amendedItems : {};
+        normalized.amendedItems = detectAmendments(k, normalized.id, normalized.items);
         newPending[k] = normalized;
       }
     });
@@ -2077,7 +2092,6 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-
 // ── AMENDMENT POPUP ──
 function openAmendPopup(name, oldQty, newQty, unit) {
   document.getElementById('amend-popup-name').textContent = name;
@@ -2295,7 +2309,7 @@ setTimeout(function(){
 
 <!-- AMENDMENT DETAIL POPUP -->
 <div id="amend-popup-back" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:500;align-items:center;justify-content:center;padding:24px;" onclick="closeAmendPopup(event)">
-  <div id="amend-popup" style="background:var(--panel);border:1px solid var(--line2);border-top:3px solid var(--red);width:100%;max-width:340px;padding:22px 22px 18px;">
+  <div style="background:var(--panel);border:1px solid var(--line2);border-top:3px solid var(--red);width:100%;max-width:340px;padding:22px 22px 18px;">
     <div style="font-size:10px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);margin-bottom:4px;">Amended Order</div>
     <div id="amend-popup-name" style="font-size:22px;font-weight:900;text-transform:uppercase;color:var(--ink);letter-spacing:0.02em;margin-bottom:16px;line-height:1.1;"></div>
     <div style="border-top:1px solid var(--line);padding-top:12px;">
@@ -2311,6 +2325,5 @@ setTimeout(function(){
     <button onclick="closeAmendPopup()" style="width:100%;margin-top:14px;padding:10px;background:transparent;border:1px solid var(--line2);color:var(--ink4);font-family:var(--font);font-size:11px;font-weight:900;letter-spacing:0.14em;text-transform:uppercase;cursor:pointer;touch-action:manipulation;">Dismiss</button>
   </div>
 </div>
-
 </body>
 </html>
