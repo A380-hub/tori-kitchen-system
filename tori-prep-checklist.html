@@ -1523,8 +1523,11 @@ function saveNewTask() {
 
 function resetSchedule() {
   if (!confirm('Reset every task back to the default schedule? Your custom changes will be lost.')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  location.reload();
+  TASKS = JSON.parse(JSON.stringify(DEFAULT_TASKS));
+  rebuildTaskMap();
+  saveSchedule();
+  renderSettings();
+  showToast('Schedule reset to default');
 }
 
 /* ──────────────────────────────────────────────
