@@ -1741,13 +1741,13 @@ function getMyDeliveryStatus() {
       const data = JSON.parse(raw);
       if (data[rk]) return data[rk];
     }
-    // Fallback: TORI_DISPATCH (written by kitchen) — means status is 'in_delivery'
+    // Fallback: TORI_DISPATCH (written by kitchen) — order dispatched but driver hasn't started yet = 'preparing'
     const disp = localStorage.getItem('TORI_DISPATCH');
     if (disp) {
       const d = JSON.parse(disp);
       if (d[rk] && d[rk].id) {
         return {
-          status: 'in_delivery',
+          status: 'preparing',
           order: d[rk],
           dispatchedAt: d.dispatchedAt,
           dispatchedBy: d.dispatchedBy
