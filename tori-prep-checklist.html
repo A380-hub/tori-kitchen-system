@@ -15,6 +15,8 @@
 <meta http-equiv="Expires" content="0">
 <title>TORI Preparation List</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <style>
 :root {
   --bg:     #0F1314;
@@ -132,7 +134,7 @@ body {
 }
 .field-input:focus { outline: none; border-left-color: var(--red); background: var(--panel2); }
 .field-input::placeholder { color: var(--ink4); font-weight: 600; }
-.field-input[type="date"] { font-size: 18px; color-scheme: dark; }
+#prep-date { font-size: 18px; color-scheme: dark; }
 
 .start-btn {
   width: 100%; background: var(--red2); border: none; color: var(--ink);
@@ -757,7 +759,7 @@ body {
       <div class="field-wrap">
         <div>
           <div class="field-label">Date</div>
-          <input class="field-input" type="date" id="prep-date" />
+          <input class="field-input" type="text" id="prep-date" readonly placeholder="DD-MM-YYYY" />
         </div>
         <div>
           <div class="field-label">Chef Name &amp; Surname</div>
@@ -1038,7 +1040,8 @@ function saveSchedule() {
 /* Map JS getDay() (Sun=0..Sat=6) to our index (Mon=0..Sat=5).
    Sunday returns -1 (kitchen closed). */
 function todayIndex(dateStr) {
-  const d = new Date(dateStr + 'T12:00:00');
+  const iso = (dateStr.length===10 && dateStr.indexOf('-')===2) ? dmyToIso(dateStr) : dateStr;
+  const d = new Date(iso + 'T12:00:00');
   const js = d.getDay();
   if (js === 0) return -1;
   return js - 1;
@@ -1051,7 +1054,23 @@ let extraIds = new Set(); // ids of off-schedule tasks the chef pulled in
 let lastPayload = null;
 
 /* ── INIT ── */
-document.getElementById('prep-date').value = new Date().toISOString().slice(0,10);
+function getDefaultPrepDate() {
+  const now = new Date();
+  const offset = now.getDay() === 6 ? 2 : 1;
+  now.setDate(now.getDate() + offset);
+  return now.toISOString().slice(0,10);
+}
+function isoToDmy(iso) { const [y,m,d]=iso.split('-'); return d+'-'+m+'-'+y; }
+function dmyToIso(dmy) { const [d,m,y]=dmy.split('-'); return y+'-'+m+'-'+d; }
+
+const prepDatePicker = flatpickr('#prep-date', {
+  dateFormat: 'd-m-Y',
+  defaultDate: (() => { const iso = getDefaultPrepDate(); const [y,m,d] = iso.split('-'); return new Date(y, m-1, d); })(),
+  disableMobile: true
+});
+const _savedUser = new URLSearchParams(window.location.search).get('user')
+  || localStorage.getItem('TORI_USER_NAME') || '';
+if (_savedUser) document.getElementById('prep-name').value = _savedUser;
 ['prep-name','prep-date'].forEach(id =>
   document.getElementById(id).addEventListener('input', chkReady)
 );
@@ -1064,7 +1083,7 @@ function chkReady() {
 
 function startPrep() {
   chefName  = document.getElementById('prep-name').value.trim();
-  prepDate  = document.getElementById('prep-date').value;
+  prepDate  = dmyToIso(document.getElementById('prep-date').value);
   dayIdx    = todayIndex(prepDate);
   checked   = {};
   extraIds  = new Set();
@@ -1353,7 +1372,7 @@ function goHome() {
   lastPayload = null;
   checked = {};
   document.getElementById('prep-name').value = '';
-  document.getElementById('prep-date').value = new Date().toISOString().slice(0,10);
+  prepDatePicker.setDate(getDefaultPrepDate(), false);
   document.getElementById('start-btn').disabled = true;
   go('s-welcome');
 }
