@@ -322,6 +322,22 @@ async def get_prep_history():
     return {"history": history}
 
 
+@app.post("/api/kitchen/clear-active")
+async def clear_active_orders():
+    """Mark all active orders as superseded — clears the kitchen display immediately."""
+    result = await sb_patch("orders", "status=eq.active", {"status": "superseded"})
+    cleared = len(result) if isinstance(result, list) else 0
+    return {"ok": True, "cleared": cleared}
+
+
+@app.post("/api/kitchen/clear-dispatched")
+async def clear_dispatched_orders():
+    """Mark all dispatched orders as delivered — clears stuck delivery screen entries."""
+    result = await sb_patch("orders", "status=eq.dispatched", {"status": "delivered", "delivered_at": now_iso(), "delivered_by": "Admin"})
+    cleared = len(result) if isinstance(result, list) else 0
+    return {"ok": True, "cleared": cleared}
+
+
 @app.post("/api/admin/reset")
 async def admin_reset(request: Request):
     """Clear all orders from the database. For testing/admin use only."""
