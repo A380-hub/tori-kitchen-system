@@ -502,6 +502,13 @@ body {
 .location-sub  { font-family: var(--body); font-size: 13px; color: var(--ink4); margin-top: 2px; }
 .settings-save-btn { width: 100%; background: var(--red2); border: none; color: var(--ink); font-family: var(--font); font-size: 17px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; padding: 16px; cursor: pointer; transition: background 0.15s; }
 .settings-save-btn:hover { background: var(--red); }
+.settings-admin-btn {
+  width: 100%; background: var(--panel3); border: 1px solid var(--line2); color: var(--ink);
+  font-family: var(--font); font-size: 15px; font-weight: 900;
+  letter-spacing: 0.12em; text-transform: uppercase; padding: 15px; cursor: pointer; transition: all 0.15s;
+}
+.settings-admin-btn:hover { background: var(--panel4); }
+.settings-admin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .settings-icon-btn { background: transparent; border: 1px solid var(--line2); color: var(--ink4); font-size: 18px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: all 0.15s; align-self: center; margin-left: 8px; }
 .settings-icon-btn:hover { color: var(--ink); background: var(--panel3); }
 .location-tag { font-size: 16px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink2); white-space: nowrap; margin-top: 4px; }
@@ -1037,6 +1044,22 @@ body {
       </div>
     </div>
     <button class="settings-save-btn" onclick="saveSettings()">Save Settings →</button>
+
+    <!-- Admin Section -->
+    <div>
+      <div class="settings-section-label">Admin</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="settings-admin-btn" id="admin-access-btn" onclick="toggleAdminPanel()">
+          Admin Access
+        </button>
+        <div id="admin-panel" style="display:none;flex-direction:column;gap:10px;">
+          <button class="settings-admin-btn" onclick="acceptAllPendingOrders()" id="accept-all-btn">
+            Clear All Pending Orders
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1644,6 +1667,67 @@ function saveSettings() {
   applyLocationUI();
   showToast('Settings saved — ' + LOCATIONS[selectedLocation]);
   go('s-welcome');
+}
+
+let _adminUnlocked = false;
+function toggleAdminPanel() {
+  const panel = document.getElementById('admin-panel');
+  const btn   = document.getElementById('admin-access-btn');
+  if (_adminUnlocked) {
+    _adminUnlocked = false;
+    panel.style.display = 'none';
+    btn.textContent = 'Admin Access';
+    return;
+  }
+  const pin = prompt('Enter admin PIN:');
+  if (pin === '0000') {
+    _adminUnlocked = true;
+    panel.style.display = 'flex';
+    btn.textContent = 'Admin Access — ON';
+  } else if (pin !== null) {
+    showToast('Incorrect PIN');
+  }
+}
+
+async function acceptAllPendingOrders() {
+  const btn = document.getElementById('accept-all-btn');
+  if (!confirm('Clear all pending delivered orders in the system?\nThis will mark all "delivered" orders as accepted.')) return;
+  btn.disabled = true;
+  btn.textContent = 'Clearing…';
+  try {
+    const res = await fetch(_API_BASE + '/api/orders/active', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const pending = (data.history || []).filter(h => h.status === 'delivered');
+    if (!pending.length) {
+      showToast('No pending delivered orders found');
+      btn.disabled = false;
+      btn.textContent = 'Accept All Pending Orders';
+      return;
+    }
+    let accepted = 0;
+    for (const order of pending) {
+      const r = await fetch(_API_BASE + '/api/orders/delivered', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurant:   order.restaurant,
+          delivered_by: order.delivered_by || 'Admin',
+          accepted_by:  'Admin',
+          missing_items: {}
+        })
+      });
+      if (r.ok) accepted++;
+    }
+    // Clear stale localStorage status so sync picks up fresh state
+    try { localStorage.removeItem('TORI_STATUS'); } catch(e) {}
+    showToast(`Cleared ${accepted} order${accepted !== 1 ? 's' : ''}`);
+    await syncStatusFromAPI();
+  } catch(e) {
+    showToast('Error: ' + (e.message || 'unknown'));
+  }
+  btn.disabled = false;
+  btn.textContent = 'Clear All Pending Orders';
 }
 
 /* ═══════════════════════════════════════
