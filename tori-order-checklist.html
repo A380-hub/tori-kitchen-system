@@ -459,7 +459,7 @@ body {
 .accept-all-btn:hover { background: var(--green); }
 .accept-all-btn:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
 .accepted-notice { text-align:center; padding:14px; font-size:14px; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--green); border:1px solid rgba(76,175,80,0.35); background:rgba(76,175,80,0.08); }
-.reason-modal { background: var(--panel); border-top: 4px solid var(--red2); padding: 24px 20px 32px; width: 100%; max-width: 480px; }
+.reason-modal { background: var(--panel); border: 1px solid var(--line2); border-top: 4px solid var(--red2); padding: 24px 20px 32px; width: 90%; max-width: 480px; }
 .reason-modal-title { font-size: 20px; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
 .reason-modal-sub   { font-family: var(--body); font-size: 13px; color: var(--ink4); margin-bottom: 16px; line-height: 1.5; }
 .reason-item-name   { font-size: 16px; font-weight: 900; text-transform: uppercase; color: var(--ink2); margin-bottom: 14px; padding: 8px 12px; background: var(--panel2); border-left: 3px solid var(--red2); }
@@ -472,7 +472,7 @@ body {
 .reason-ok:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
 .reason-cancel { flex: 1; background: transparent; border: 1px solid var(--line2); color: var(--ink3); font-family: var(--font); font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 13px; cursor: pointer; transition: all 0.15s; }
 .reason-cancel:hover { color: var(--ink); background: var(--panel3); }
-.accept-name-modal { background: var(--panel); border-top: 4px solid var(--green2); padding: 28px 24px 36px; width: 100%; max-width: 480px; }
+.accept-name-modal { background: var(--panel); border: 1px solid var(--line2); border-top: 4px solid var(--green2); padding: 28px 24px 36px; width: 90%; max-width: 480px; }
 .anm-title { font-size: 22px; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
 .anm-sub   { font-family: var(--body); font-size: 13px; color: var(--ink4); margin-bottom: 20px; line-height: 1.5; }
 .anm-label { font-size: 11px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink4); margin-bottom: 8px; }
@@ -842,7 +842,7 @@ body {
   width: 100vw !important; height: 100vh !important;
   z-index: 9999 !important;
   background: rgba(0,0,0,0.85);
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
 }
 .modal-back.open { display: flex !important; }
@@ -2185,13 +2185,16 @@ function renderDeliveryStatusInto(bodyEl, footerEl) {
     html += buildItemList(st, missingItems, canMark);
 
     if (st.status === 'accepted') {
-      footerEl.innerHTML = `<div class="accepted-notice">✓ Delivery Accepted by ${st.acceptedBy || '—'}</div>`;
+      html += `<div class="accepted-notice">✓ Delivery Accepted by ${st.acceptedBy || '—'}</div>`;
+      footerEl.innerHTML = '';
     } else {
-      footerEl.innerHTML = `
-        <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:2px;">
+      html += `<div style="padding:16px;">
+        <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:8px;">
           Delivered by <strong style="color:var(--ink3)">${dispBy}</strong>
         </div>
-        <button class="accept-all-btn" onclick="openAcceptModal()">Delivery Accepted →</button>`;
+        <button class="accept-all-btn" onclick="openAcceptModal()">Delivery Accepted →</button>
+      </div>`;
+      footerEl.innerHTML = '';
     }
   }
 
@@ -2290,13 +2293,16 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
     html += buildItemList(st, missingItems, canMark);
 
     if (st.status === 'accepted') {
-      footerEl.innerHTML = `<div class="accepted-notice">✓ Delivery Accepted by ${st.acceptedBy || '—'}</div>`;
+      html += `<div class="accepted-notice">✓ Delivery Accepted by ${st.acceptedBy || '—'}</div>`;
+      footerEl.innerHTML = '';
     } else {
-      footerEl.innerHTML = `
-        <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:2px;">
+      html += `<div style="padding:16px;">
+        <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:8px;">
           Delivered by <strong style="color:var(--ink3)">${dispBy}</strong>
         </div>
-        <button class="accept-all-btn" onclick="openAcceptModal()">Delivery Accepted →</button>`;
+        <button class="accept-all-btn" onclick="openAcceptModal()">Delivery Accepted →</button>
+      </div>`;
+      footerEl.innerHTML = '';
     }
   }
 
