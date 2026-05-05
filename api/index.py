@@ -271,6 +271,36 @@ async def clear_prep(request: Request):
             result = []
     return {"ok": True, "cleared": len(result) if isinstance(result, list) else 0}
 
+@app.get("/api/prep/tasks")
+async def get_prep_tasks():
+    """Return all custom prep tasks saved by staff."""
+    rows = await sb_get("prep_tasks", "order=created_at.asc&select=*")
+    tasks = []
+    for row in rows:
+        tasks.append({
+            "id":   "custom_" + str(row["id"]),
+            "name": row["name"],
+            "cat":  row.get("cat", "other"),
+            "unit": row.get("unit", "kg"),
+            "days": row.get("days", []),
+        })
+    return {"tasks": tasks}
+
+@app.post("/api/prep/tasks")
+async def save_prep_task(request: Request):
+    """Save a new custom prep task."""
+    body = await request.json()
+    name = body.get("name", "").strip()
+    if not name:
+        raise HTTPException(400, "name is required")
+    row = {
+        "name": name,
+        "cat":  body.get("cat", "other"),
+        "unit": body.get("unit", "kg"),
+        "days": body.get("days", []),
+    }
+    result = await sb_post("prep_tasks", row)
+    return {"ok": True, "id": result[0]["id"] if result else None}
 
 @app.post("/api/prep/tick")
 async def tick_prep_item(request: Request):
