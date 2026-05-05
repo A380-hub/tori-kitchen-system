@@ -1584,7 +1584,25 @@ function fmtDTLocal(iso) {
   return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' ' + d.toTimeString().slice(0,5);
 }
 
-function startAmend(){ isAmending=true; catIdx=0; launch(); }
+function startAmend(){
+  isAmending = true;
+  catIdx = 0;
+  // Pre-fill checked with the current order's items so staff can see what was already sent
+  checked = {};
+  try {
+    const existingItems = lastPayload
+      ? lastPayload.items
+      : (() => {
+          const orders = lsGet('TORI_ORDERS', {});
+          const rk = restaurant || selectedLocation;
+          return (orders[rk] && orders[rk].items) ? orders[rk].items : {};
+        })();
+    Object.entries(existingItems).forEach(([id, qty]) => {
+      if (qty > 0) checked[id] = qty;
+    });
+  } catch(e) { checked = {}; }
+  launch();
+}
 
 function cancelChecklist() {
   const hasItems = Object.keys(checked).length > 0;
