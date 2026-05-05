@@ -1692,8 +1692,8 @@ async function syncStatusFromAPI() {
 
       if (localIsNewer) { /* fresh local submit — do not overwrite with old history */ }
       else if (localStatus === 'accepted') { /* keep — already accepted */ }
-      else if (localStatus === 'in_delivery') { /* keep — driver already started, API lags behind */ }
-      else if (localStatus === 'delivered') { /* keep — already delivered, API lags behind */ }
+      else if (localStatus === 'in_delivery' && latest.status === 'dispatched') { /* keep — driver started, API still shows dispatched */ }
+      else if (localStatus === 'delivered') { /* keep — already delivered */ }
       else if (latest.status === 'dispatched') {
         existing[rk] = {
           status:       'preparing',
