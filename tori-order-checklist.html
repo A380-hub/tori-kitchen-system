@@ -1254,7 +1254,9 @@ function startChecklist() {
   // Restaurant is always the device's configured location from Settings
   restaurant = selectedLocation;
   if (!restaurant) {
-    showToast('Please set your restaurant location in Settings ⚙ first');
+    if (confirm('No restaurant selected.\n\nPlease go to Settings ⚙ and select your restaurant location first.\n\nOpen Settings now?')) {
+      go('s-settings');
+    }
     return;
   }
   staffName  = document.getElementById('order-name').value.trim();
@@ -1451,16 +1453,18 @@ async function doSend() {
     };
     localStorage.setItem('TORI_ORDERS', JSON.stringify(orders));
 
-    // Clear stale delivery status for this restaurant when a NEW order is placed (not amendment)
+    // Write 'preparing' status immediately so delivery tab shows the new order
+    try {
+      const statusData = lsGet('TORI_STATUS', {});
+      statusData[rk] = {
+        status: 'preparing',
+        order:  { id: payload.ts, staffName: payload.staff_name, items: payload.items, ts: payload.ts }
+      };
+      localStorage.setItem('TORI_STATUS', JSON.stringify(statusData));
+    } catch(e) {}
+
+    // Clear name field for next order (new orders only, not amendments)
     if (!isAmending) {
-      try {
-        const statusData = lsGet('TORI_STATUS', {});
-        if (statusData[rk]) {
-          delete statusData[rk];
-          localStorage.setItem('TORI_STATUS', JSON.stringify(statusData));
-        }
-      } catch(e) {}
-      // Clear name field for next order
       document.getElementById('order-name').value = '';
       document.getElementById('start-btn').disabled = true;
     }
