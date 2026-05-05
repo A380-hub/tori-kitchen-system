@@ -1648,6 +1648,79 @@ function saveSettings() {
 }
 
 /* ═══════════════════════════════════════
+   API STATUS SYNC
+   Polls Vercel API every 5s and writes
+   result into localStorage so all existing
+   rendering functions pick it up automatically
+   ═══════════════════════════════════════ */
+const _API_BASE = 'https://tori-kitchen-system-tv6b.vercel.app';
+let _apiSyncBusy = false;
+
+async function syncStatusFromAPI() {
+  if (!selectedLocation || _apiSyncBusy) return;
+  _apiSyncBusy = true;
+  try {
+    const res = await fetch(_API_BASE + '/api/orders/active', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const rk = selectedLocation;
+
+    // Build TORI_STATUS entry from API response
+    const existing = lsGet('TORI_STATUS', {});
+
+    // Check active orders (preparing)
+    if (data[rk] && !existing[rk]) {
+      existing[rk] = { status: 'preparing', order: data[rk] };
+    }
+
+    // Check history for this restaurant — find most recent dispatched/delivered/accepted
+    const myHistory = (data.history || []).filter(h => h.restaurant === rk);
+    if (myHistory.length) {
+      const latest = myHistory[0]; // history is newest-first
+      if (latest.status === 'dispatched') {
+        existing[rk] = {
+          status:       'in_delivery',
+          order:        { id: latest.id, staffName: latest.staff_name, items: latest.items, ts: new Date(latest.created_at).getTime() },
+          dispatchedAt: latest.dispatched_at,
+          dispatchedBy: latest.dispatched_by
+        };
+      } else if (latest.status === 'delivered') {
+        existing[rk] = {
+          status:      'delivered',
+          order:       { id: latest.id, staffName: latest.staff_name, items: latest.items, ts: new Date(latest.created_at).getTime() },
+          dispatchedAt: latest.dispatched_at,
+          dispatchedBy: latest.dispatched_by,
+          deliveredAt:  latest.delivered_at,
+          deliveredBy:  latest.delivered_by
+        };
+      } else if (latest.status === 'accepted') {
+        existing[rk] = {
+          status:      'accepted',
+          order:       { id: latest.id, staffName: latest.staff_name, items: latest.items, ts: new Date(latest.created_at).getTime() },
+          dispatchedAt: latest.dispatched_at,
+          dispatchedBy: latest.dispatched_by,
+          deliveredAt:  latest.delivered_at,
+          deliveredBy:  latest.delivered_by,
+          acceptedAt:   latest.delivered_at
+        };
+      }
+    }
+
+    // If no active order and no recent history entry, clear stale status
+    if (!data[rk] && myHistory.length === 0) {
+      delete existing[rk];
+    }
+
+    localStorage.setItem('TORI_STATUS', JSON.stringify(existing));
+  } catch(e) { /* silent fail — will retry */ }
+  finally { _apiSyncBusy = false; }
+}
+
+// Run immediately and then every 5 seconds
+syncStatusFromAPI();
+setInterval(syncStatusFromAPI, 5000);
+
+/* ═══════════════════════════════════════
    STATUS POLLING & BADGE
    ═══════════════════════════════════════ */
 function getMyDeliveryStatus() {
