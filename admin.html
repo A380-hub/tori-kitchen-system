@@ -352,7 +352,9 @@
       if (res.ok) { showToast(id ? 'User updated' : 'User added', 'success'); cancelForm(); loadUsers(); }
       else {
         const err = await res.json();
-        showToast(err.code === '23505' ? 'PIN already in use — choose another' : 'Save failed', 'error');
+        const msg = err.message || err.details || err.code || JSON.stringify(err);
+        showToast(err.code === '23505' ? 'PIN already in use — choose another' : ('Error: ' + msg), 'error');
+        console.error('Supabase error:', err);
       }
     } catch(e) { showToast('Connection error', 'error'); }
   }
