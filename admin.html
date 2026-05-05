@@ -190,14 +190,42 @@
 
   <button class="btn-add" onclick="showAddForm()">+ Add New User</button>
 
-  <!-- Order System -->
+  <!-- CLEAR SECTIONS -->
   <div class="section" style="margin-top:32px;">
-    <div class="section-title">Order System</div>
-    <div style="background:#111;border:1px solid #1e1e1e;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px;">
-      <div style="font-family:'Barlow',sans-serif;font-size:13px;color:#555;line-height:1.5;">Orders delivered but not yet accepted by the restaurant. Use this to manually clear them.</div>
-      <div id="pending-orders-status" style="font-family:'Barlow',sans-serif;font-size:13px;color:#888;">Checking…</div>
-      <button class="btn-primary" id="clear-pending-btn" onclick="clearAllPendingOrders()" style="margin-top:4px;">Clear All Pending Orders</button>
+    <div class="section-title">System — Clear Data</div>
+
+    <!-- ORDER -->
+    <div style="background:#111;border:1px solid #1e1e1e;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+      <div style="font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#cc1010;">Order</div>
+      <div style="font-family:'Barlow',sans-serif;font-size:12px;color:#555;line-height:1.5;">Clears orders that are stuck in <em>delivered</em> status — not yet accepted by the restaurant.</div>
+      <div id="status-order" style="font-family:'Barlow',sans-serif;font-size:12px;color:#888;">Checking…</div>
+      <button class="btn-primary" id="btn-clear-order" onclick="clearModule('order')" style="margin-top:2px;">Clear All Orders</button>
     </div>
+
+    <!-- KITCHEN DISPLAY -->
+    <div style="background:#111;border:1px solid #1e1e1e;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+      <div style="font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#cc1010;">Kitchen Display</div>
+      <div style="font-family:'Barlow',sans-serif;font-size:12px;color:#555;line-height:1.5;">Clears orders currently showing as <em>active</em> on the kitchen screen. Use when an order is stuck and cannot be dispatched.</div>
+      <div id="status-kitchen" style="font-family:'Barlow',sans-serif;font-size:12px;color:#888;">Checking…</div>
+      <button class="btn-primary" id="btn-clear-kitchen" onclick="clearModule('kitchen')" style="margin-top:2px;">Clear All Orders</button>
+    </div>
+
+    <!-- DELIVERY -->
+    <div style="background:#111;border:1px solid #1e1e1e;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+      <div style="font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#cc1010;">Delivery</div>
+      <div style="font-family:'Barlow',sans-serif;font-size:12px;color:#555;line-height:1.5;">Clears orders currently in <em>dispatched</em> status — sent out but not yet marked as delivered.</div>
+      <div id="status-delivery" style="font-family:'Barlow',sans-serif;font-size:12px;color:#888;">Checking…</div>
+      <button class="btn-primary" id="btn-clear-delivery" onclick="clearModule('delivery')" style="margin-top:2px;">Clear All Orders</button>
+    </div>
+
+    <!-- PREP CHECKLIST -->
+    <div style="background:#111;border:1px solid #1e1e1e;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#cc1010;">Prep Checklist</div>
+      <div style="font-family:'Barlow',sans-serif;font-size:12px;color:#555;line-height:1.5;">Clears the active prep list currently showing in the kitchen. Marks it as cleared.</div>
+      <div id="status-prep" style="font-family:'Barlow',sans-serif;font-size:12px;color:#888;">Checking…</div>
+      <button class="btn-primary" id="btn-clear-prep" onclick="clearModule('prep')" style="margin-top:2px;">Clear All Orders</button>
+    </div>
+
   </div>
 
 </div>
@@ -237,7 +265,7 @@
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('admin-app').classList.add('visible');
         loadUsers();
-        checkPendingOrders();
+        checkAllModules();
       }, 400);
     } else {
       updateAuthDots('error'); authBusy = true;
@@ -453,6 +481,114 @@
     }
     btn.textContent = 'Clear All Pending Orders';
   }
+
+  // ── CLEAR MODULES ──
+  const MODULE_CONFIG = {
+    order: {
+      label: 'Order',
+      desc: 'delivered orders not yet accepted',
+      check: async () => {
+        const res = await fetch(VERCEL_API + '/api/orders/active', { cache: 'no-store' });
+        const data = await res.json();
+        const n = (data.history || []).filter(h => h.status === 'delivered').length;
+        return n === 0 ? { clear: true, msg: '✓ No pending delivered orders.' }
+                       : { clear: false, msg: n + ' order' + (n !== 1 ? 's' : '') + ' awaiting acceptance.' };
+      },
+      clear: async () => {
+        const res = await fetch(VERCEL_API + '/api/orders/active', { cache: 'no-store' });
+        const data = await res.json();
+        const pending = (data.history || []).filter(h => h.status === 'delivered');
+        const restaurants = [...new Set(pending.map(o => o.restaurant))];
+        for (const r of restaurants) {
+          await fetch(VERCEL_API + '/api/orders/accepted', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ restaurant: r, accepted_by: 'Admin' }) });
+        }
+        return restaurants.length;
+      }
+    },
+    kitchen: {
+      label: 'Kitchen Display',
+      desc: 'active orders on kitchen screen',
+      check: async () => {
+        const res = await fetch(VERCEL_API + '/api/orders/active', { cache: 'no-store' });
+        const data = await res.json();
+        const active = ['r1','r2'].filter(k => data[k]);
+        return active.length === 0
+          ? { clear: true,  msg: '✓ Kitchen display is clear.' }
+          : { clear: false, msg: 'Active: ' + active.map(k => k==='r1'?'Tori 1 — Špansko':'Tori 2 — Trnje').join(', ') };
+      },
+      clear: async () => {
+        await fetch(VERCEL_API + '/api/kitchen/clear-active', { method:'POST', headers:{'Content-Type':'application/json'} });
+        return 1;
+      }
+    },
+    delivery: {
+      label: 'Delivery',
+      desc: 'dispatched orders not yet delivered',
+      check: async () => {
+        const res = await fetch(VERCEL_API + '/api/orders/active', { cache: 'no-store' });
+        const data = await res.json();
+        const n = (data.history || []).filter(h => h.status === 'dispatched').length;
+        return n === 0 ? { clear: true,  msg: '✓ No dispatched orders pending.' }
+                       : { clear: false, msg: n + ' order' + (n !== 1 ? 's' : '') + ' dispatched, not yet delivered.' };
+      },
+      clear: async () => {
+        const res = await fetch(VERCEL_API + '/api/kitchen/clear-dispatched', { method:'POST', headers:{'Content-Type':'application/json'} });
+        return 1;
+      }
+    },
+    prep: {
+      label: 'Prep Checklist',
+      desc: 'active prep list in kitchen',
+      check: async () => {
+        const res = await fetch(VERCEL_API + '/api/orders/active', { cache: 'no-store' });
+        const data = await res.json();
+        return data.prep
+          ? { clear: false, msg: 'Active prep list found — submitted by ' + (data.prep.staffName || 'unknown') + '.' }
+          : { clear: true,  msg: '✓ No active prep list.' };
+      },
+      clear: async () => {
+        await fetch(VERCEL_API + '/api/prep/clear', { method:'POST', headers:{'Content-Type':'application/json'} });
+        return 1;
+      }
+    }
+  };
+
+  async function checkAllModules() {
+    for (const [key, cfg] of Object.entries(MODULE_CONFIG)) {
+      const statusEl = document.getElementById('status-' + key);
+      const btn = document.getElementById('btn-clear-' + key);
+      if (!statusEl) continue;
+      try {
+        const result = await cfg.check();
+        statusEl.textContent = result.msg;
+        statusEl.style.color = result.clear ? '#22cc66' : '#d4a847';
+        btn.disabled = result.clear; btn.style.opacity = result.clear ? '0.4' : '1';
+      } catch(e) {
+        statusEl.textContent = 'Could not check status.';
+        statusEl.style.color = '#ff4444';
+      }
+    }
+  }
+
+  async function clearModule(key) {
+    const cfg = MODULE_CONFIG[key];
+    if (!confirm('Clear all ' + cfg.desc + '? This cannot be undone.')) return;
+    const btn = document.getElementById('btn-clear-' + key);
+    const origText = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Clearing…';
+    try {
+      await cfg.clear();
+      showToast(cfg.label + ' cleared', 'success');
+      await checkAllModules();
+    } catch(e) {
+      showToast('Error: ' + (e.message || 'unknown'), 'error');
+    }
+    btn.disabled = false; btn.textContent = origText;
+  }
+
+  // Keep old function names working for any references
+  function checkPendingOrders() { checkAllModules(); }
+  function checkKitchenDisplay() {}
 
   document.addEventListener('keydown', e => {
     if (document.getElementById('auth-screen').style.display !== 'none') {
