@@ -1,19 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-(function(){
-  var V='1.0.1';
-  var k='TORI_APP_VERSION_'+location.pathname.split('/').pop();
-  if(localStorage.getItem(k)!==V){localStorage.setItem(k,V);location.reload(true);}
-})();
-</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<title>TORI Kitchen Ordering</title>
+<title>TORI Order Checklist — DEMO</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -35,7 +25,7 @@
   --font:   'Barlow Condensed', sans-serif;
   --body:   'Barlow', sans-serif;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; }
 body {
   min-height: 100%;
@@ -195,26 +185,27 @@ body {
   letter-spacing: 0.02em; color: var(--ink3); transition: color 0.15s; line-height: 1.15;
 }
 .item-row.checked .item-name { color: var(--ink); }
-
-/* Inline qty — hidden until checked */
-.item-qty-inline {
-  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
-  opacity: 0; pointer-events: none; transition: opacity 0.15s;
+.item-qty-badge {
+  font-size: 16px; font-weight: 900;
+  color: var(--ink); /* WHITE */
+  white-space: nowrap; min-width: 44px; text-align: right;
+  opacity: 0; transition: opacity 0.15s;
 }
-.item-row.checked .item-qty-inline { opacity: 1; pointer-events: auto; }
+.item-row.checked .item-qty-badge { opacity: 1; }
+
+.item-expand { max-height: 0; overflow: hidden; transition: max-height 0.22s ease; }
+.item-row.checked .item-expand { max-height: 70px; }
+.qty-row { padding: 0 18px 14px 58px; display: flex; align-items: center; gap: 10px; }
+.qty-lbl { font-family: var(--body); font-size: 13px; color: var(--ink4); white-space: nowrap; }
 .qty-input {
-  width: 72px; height: 38px; background: var(--panel2);
+  width: 90px; height: 42px; background: var(--panel2);
   border: 1px solid var(--line2); border-bottom: 2px solid var(--red2);
-  color: var(--ink); font-family: var(--font); font-size: 22px; font-weight: 900;
+  color: var(--ink); font-family: var(--font); font-size: 24px; font-weight: 900;
   text-align: center; -moz-appearance: textfield; -webkit-appearance: none; border-radius: 0;
 }
 .qty-input::-webkit-outer-spin-button, .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .qty-input:focus { outline: none; border-bottom-color: var(--red); background: var(--panel); }
-.qty-unit { font-family: var(--body); font-size: 13px; color: var(--ink4); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
-
-/* Legacy — keep for any old references */
-.item-qty-badge { display: none; }
-.item-expand { display: none; }
+.qty-unit { font-family: var(--body); font-size: 14px; color: var(--ink4); font-weight: 600; }
 
 /* bottom nav */
 .bottom-nav {
@@ -231,10 +222,10 @@ body {
 }
 .nav-btn:hover { background: var(--panel4); }
 .nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
-.nav-btn.fwd  { background: var(--red2); border-color: var(--red2); flex: 2; }
-.nav-btn.fwd:hover { background: var(--red); border-color: var(--red); }
-.nav-btn.review { background: var(--panel2); border-color: var(--line2); color: var(--ink3); flex: 0 0 auto; white-space: nowrap; }
-.nav-btn.review:hover { background: var(--panel3); color: var(--ink); }
+.nav-btn.fwd  { background: var(--panel3); border-color: var(--line2); flex: 1; }
+.nav-btn.fwd:hover { background: var(--panel4); border-color: var(--line2); }
+.nav-btn.review { background: var(--red2); border-color: var(--red2); flex: 2; }
+.nav-btn.review:hover { background: var(--red); border-color: var(--red); }
 
 /* ══════════ REVIEW ══════════ */
 .review-header {
@@ -425,14 +416,14 @@ body {
   color: var(--ink4); padding: 5px 10px; border: 1px solid var(--line2);
 }
 .status-step .ss-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink4); flex-shrink: 0; }
-.status-step.st-preparing  { color: #F59E0B; border-color: rgba(245,158,11,0.45); background: rgba(245,158,11,0.1); }
-.status-step.st-preparing  .ss-dot { background: #F59E0B; box-shadow: 0 0 7px #F59E0B; }
-.status-step.st-in_delivery { color: #3B82F6; border-color: rgba(59,130,246,0.45); background: rgba(59,130,246,0.1); }
-.status-step.st-in_delivery .ss-dot { background: #3B82F6; box-shadow: 0 0 7px #3B82F6; animation: gpulse 1.2s ease-in-out infinite; }
-.status-step.st-delivered  { color: var(--green); border-color: rgba(76,175,80,0.45); background: rgba(76,175,80,0.1); }
-.status-step.st-delivered  .ss-dot { background: var(--green); box-shadow: 0 0 7px var(--green); animation: gpulse 1.2s ease-in-out infinite; }
+.status-step.st-preparing { color: var(--green); border-color: rgba(76,175,80,0.45); background: rgba(76,175,80,0.1); }
+.status-step.st-preparing .ss-dot { background: var(--green); box-shadow: 0 0 7px var(--green); animation: gpulse 1.2s ease-in-out infinite; }
+.status-step.st-in_delivery { color: var(--green); border-color: rgba(76,175,80,0.45); background: rgba(76,175,80,0.1); }
+.status-step.st-in_delivery .ss-dot { background: var(--green); box-shadow: 0 0 7px var(--green); animation: gpulse 1.2s ease-in-out infinite; }
+.status-step.st-delivered { color: var(--green); border-color: rgba(76,175,80,0.45); background: rgba(76,175,80,0.1); }
+.status-step.st-delivered .ss-dot { background: var(--green); box-shadow: 0 0 7px var(--green); animation: gpulse 1.2s ease-in-out infinite; }
 .status-arrow { color: var(--line2); font-size: 14px; }
-.pending-body { flex: 1; overflow-y: auto; }
+.pending-body { flex: 1; overflow-y: auto; padding-bottom: 130px; }
 .pending-cat-hdr {
   padding: 7px 18px 5px; font-size: 10px; font-weight: 900; letter-spacing: 0.22em;
   text-transform: uppercase; color: var(--ink4); background: var(--bg2);
@@ -456,50 +447,44 @@ body {
 .pending-item-row.missing .missing-cb::after { opacity:1; transform:scale(1); }
 .missing-reason-tag { font-size:11px; font-family:var(--body); color: var(--red); margin-left: 4px; font-style:italic; }
 .pending-footer {
-  width: 100%; padding: 16px 16px 24px;
-  display: flex; flex-direction: column; gap: 8px;
-  border-top: 1px solid var(--line2);
-  background: var(--bg);
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px; background: rgba(15,19,20,0.98);
+  border-top: 1px solid var(--line2); padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 8px; z-index: 100; backdrop-filter: blur(10px);
 }
 .accept-all-btn {
-  display: block; width: 100%;
-  background: var(--green2); border: none; color: var(--ink);
+  width: 100%; background: var(--green2); border: none; color: var(--ink);
   font-family: var(--font); font-size: 17px; font-weight: 900; letter-spacing: 0.12em;
-  text-transform: uppercase; padding: 16px; cursor: pointer;
-  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  border-radius: 6px;
+  text-transform: uppercase; padding: 16px; cursor: pointer; transition: background 0.15s;
 }
-.accept-all-btn:disabled { background: var(--panel3) !important; color: var(--ink4) !important; cursor: not-allowed; }
+.accept-all-btn:hover { background: var(--green); }
+.accept-all-btn:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
 .accepted-notice { text-align:center; padding:14px; font-size:14px; font-weight:900; letter-spacing:0.12em; text-transform:uppercase; color:var(--green); border:1px solid rgba(76,175,80,0.35); background:rgba(76,175,80,0.08); }
+.reason-modal { background: var(--panel); border-top: 4px solid var(--red2); padding: 24px 20px 32px; width: 100%; max-width: 480px; }
+.reason-modal-title { font-size: 20px; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
+.reason-modal-sub   { font-family: var(--body); font-size: 13px; color: var(--ink4); margin-bottom: 16px; line-height: 1.5; }
 .reason-item-name   { font-size: 16px; font-weight: 900; text-transform: uppercase; color: var(--ink2); margin-bottom: 14px; padding: 8px 12px; background: var(--panel2); border-left: 3px solid var(--red2); }
 .reason-opts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .reason-opt { background: var(--panel2); border: 1px solid var(--line2); color: var(--ink3); font-family: var(--font); font-size: 14px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 8px 16px; cursor: pointer; transition: all 0.15s; }
 .reason-opt:hover { border-color: var(--red2); color: var(--ink); }
 .reason-opt.selected { background: rgba(222,0,0,0.12); border-color: var(--red2); color: #E07070; }
-.reason-ok { background: var(--red2); border: none; color: var(--ink); font-family: var(--font); font-size: 15px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; transition: background 0.15s; }
+.reason-acts { display: flex; gap: 10px; margin-top: 16px; }
+.reason-ok { flex: 2; background: var(--red2); border: none; color: var(--ink); font-family: var(--font); font-size: 15px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 13px; cursor: pointer; transition: background 0.15s; }
 .reason-ok:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+.reason-cancel { flex: 1; background: transparent; border: 1px solid var(--line2); color: var(--ink3); font-family: var(--font); font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 13px; cursor: pointer; transition: all 0.15s; }
+.reason-cancel:hover { color: var(--ink); background: var(--panel3); }
+.accept-name-modal { background: var(--panel); border-top: 4px solid var(--green2); padding: 28px 24px 36px; width: 100%; max-width: 480px; }
+.anm-title { font-size: 22px; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; }
+.anm-sub   { font-family: var(--body); font-size: 13px; color: var(--ink4); margin-bottom: 20px; line-height: 1.5; }
 .anm-label { font-size: 11px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink4); margin-bottom: 8px; }
-.anm-input { width: 100%; background: var(--panel2); border: 1px solid var(--line2); border-left: 3px solid var(--green2); color: var(--ink); font-family: var(--font); font-size: 20px; font-weight: 700; padding: 13px 15px; border-radius: 0; -webkit-appearance: none; margin-bottom: 4px; }
+.anm-input { width: 100%; background: var(--panel2); border: 1px solid var(--line2); border-left: 3px solid var(--green2); color: var(--ink); font-family: var(--font); font-size: 20px; font-weight: 700; padding: 13px 15px; border-radius: 0; -webkit-appearance: none; margin-bottom: 20px; }
 .anm-input:focus { outline: none; border-left-color: var(--green); }
 .anm-input::placeholder { color: var(--ink4); font-weight: 600; }
-.anm-ok { background: #388E3C; border: none; color: #fff; font-family: var(--font); font-size: 15px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; touch-action: manipulation; border-radius: 6px; }
+.anm-acts { display: flex; gap: 10px; }
+.anm-ok { flex: 2; background: var(--green2); border: none; color: var(--ink); font-family: var(--font); font-size: 15px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; transition: background 0.15s; }
+.anm-ok:hover:not(:disabled) { background: var(--green); }
 .anm-ok:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
-.anm-cancel { background: transparent; border: 1px solid var(--line2); color: var(--ink3); font-family: var(--font); font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; touch-action: manipulation; }
-
-/* ── MODAL OVERLAY ── */
-.modal-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.85); z-index: 9999;
-  align-items: center; justify-content: center; padding: 24px;
-}
-.modal-overlay.open { display: flex; }
-.modal-popup {
-  background: var(--panel); border: 1px solid var(--line2);
-  border-top: 4px solid var(--green2);
-  padding: 28px 24px; width: 100%; max-width: 440px;
-}
-.modal-popup-title { font-size: 22px; font-weight: 900; text-transform: uppercase; margin-bottom: 6px; }
-.modal-popup-sub { font-family: var(--body); font-size: 13px; color: var(--ink4); margin-bottom: 20px; line-height: 1.5; }
+.anm-cancel { flex: 1; background: transparent; border: 1px solid var(--line2); color: var(--ink3); font-family: var(--font); font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer; transition: all 0.15s; }
 .anm-cancel:hover { color: var(--ink); background: var(--panel3); }
 
 /* Settings */
@@ -553,14 +538,8 @@ body {
 }
 .topbar-tab:hover { color: var(--ink3); }
 .topbar-tab.active { color: var(--ink); border-bottom-color: var(--red); }
-.topbar-tab.tab-live { animation: tab-green-pulse 1.2s ease-in-out infinite; }
-.topbar-tab.tab-preparing  { color: #F59E0B !important; animation: tab-green-pulse 1.2s ease-in-out infinite; }
-.topbar-tab.tab-preparing.active  { border-bottom-color: #F59E0B; }
-.topbar-tab.tab-in_delivery { color: #3B82F6 !important; animation: tab-green-pulse 1.2s ease-in-out infinite; }
-.topbar-tab.tab-in_delivery.active { border-bottom-color: #3B82F6; }
-.topbar-tab.tab-delivered  { color: var(--green) !important; animation: tab-green-pulse 1.2s ease-in-out infinite; }
-.topbar-tab.tab-delivered.active  { border-bottom-color: var(--green); }
-@keyframes tab-blue-pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.topbar-tab.tab-live { color: var(--green) !important; animation: tab-green-pulse 1.2s ease-in-out infinite; }
+.topbar-tab.tab-live.active { border-bottom-color: var(--green); }
 @keyframes tab-green-pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 .topbar-tab-dot { display: none; /* dot removed, using text pulse instead */ }
 
@@ -740,17 +719,9 @@ body {
 .hist-row { cursor: pointer; transition: background 0.12s; }
 .hist-row:hover td { background: rgba(255,255,255,0.04); }
 .hist-row:active td { background: rgba(255,255,255,0.07); }
-.clear-hist-btn {
-  background: transparent; border: 1px solid var(--line2);
-  color: var(--ink4); font-family: var(--font); font-size: 11px;
-  font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase;
-  padding: 7px 14px; cursor: pointer; white-space: nowrap;
-  transition: color 0.15s, border-color 0.15s;
-}
-.clear-hist-btn:hover { color: var(--red); border-color: var(--red); }
 
 /* ══ HISTORY DETAIL SHEET ══ */
-.history-detail-sheet, .detail-sheet {
+.history-detail-sheet {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   width: 100%;
@@ -760,7 +731,7 @@ body {
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
 }
-.history-detail-sheet.open, .detail-sheet.open { transform: translateX(0); }
+.history-detail-sheet.open { transform: translateX(0); }
 
 .detail-sheet-topbar {
   background: rgba(15,19,20,0.98);
@@ -845,13 +816,26 @@ body {
 }
 .soc-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .soc-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink4); }
-.soc-val   { font-size: 16px; font-weight: 400; color: var(--ink); text-align: right; }
+.soc-val   { font-size: 16px; font-weight: 900; color: var(--ink); text-align: right; }
 .soc-val.green { color: var(--green); }
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--line2); }
 
-/* ══ MODALS ══ */
+/* ══════════ STATUS TOAST NOTIFICATION ══════════ */
+.status-toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-120px);
+  z-index: 99999; background: var(--panel2); border: 1px solid var(--line2);
+  border-left: 4px solid var(--green); padding: 14px 20px;
+  font-family: var(--font); font-size: 16px; font-weight: 900;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink);
+  min-width: 260px; text-align: center;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+  opacity: 0; pointer-events: none; white-space: nowrap;
+  touch-action: manipulation;
+}
+.status-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
 .modal-back {
   display: none;
   position: fixed !important;
@@ -864,20 +848,11 @@ body {
 }
 .modal-back.open { display: flex !important; }
 </style>
-<style>
-@keyframes orbit1-kis{0%{transform:rotate(0deg) translateX(45px) scale(1)}50%{transform:rotate(180deg) translateX(45px) scale(.5)}100%{transform:rotate(360deg) translateX(45px) scale(1)}}
-@keyframes orbit2-kis{0%{transform:rotate(120deg) translateX(45px) scale(.6)}50%{transform:rotate(300deg) translateX(45px) scale(1.1)}100%{transform:rotate(480deg) translateX(45px) scale(.6)}}
-@keyframes orbit3-kis{0%{transform:rotate(240deg) translateX(45px) scale(1.1)}50%{transform:rotate(420deg) translateX(45px) scale(.5)}100%{transform:rotate(600deg) translateX(45px) scale(1.1)}}
-@keyframes dropMorph-kis{0%,100%{rx:10;ry:14}50%{rx:14;ry:10}}
-#tori-blob-splash{position:fixed;inset:0;z-index:99999;background:#000;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity 0.4s ease;}
-#tori-blob-splash.hide{opacity:0;}
-.orbit-drop-kis{fill:#cc1010;transform-origin:100px 100px;}
-.orbit-drop-kis:nth-child(1){animation:orbit1-kis 2.1s ease-in-out infinite,dropMorph-kis 1.4s ease-in-out infinite;}
-.orbit-drop-kis:nth-child(2){animation:orbit2-kis 2.1s ease-in-out infinite,dropMorph-kis 1.4s .47s ease-in-out infinite;}
-.orbit-drop-kis:nth-child(3){animation:orbit3-kis 2.1s ease-in-out infinite,dropMorph-kis 1.4s .94s ease-in-out infinite;}
-</style>
 </head>
 <body>
+
+<!-- ══ STATUS TOAST ══ -->
+<div class="status-toast" id="status-toast"></div>
 
 <!-- ══ SCREEN: WELCOME ══ -->
 <div class="screen active" id="s-welcome" style="flex-direction:column;">
@@ -888,21 +863,20 @@ body {
       <div id="location-tag-display" class="location-tag" style="display:none;"></div>
     </div>
     <div class="topbar-tabs">
-      <button class="topbar-tab active" id="tab-home" onclick="switchTab('home')">Order</button>
+      <button class="topbar-tab active" id="tab-home" onclick="switchTab('home')">Home</button>
       <button class="topbar-tab" id="tab-delivery" onclick="switchTab('delivery')">
         Status
         <span class="topbar-tab-dot" id="tab-delivery-dot" style="display:none;"></span>
       </button>
       <button class="topbar-tab" id="tab-history" onclick="switchTab('history')">History</button>
     </div>
-    <button class="settings-icon-btn" onclick="if(API_BASE){pollApiStatus();showToast('Synced')}" title="Sync" style="font-size:16px;">↻</button>
     <button class="settings-icon-btn" onclick="go('s-settings')" title="Settings">⚙</button>
   </div>
 
   <!-- TAB: HOME -->
   <div id="tab-home-content" class="welcome-body">
     <div>
-      <div class="section-label" style="text-align:center;">Order Details</div>
+      <div class="section-label">Order Details</div>
       <div class="field-wrap">
         <div>
           <div class="field-label">Date</div>
@@ -911,7 +885,7 @@ body {
         <div>
           <div class="field-label">Your Name &amp; Surname</div>
           <input class="field-input" type="text" id="order-name"
-            placeholder="e.g. Vladimir Filakovac" style="font-weight:400;" autocomplete="name" autocorrect="off" />
+            placeholder="e.g. Ana Kovač" autocomplete="name" autocorrect="off" />
         </div>
       </div>
     </div>
@@ -920,16 +894,13 @@ body {
 
   <!-- TAB: DELIVERY STATUS — status only, no sub-tabs -->
   <div id="tab-delivery-content" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
-    <div id="home-pending-body" style="flex:1;overflow-y:auto;"></div>
+    <div id="home-pending-body" style="flex:1;overflow-y:auto;padding-bottom:100px;"></div>
+    <div class="pending-footer" id="home-pending-footer"></div>
   </div><!-- /tab-delivery-content -->
 
   <!-- TAB: HISTORY -->
-  <div id="tab-history-content" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line);flex-shrink:0;">
-      <div style="font-size:11px;font-weight:900;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink4);">Delivery History</div>
-      
-    </div>
-    <div id="history-tab-body" style="flex:1;overflow-y:auto;"></div>
+  <div id="tab-history-content" style="display:none;flex:1;overflow-y:auto;">
+    <div id="history-tab-body"></div>
   </div><!-- /tab-history-content -->
 
 </div><!-- /s-welcome -->
@@ -967,9 +938,9 @@ body {
   <div class="items-list" id="items-list"></div>
 
   <div class="bottom-nav">
-    <button class="nav-btn" id="prev-btn" onclick="prevCat()" style="flex:0 0 auto;min-width:80px;">← Prev</button>
-    <button class="nav-btn fwd" id="next-btn" onclick="nextCat()">Next →</button>
-    <button class="nav-btn review" id="review-btn" onclick="showReview()">Review →</button>
+    <button class="nav-btn" id="prev-btn" onclick="prevCat()">← Prev</button>
+    <button class="nav-btn fwd" id="next-btn" onclick="showCat(catIdx+1<CATS.length?catIdx+1:catIdx)">Next →</button>
+    <button class="nav-btn review" id="review-btn" onclick="showReview()">Review</button>
   </div>
 </div>
 
@@ -1020,7 +991,8 @@ body {
 
   <!-- DASH TAB: DELIVERY -->
   <div id="dtab-delivery-content" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
-    <div class="pending-body" id="dash-pending-body" style="flex:1;overflow-y:auto;"></div>
+    <div class="pending-body" id="dash-pending-body" style="flex:1;overflow-y:auto;padding-bottom:100px;"></div>
+    <div class="pending-footer" id="dash-pending-footer"></div>
   </div>
 
 </div>
@@ -1065,103 +1037,53 @@ body {
         </div>
       </div>
     </div>
-    <div style="margin-top:20px;">
-      <div class="settings-section-label">Admin</div>
-      <label style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line2);cursor:pointer;user-select:none;">
-        <input type="checkbox" id="admin-toggle" onchange="toggleAdminMode()" style="width:20px;height:20px;accent-color:var(--red);">
-        <div>
-          <div style="font-size:16px;font-weight:800;text-transform:uppercase;">Admin Mode</div>
-          <div style="font-size:12px;color:var(--ink4);margin-top:2px;">Access import & clear functions</div>
-        </div>
-      </label>
-      <div id="admin-panel" style="display:none;margin-top:12px;flex-direction:column;gap:8px;">
-        <button onclick="importHistoryFromDB()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--ink);font-family:var(--font);font-size:14px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Import History from Database</button>
-        <button onclick="location.reload(true)" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--ink);font-family:var(--font);font-size:14px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Force Refresh Page</button>
-        <button onclick="clearOrderHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--red);font-family:var(--font);font-size:14px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Clear Local History</button>
-      </div>
-    </div>
-    <div style="margin-top:16px;padding:12px 14px;background:var(--panel);border:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:11px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);">App Version</div>
-      <div style="font-size:14px;font-weight:700;color:var(--ink3);letter-spacing:0.08em;">v1.0.0</div>
-    </div>
     <button class="settings-save-btn" onclick="saveSettings()">Save Settings →</button>
   </div>
 </div>
 
 
 <!-- MISSING REASON MODAL -->
-<!-- REASON SHEET -->
-<div class="detail-sheet reason-sheet" id="reason-modal-back">
-  <div class="detail-sheet-topbar">
-    <button class="detail-back-btn" onclick="closeReasonModal()">← Back</button>
-    <div class="detail-sheet-title">Mark as Missing</div>
-  </div>
-  <div style="padding:20px;">
-    <div style="font-family:var(--body);font-size:13px;color:var(--ink4);margin-bottom:16px;line-height:1.5;">Select the reason this item was not delivered.</div>
-    <div class="reason-item-name" id="reason-item-name" style="font-size:18px;font-weight:900;text-transform:uppercase;color:var(--ink);margin-bottom:20px;letter-spacing:0.04em;"></div>
+<div class="modal-back" id="reason-modal-back">
+  <div class="reason-modal">
+    <div class="reason-modal-title">Mark as Missing</div>
+    <div class="reason-modal-sub">Select the reason this item was not delivered.</div>
+    <div class="reason-item-name" id="reason-item-name"></div>
     <div class="reason-opts">
-      <div class="reason-opt" onclick="selectReason(this,'Not Delivered')">Not Delivered</div>
-      <div class="reason-opt" onclick="selectReason(this,'Damaged')">Damaged</div>
-      <div class="reason-opt" onclick="selectReason(this,'other')">Other</div>
+      <div class="reason-opt" onclick="selectReason(this,'Forgotten')">Forgotten</div>
+      <div class="reason-opt" onclick="selectReason(this,'Destroyed during delivery')">Damaged</div>
+      <div class="reason-opt" onclick="selectReason(this,'Out of stock')">Out of Stock</div>
+      <div class="reason-opt" onclick="selectReason(this,'Other')">Other</div>
     </div>
-    <input class="anm-input" id="reason-other-input" type="text" placeholder="Type reason…"
-      style="display:none;margin-top:12px;width:100%;"
-      oninput="onReasonOtherInput()" />
-    <button class="reason-ok" id="reason-ok" disabled onclick="confirmMissing()" style="margin-top:24px;width:100%;">Confirm Missing →</button>
+    <div class="reason-acts">
+      <button class="reason-cancel" onclick="closeReasonModal()">Cancel</button>
+      <button class="reason-ok" id="reason-ok" disabled onclick="confirmMissing()">Confirm Missing →</button>
+    </div>
   </div>
 </div>
 
 <!-- ACCEPT NAME MODAL -->
-<div class="modal-overlay" id="accept-name-modal-back">
-  <div class="modal-popup">
-    <div class="modal-popup-title">Confirm Delivery Accepted</div>
-    <div class="modal-popup-sub">Enter the name of the person accepting this delivery.</div>
+<div class="modal-back" id="accept-name-modal-back">
+  <div class="accept-name-modal">
+    <div class="anm-title">Confirm Delivery Accepted</div>
+    <div class="anm-sub">Enter the name of the person accepting this delivery at the restaurant.</div>
     <div class="anm-label">Accepted by (name &amp; surname)</div>
     <input class="anm-input" id="anm-input" type="text"
-      placeholder="e.g. Vladimir Filakovac" style="font-weight:400;" autocomplete="off"
+      placeholder="e.g. Ana Kovač" autocomplete="off"
       oninput="document.getElementById('anm-ok').disabled = !this.value.trim()" />
-    <div style="display:flex;gap:10px;margin-top:8px;">
-      <button class="anm-cancel" onclick="closeAcceptModal()" style="flex:1;">Cancel</button>
-      <button class="anm-ok" id="anm-ok" disabled onclick="confirmAcceptDelivery()" style="flex:2;">Delivery Accepted →</button>
+    <div class="anm-acts">
+      <button class="anm-cancel" onclick="closeAcceptModal()">Cancel</button>
+      <button class="anm-ok" id="anm-ok" disabled onclick="confirmAcceptDelivery()">Delivery Accepted →</button>
     </div>
   </div>
 </div>
 
-<!-- MISSING ITEMS RE-ADD SHEET -->
-<div class="detail-sheet" id="missing-readd-sheet">
-  <div class="detail-sheet-topbar">
-    <button class="detail-back-btn" onclick="dismissMissingReadd()">Skip</button>
-    <div class="detail-sheet-title">Items Not Delivered Last Time</div>
-  </div>
-  <div style="padding:20px 20px 0;">
-    <div style="font-family:var(--body);font-size:13px;color:var(--ink4);line-height:1.5;margin-bottom:16px;">
-      The following items were not delivered during your last order. Would you like to add them to this order?
-    </div>
-  </div>
-  <div id="missing-readd-list" style="flex:1;overflow-y:auto;padding-bottom:20px;"></div>
-  <div style="padding:16px 20px;border-top:1px solid var(--line);display:flex;gap:10px;flex-shrink:0;">
-    <button onclick="dismissMissingReadd()" style="flex:1;background:transparent;border:1px solid var(--line2);color:var(--ink4);font-family:var(--font);font-size:14px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;padding:14px;cursor:pointer;">Skip</button>
-    <button id="readd-confirm-btn" onclick="confirmMissingReadd()" style="flex:2;background:var(--red2);border:none;color:var(--ink);font-family:var(--font);font-size:14px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;padding:14px;cursor:pointer;">Add to Order →</button>
-  </div>
-</div>
-
-<div id="toast" onclick="this.classList.remove('show')" style="
-  display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-  background:rgba(30,34,36,0.97); color:#fff; font-family:'Barlow Condensed',sans-serif;
-  font-size:15px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
-  padding:18px 28px; z-index:99999; text-align:center; cursor:pointer;
-  border:1px solid rgba(255,255,255,0.12); max-width:80vw;
-  box-shadow:0 8px 40px rgba(0,0,0,0.5);
-"></div>
+<div class="toast" id="toast"></div>
 
 <!-- HISTORY DETAIL SHEET -->
 <div class="history-detail-sheet" id="history-detail-sheet">
   <div class="detail-sheet-topbar">
     <button class="detail-back-btn" onclick="closeHistoryDetail()">← Back</button>
-    <div style="display:flex;flex-direction:column;gap:2px;">
-      <div style="font-size:10px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);">Delivery History</div>
-      <div class="detail-sheet-title" id="detail-sheet-title"></div>
-    </div>
+    <div class="detail-sheet-title" id="detail-sheet-title"></div>
   </div>
   <div class="detail-sheet-meta" id="detail-sheet-meta"></div>
   <div class="detail-sheet-body" id="detail-sheet-body"></div>
@@ -1169,7 +1091,7 @@ body {
 
 
 <script>
-const API_BASE = 'https://tori-kitchen-system-tv6b.vercel.app'; // set to your backend URL
+const API_BASE = ''; // set to your backend URL
 
 // Safe localStorage JSON parse — handles null, undefined, and empty string
 function lsGet(key, fallback) {
@@ -1329,6 +1251,7 @@ function chkReady() {
 }
 
 function startChecklist() {
+  // Restaurant is always the device's configured location from Settings
   restaurant = selectedLocation;
   if (!restaurant) {
     showToast('Please set your restaurant location in Settings ⚙ first');
@@ -1337,81 +1260,6 @@ function startChecklist() {
   staffName  = document.getElementById('order-name').value.trim();
   orderDate  = document.getElementById('order-date').value;
   isAmending = false; catIdx = 0; checked = {};
-
-  // Check last delivery for undelivered items
-  const lastMissing = getLastMissingItems();
-  if (Object.keys(lastMissing).length) {
-    showMissingReadd(lastMissing);
-  } else {
-    launch();
-  }
-}
-
-// ── MISSING ITEMS RE-ADD ──
-let _pendingMissingItems = {};
-
-function getLastMissingItems() {
-  try {
-    const log = lsGet('TORI_RESTAURANT_LOG', []);
-    if (!log.length) return {};
-    // Filter to current restaurant only, then take the most recent
-    const rk = selectedLocation;
-    const filtered = rk ? log.filter(e => e.restaurant === rk) : log;
-    if (!filtered.length) return {};
-    return filtered[0].missingItems || {};
-  } catch(e) { return {}; }
-}
-
-function showMissingReadd(missing) {
-  _pendingMissingItems = missing;
-
-  // Build item list
-  const itemMeta = {};
-  CATS.forEach(c => c.items.forEach(i => { itemMeta[i.id] = i; }));
-
-  let html = '';
-  Object.entries(missing).forEach(([id, reason]) => {
-    const m = itemMeta[id];
-    if (!m) return;
-    html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line);">
-      <div>
-        <div style="font-size:17px;font-weight:700;text-transform:uppercase;color:var(--ink);">${m.name}</div>
-        <div style="font-family:var(--body);font-size:12px;color:var(--ink4);margin-top:2px;">Not delivered: ${reason}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-        <input type="number" id="readd-qty-${id}" value="1" min="0" step="any" inputmode="decimal"
-          style="width:60px;height:36px;background:var(--panel2);border:1px solid var(--line2);border-bottom:2px solid var(--red2);color:var(--ink);font-family:var(--font);font-size:20px;font-weight:900;text-align:center;border-radius:0;-webkit-appearance:none;-moz-appearance:textfield;"
-          onclick="event.stopPropagation()" />
-        <span style="font-family:var(--body);font-size:12px;color:var(--ink4);text-transform:uppercase;">${m.unit}</span>
-      </div>
-    </div>`;
-  });
-
-  document.getElementById('missing-readd-list').innerHTML = html || '<div style="padding:20px;color:var(--ink4);">No items</div>';
-  document.getElementById('missing-readd-sheet').classList.add('open');
-}
-
-function dismissMissingReadd() {
-  document.getElementById('missing-readd-sheet').classList.remove('open');
-  _pendingMissingItems = {};
-  launch();
-}
-
-function confirmMissingReadd() {
-  const itemMeta = {};
-  CATS.forEach(c => c.items.forEach(i => { itemMeta[i.id] = i; }));
-
-  Object.keys(_pendingMissingItems).forEach(id => {
-    const inp = document.getElementById('readd-qty-' + id);
-    if (!inp) return;
-    const qty = parseFloat(inp.value);
-    if (!isNaN(qty) && qty > 0) {
-      checked[id] = qty;
-    }
-  });
-
-  document.getElementById('missing-readd-sheet').classList.remove('open');
-  _pendingMissingItems = {};
   launch();
 }
 
@@ -1476,10 +1324,14 @@ function showCat(idx) {
     row.className='item-row'+(isc?' checked':'');
     row.id='row-'+item.id;
     row.innerHTML=`
-      <div class="item-main" onclick="focusQty('${item.id}')">
-        <div class="item-check" onclick="event.stopPropagation();toggle('${item.id}')"></div>
+      <div class="item-main" onclick="toggle('${item.id}')">
+        <div class="item-check"></div>
         <div class="item-name">${item.name}</div>
-        <div class="item-qty-inline" onclick="event.stopPropagation()">
+        <div class="item-qty-badge" id="badge-${item.id}">${qty?qty+' '+item.unit:''}</div>
+      </div>
+      <div class="item-expand" onclick="event.stopPropagation()">
+        <div class="qty-row">
+          <span class="qty-lbl">Quantity:</span>
           <input class="qty-input" type="number" id="qty-${item.id}"
             value="${qty}" min="0" step="any" inputmode="decimal" placeholder="0"
             oninput="qtyChange('${item.id}','${item.unit}')" />
@@ -1492,50 +1344,24 @@ function showCat(idx) {
 
   document.getElementById('prev-btn').disabled = idx===0;
   const nb = document.getElementById('next-btn');
-  nb.disabled = isLast;
-  nb.style.opacity = isLast ? '0.25' : '';
+  nb.textContent = 'Next →';
+  nb.className = 'nav-btn fwd';
+  nb.disabled = idx===CATS.length-1;
 }
-
-function nextCat(){ if(catIdx<CATS.length-1) showCat(catIdx+1); }
-function nextOrReview(){ catIdx<CATS.length-1 ? showCat(catIdx+1) : showReview(); }
 
 function toggle(id) {
-  const row = document.getElementById('row-'+id);
-  const was = row.classList.contains('checked');
-  if (was) {
-    // Tapping checkbox unchecks
-    row.classList.remove('checked');
-    delete checked[id];
-    const inp = document.getElementById('qty-'+id);
-    if (inp) inp.value = '';
-  } else {
-    row.classList.add('checked');
-    const inp = document.getElementById('qty-'+id);
-    if (inp) { inp.focus(); inp.select(); }
-  }
+  const row=document.getElementById('row-'+id);
+  const was=row.classList.contains('checked');
+  if(was){ row.classList.remove('checked'); delete checked[id]; document.getElementById('badge-'+id).textContent=''; }
+  else   { row.classList.add('checked'); setTimeout(()=>{const inp=document.getElementById('qty-'+id);if(inp){inp.focus();inp.select();}},230); }
 }
 
-function focusQty(id) {
-  // Tapping anywhere on the row (not checkbox) just opens keyboard
-  const row = document.getElementById('row-'+id);
-  if (!row.classList.contains('checked')) {
-    row.classList.add('checked');
-  }
-  const inp = document.getElementById('qty-'+id);
-  if (inp) { inp.focus(); inp.select(); }
-}
-
-function qtyChange(id, unit) {
-  const inp = document.getElementById('qty-'+id);
-  const v   = parseFloat(inp.value);
-  const row = document.getElementById('row-'+id);
-  if (!isNaN(v) && v > 0) {
-    checked[id] = v;
-    row.classList.add('checked');
-  } else {
-    delete checked[id];
-    row.classList.remove('checked');
-  }
+function qtyChange(id,unit) {
+  const inp=document.getElementById('qty-'+id);
+  const v=parseFloat(inp.value);
+  const badge=document.getElementById('badge-'+id);
+  if(!isNaN(v)&&v>0){ checked[id]=v; badge.textContent=v+' '+unit; document.getElementById('row-'+id).classList.add('checked'); }
+  else               { delete checked[id]; badge.textContent=''; }
 }
 
 function prevCat(){ if(catIdx>0) showCat(catIdx-1); }
@@ -1591,19 +1417,7 @@ async function doSend() {
   lastPayload=payload;
 
   try {
-    // ── API MODE ──
-    if (API_BASE) {
-      const ep = isAmending ? '/api/orders/amend' : '/api/orders/submit';
-      const res = await fetch(API_BASE + ep, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      showSuccess(payload);
-      return;
-    }
-    // FALLBACK: write order directly to localStorage for kitchen system to read
+    // DEMO: write order directly to localStorage for kitchen system to read
     const orders = lsGet('TORI_ORDERS', {});
     const rk = payload.restaurant;
     const prevId = orders[rk] ? orders[rk].id : null;
@@ -1647,19 +1461,7 @@ async function retrySend(){
   if(!lastPayload){goHome();return;}
   go('s-review');
   try{
-    // ── API MODE ──
-    if (API_BASE) {
-      const ep = lastPayload.is_amendment ? '/api/orders/amend' : '/api/orders/submit';
-      const res = await fetch(API_BASE + ep, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(lastPayload)
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      showSuccess(lastPayload);
-      return;
-    }
-    // FALLBACK: re-write order to localStorage
+    // DEMO: re-write order to localStorage
     const orders2 = lsGet('TORI_ORDERS', {});
     const rk2 = lastPayload.restaurant;
     orders2[rk2] = { id:lastPayload.ts, restaurant:rk2, staffName:lastPayload.staff_name, orderDate:lastPayload.order_date, items:lastPayload.items, ts:lastPayload.ts, dispatched:false };
@@ -1712,24 +1514,6 @@ function checkDispatchStatus(p) {
   const infoEl   = document.getElementById('suc-dispatch-info');
   const amendBtn = document.getElementById('amend-btn');
 
-  // ── API MODE ──
-  if (API_BASE) {
-    const rk = p.restaurant;
-    const st = _apiOrderStatus[rk];
-    if (st && (st.status === 'in_delivery' || st.status === 'delivered')) {
-      amendBtn.disabled = true;
-      amendBtn.title = 'Cannot amend — order has already been dispatched';
-      infoEl.style.display = 'block';
-      infoEl.innerHTML = `Dispatched at ${st.dispatchedAt ? fmtDTLocal(st.dispatchedAt) : '—'}`;
-    } else {
-      amendBtn.disabled = false;
-      amendBtn.title = '';
-      infoEl.style.display = 'none';
-    }
-    return;
-  }
-
-  // ── FALLBACK: localStorage ──
   let dispatchData = null;
   try {
     const raw = localStorage.getItem('TORI_DISPATCH');
@@ -1852,29 +1636,27 @@ function saveSettings() {
 function getMyDeliveryStatus() {
   if (!selectedLocation) return null;
   const rk = selectedLocation;
-
-  // ── API MODE: use cached API status ONLY — never fall through to localStorage ──
-  if (API_BASE) {
-    if (_apiOrderStatus && _apiOrderStatus[rk]) {
-      return _apiOrderStatus[rk];
-    }
-    return null; // no active status from API = no delivery in progress
-  }
-
-  // ── FALLBACK: localStorage (local testing only) ──
   try {
+    // Primary: TORI_STATUS (written by kitchen on dispatch, updated by driver on delivery)
     const raw = localStorage.getItem('TORI_STATUS');
     if (raw) {
       const data = JSON.parse(raw);
       if (data[rk]) return data[rk];
     }
+    // Fallback: TORI_DISPATCH (written by kitchen) — means status is 'in_delivery'
     const disp = localStorage.getItem('TORI_DISPATCH');
     if (disp) {
       const d = JSON.parse(disp);
       if (d[rk] && d[rk].id) {
-        return { status: 'in_delivery', order: d[rk], dispatchedAt: d.dispatchedAt, dispatchedBy: d.dispatchedBy };
+        return {
+          status: 'in_delivery',
+          order: d[rk],
+          dispatchedAt: d.dispatchedAt,
+          dispatchedBy: d.dispatchedBy
+        };
       }
     }
+    // Also check TORI_ORDERS — order submitted but not yet dispatched = 'preparing'
     const orders = localStorage.getItem('TORI_ORDERS');
     if (orders) {
       const o = JSON.parse(orders);
@@ -1885,79 +1667,6 @@ function getMyDeliveryStatus() {
     return null;
   } catch(e){ return null; }
 }
-
-// ── API STATUS POLLING ──
-let _apiOrderStatus = {};
-
-// Persist accepted order IDs in localStorage so they survive page refresh
-function getAcceptedIds() {
-  try { return JSON.parse(localStorage.getItem('TORI_ACCEPTED_IDS') || '{}'); } catch(e) { return {}; }
-}
-function setAcceptedId(rk, id) {
-  const acc = getAcceptedIds();
-  acc[rk] = id;
-  try { localStorage.setItem('TORI_ACCEPTED_IDS', JSON.stringify(acc)); } catch(e) {}
-}
-
-let _historyCleared = false;
-let _lastApiData = null;
-
-async function pollApiStatus() {
-  if (!API_BASE) return;
-  try {
-    const res = await fetch(API_BASE + '/api/orders/active', { cache: 'no-store' });
-    if (!res.ok) return;
-    const data = await res.json();
-    _lastApiData = data;
-    const accepted = getAcceptedIds();
-    _apiOrderStatus = {};
-
-    // Active orders = preparing
-    ['r1','r2'].forEach(rk => {
-      if (data[rk]) {
-        _apiOrderStatus[rk] = { status: 'preparing', order: data[rk] };
-        // New active order means old acceptance is stale — clear it
-        if (accepted[rk] && accepted[rk] !== data[rk].id) {
-          delete accepted[rk];
-          try { localStorage.setItem('TORI_ACCEPTED_IDS', JSON.stringify(accepted)); } catch(e) {}
-        }
-      }
-    });
-
-    // History — only show the MOST RECENT entry per restaurant
-    // data.history is sorted by created_at desc, so first match per restaurant wins
-    const seenRestaurant = {};
-    (data.history || []).forEach(h => {
-      const rk = h.restaurant;
-      if (_apiOrderStatus[rk]) return; // active order takes priority
-      if (seenRestaurant[rk]) return; // already found the most recent for this restaurant
-      seenRestaurant[rk] = true;
-
-      // If this (most recent) order was accepted, skip it — nothing to show
-      if (accepted[rk] && accepted[rk] >= h.id) return;
-
-      if (h.status === 'dispatched') {
-        _apiOrderStatus[rk] = {
-          status: 'in_delivery', order: h,
-          dispatchedAt: h.dispatched_at, dispatchedBy: h.dispatched_by
-        };
-      }
-      if (h.status === 'delivered') {
-        _apiOrderStatus[rk] = {
-          status: 'delivered', order: h,
-          dispatchedAt: h.dispatched_at, dispatchedBy: h.dispatched_by,
-          deliveredAt: h.delivered_at, deliveredBy: h.delivered_by,
-          missingItems: h.missing_items || {},
-          notDispatched: h.not_dispatched || {}
-        };
-      }
-    });
-    updateWelcomeStatusBadge();
-    updateDeliveryTabDots();
-    // Don't call refreshAllDeliveryViews here — re-rendering every 3s swallows button clicks
-  } catch(e) {}
-}
-if (API_BASE) { pollApiStatus(); setInterval(pollApiStatus, 3000); }
 
 function updateWelcomeStatusBadge() {
   const st = getMyDeliveryStatus();
@@ -1988,14 +1697,13 @@ function updateViewPendingBtn() {
   if (!btn) return;
   const lbl = document.getElementById('vpb-label');
   btn.classList.remove('pulsing');
-  btn.style.background=''; btn.style.color=''; btn.style.borderColor='';
   if (!st || !st.status || st.status === 'none' || st.status === 'accepted') {
     if (lbl) lbl.textContent = 'View Pending Delivery';
     return;
   }
   if (st.status === 'preparing')   { if(lbl) lbl.textContent = 'View Order — Preparing'; }
   if (st.status === 'in_delivery') { if(lbl) lbl.textContent = 'View Order — In Delivery'; btn.classList.add('pulsing'); }
-  if (st.status === 'delivered')   { if(lbl) lbl.textContent = 'Delivery Arrived — Accept Now'; btn.classList.add('pulsing'); btn.style.background='#388E3C'; btn.style.color='#fff'; btn.style.borderColor='#388E3C'; }
+  if (st.status === 'delivered')   { if(lbl) lbl.textContent = 'Delivery Arrived — Accept Now'; btn.classList.add('pulsing'); }
 }
 
 setInterval(() => {
@@ -2004,6 +1712,7 @@ setInterval(() => {
   pollDispatchStatus();
   updateAmendHomeBtn();
   refreshAllDeliveryViews();
+  checkStatusChange();
 }, 2000);
 
 // Live-poll whether this restaurant's order has been dispatched.
@@ -2016,7 +1725,7 @@ function pollDispatchStatus() {
   const rk = lastPayload.restaurant;
   let dispatched = false;
 
-  // Check TORI_ORDERS dispatched flag 
+  // Check TORI_ORDERS dispatched flag (DEMO)
   try {
     const orders = lsGet('TORI_ORDERS', {});
     if (orders[rk] && orders[rk].dispatched) dispatched = true;
@@ -2085,30 +1794,12 @@ function toggleMissing(itemId, itemName) {
 function selectReason(el, value) {
   document.querySelectorAll('.reason-opt').forEach(o => o.classList.remove('selected'));
   el.classList.add('selected');
-  const otherInput = document.getElementById('reason-other-input');
-  if (value === 'other') {
-    _selectedReason = null;
-    otherInput.style.display = 'block';
-    otherInput.value = '';
-    otherInput.focus();
-    document.getElementById('reason-ok').disabled = true;
-  } else {
-    _selectedReason = value;
-    otherInput.style.display = 'none';
-    document.getElementById('reason-ok').disabled = false;
-  }
-}
-
-function onReasonOtherInput() {
-  const val = document.getElementById('reason-other-input').value.trim();
-  _selectedReason = val || null;
-  document.getElementById('reason-ok').disabled = !val;
+  _selectedReason = value;
+  document.getElementById('reason-ok').disabled = false;
 }
 
 function closeReasonModal() {
   document.getElementById('reason-modal-back').classList.remove('open');
-  document.getElementById('reason-other-input').style.display = 'none';
-  document.getElementById('reason-other-input').value = '';
   _pendingItemForReason = null;
   _selectedReason = null;
 }
@@ -2136,60 +1827,12 @@ function confirmAcceptDelivery() {
   if (!name) return;
   closeAcceptModal();
 
-  // Snapshot missingItems immediately before any re-renders or async ops can interfere
-  const snapshotMissing = { ...missingItems };
-
-  const rk = selectedLocation;
-
-  // ── API MODE ──
-  if (API_BASE) {
-    const currentStatus = _apiOrderStatus[rk];
-
-    // Tell the backend — include missing items so API history is accurate
-    fetch(API_BASE + '/api/orders/accepted', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ restaurant: rk, accepted_by: name, missing_items: snapshotMissing })
-    }).catch(e => {});
-
-    // Also persist locally as backup
-    if (currentStatus && currentStatus.order && currentStatus.order.id) {
-      setAcceptedId(rk, currentStatus.order.id);
-    }
-
-    // Write to local restaurant log so notification works on next order
-    try {
-      const log = lsGet('TORI_RESTAURANT_LOG', []);
-      log.unshift({
-        id:           currentStatus && currentStatus.order ? currentStatus.order.id : Date.now(),
-        restaurant:   rk,
-        orderedBy:    currentStatus && currentStatus.order ? (currentStatus.order.staff_name || currentStatus.order.staffName || '—') : '—',
-        orderedAt:    currentStatus && currentStatus.order ? (currentStatus.order.created_at || null) : null,
-        dispatchedBy: currentStatus ? (currentStatus.dispatchedBy || '—') : '—',
-        dispatchedAt: currentStatus ? (currentStatus.dispatchedAt || null) : null,
-        acceptedBy:   name,
-        acceptedAt:   new Date().toISOString(),
-        items:        currentStatus && currentStatus.order ? (currentStatus.order.items || {}) : {},
-        missingItems: { ...snapshotMissing },
-        notDispatched: currentStatus ? (currentStatus.notDispatched || {}) : {}
-      });
-      localStorage.setItem('TORI_RESTAURANT_LOG', JSON.stringify(log));
-    } catch(e) { console.error('API mode history log error:', e); }
-
-    delete _apiOrderStatus[rk];
-    missingItems = {};
-    showToast('Delivery accepted by ' + name);
-    updateWelcomeStatusBadge();
-    updateDeliveryTabDots();
-    refreshAllDeliveryViews();
-    setTimeout(() => { switchTab('home'); }, 1200);
-    return;
-  }
-
-  // ── FALLBACK: localStorage ──
+  // Write accepted status to localStorage
   try {
     const raw = localStorage.getItem('TORI_STATUS') || '{}';
     const data = JSON.parse(raw);
+    const rk = selectedLocation;
+    // Create entry if missing (e.g. status was set via TORI_DISPATCH not TORI_STATUS)
     if (!data[rk]) {
       const dispatch = lsGet('TORI_DISPATCH', {});
       data[rk] = {
@@ -2202,22 +1845,15 @@ function confirmAcceptDelivery() {
     data[rk].status       = 'accepted';
     data[rk].acceptedAt   = new Date().toISOString();
     data[rk].acceptedBy   = name;
-    data[rk].missingItems = { ...snapshotMissing };
+    data[rk].missingItems = { ...missingItems };
     localStorage.setItem('TORI_STATUS', JSON.stringify(data));
   } catch(e){ console.error('confirmAcceptDelivery error:', e); }
 
+  // Save to local history log so this device has its own record
   try {
     const st = lsGet('TORI_STATUS', {});
     const rk2 = selectedLocation;
     const entry = st[rk2] || {};
-    // Fallback: also try TORI_ORDERS if TORI_STATUS didn't carry order items
-    let orderItems = (entry.order && entry.order.items) ? entry.order.items : null;
-    if (!orderItems) {
-      try {
-        const orders = lsGet('TORI_ORDERS', {});
-        if (orders[rk2] && orders[rk2].items) orderItems = orders[rk2].items;
-      } catch(e) {}
-    }
     const log = lsGet('TORI_RESTAURANT_LOG', []);
     log.unshift({
       id:           entry.order ? entry.order.id : Date.now(),
@@ -2228,8 +1864,8 @@ function confirmAcceptDelivery() {
       dispatchedAt: entry.dispatchedAt || null,
       acceptedBy:   name,
       acceptedAt:   new Date().toISOString(),
-      items:        orderItems || {},
-      missingItems: { ...snapshotMissing },
+      items:        entry.order ? entry.order.items : {},
+      missingItems: { ...missingItems },
       notDispatched: entry.notDispatched || {}
     });
     localStorage.setItem('TORI_RESTAURANT_LOG', JSON.stringify(log));
@@ -2237,10 +1873,10 @@ function confirmAcceptDelivery() {
 
   missingItems = {};
   showToast('Delivery accepted by ' + name);
+  // Stay on STATUS tab — refresh to show accepted state, then user can navigate freely
   updateWelcomeStatusBadge();
   updateDeliveryTabDots();
   refreshAllDeliveryViews();
-  setTimeout(() => { go('s-welcome'); }, 1200);
 }
 
 /* ═══════════════════════════════════════
@@ -2250,22 +1886,14 @@ let _toastTimer;
 function showToast(msg) {
   const el = document.getElementById('toast');
   if (!el) return;
-  el.textContent = msg;
-  el.style.display = 'block';
+  el.textContent = msg; el.classList.add('show');
   clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => { el.style.display = 'none'; }, 2500);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
 /* ═══════════════════════════════════════
    INIT
    ═══════════════════════════════════════ */
-// Clear all order/delivery data on open — fresh start every time
-if (!API_BASE) {
-  ['TORI_ORDERS','TORI_DISPATCH','TORI_DISPATCH_BACKUP','TORI_STATUS','TORI_HISTORY','tori_delivery_log'].forEach(k => {
-    try { localStorage.removeItem(k); } catch(e) {}
-  });
-}
-
 loadSettings();
 updateWelcomeStatusBadge();
 updateDeliveryTabDots();
@@ -2285,7 +1913,6 @@ function switchTab(which) {
   if (which === 'delivery') renderHomeDeliveryStatus();
   if (which === 'history')  renderDeliveryHistory();
   if (which === 'home')     updateAmendHomeBtn();
-  updateDeliveryTabDots(); // re-evaluate pulsing based on active tab
 }
 
 function switchDeliverySub(which) { /* no-op, sub-tabs removed */ }
@@ -2377,21 +2004,10 @@ function buildItemList(st, missingItemsRef, canMark) {
     Object.entries(missingItemsRef).forEach(([id, reason]) => {
       const m = itemMap[id] || { name: id, unit: '' };
       const qty = items[id] || '';
-      const undoBtn = canMark
-        ? `<button onclick="toggleMissingInContext('${id}','${m.name}')"
-            style="background:transparent;border:1px solid var(--line2);color:var(--ink4);
-            font-family:var(--font);font-size:10px;font-weight:900;letter-spacing:0.1em;
-            text-transform:uppercase;padding:4px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0;">
-            Undo
-          </button>`
-        : '';
       html += `<div class="missing-row">
         <span class="missing-row-name">${m.name}</span>
         <span class="missing-row-reason">${reason}</span>
-        <div class="missing-row-qty-wrap" style="display:flex;align-items:center;gap:8px;">
-          ${undoBtn}
-          <span class="missing-row-qty">${qty}</span><span class="missing-row-unit">${m.unit}</span>
-        </div>
+        <div class="missing-row-qty-wrap"><span class="missing-row-qty">${qty}</span><span class="missing-row-unit">${m.unit}</span></div>
       </div>`;
     });
   }
@@ -2406,7 +2022,7 @@ function renderDeliveryStatusInto(bodyEl, footerEl) {
       <div class="no-delivery-icon">◻</div>
       <div>No active delivery</div>
     </div>`;
-    
+    footerEl.innerHTML = '';
     return;
   }
 
@@ -2422,7 +2038,7 @@ function renderDeliveryStatusInto(bodyEl, footerEl) {
       ? 'Your order is being prepared in the kitchen.'
       : `Your order is on its way — driver: <strong>${dispBy}</strong>`;
     html += `<div class="delivery-waiting-msg">${msg}</div>`;
-    
+    footerEl.innerHTML = '';
   } else {
     // Delivered or accepted — show full list
     if (canMark) {
@@ -2431,16 +2047,14 @@ function renderDeliveryStatusInto(bodyEl, footerEl) {
     html += buildItemList(st, missingItems, canMark);
 
     if (st.status === 'accepted') {
-      html += `<div class="accepted-notice" style="margin:16px;">✓ Delivery Accepted by ${st.acceptedBy || '—'}</div>`;
+      footerEl.innerHTML = `<div class="accepted-notice">✓ Delivery Accepted by ${st.acceptedBy || '—'}</div>`;
     } else {
-      html += `<div style="padding:16px;">
-        <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:8px;">
+      footerEl.innerHTML = `
+        <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:2px;">
           Delivered by <strong style="color:var(--ink3)">${dispBy}</strong>
         </div>
-        <button class="accept-all-btn" onclick="openAcceptModal()" style="background:#388E3C;color:#fff;">Delivery Accepted →</button>
-      </div>`;
+        <button class="accept-all-btn" onclick="openAcceptModal()">Delivery Accepted →</button>`;
     }
-    
   }
 
   bodyEl.innerHTML = html;
@@ -2448,9 +2062,9 @@ function renderDeliveryStatusInto(bodyEl, footerEl) {
 
 function refreshAllDeliveryViews() {
   const homeBody   = document.getElementById('home-pending-body');
-  const homeFooter = null;
+  const homeFooter = document.getElementById('home-pending-footer');
   const dashBody   = document.getElementById('dash-pending-body');
-  const dashFooter = null;
+  const dashFooter = document.getElementById('dash-pending-footer');
   const delivTab   = document.getElementById('tab-delivery-content');
   const dashDTab   = document.getElementById('dtab-delivery-content');
   // Home STATUS tab uses full render (with order card)
@@ -2461,7 +2075,7 @@ function refreshAllDeliveryViews() {
 
 function renderHomeDeliveryStatus() {
   const bodyEl   = document.getElementById('home-pending-body');
-  const footerEl = null;
+  const footerEl = document.getElementById('home-pending-footer');
   if (bodyEl) renderDeliveryStatusIntoFull(bodyEl, footerEl);
 }
 
@@ -2476,7 +2090,7 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
       <div>No deliveries in progress</div>
       <div style="font-size:11px;margin-top:4px;opacity:0.6;">Submit a new order from the Home tab</div>
     </div>`;
-    
+    footerEl.innerHTML = '';
     return;
   }
 
@@ -2499,6 +2113,7 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
       <div class="soc-row"><span class="soc-label">Restaurant</span><span class="soc-val">${restName}</span></div>
       <div class="soc-row"><span class="soc-label">Date</span><span class="soc-val">${dateStr}</span></div>
       <div class="soc-row"><span class="soc-label">Submitted by</span><span class="soc-val">${p.staff_name || '—'}</span></div>
+      <div class="soc-row"><span class="soc-label">Items</span><span class="soc-val green">${itemCount}</span></div>
     </div>`;
   }
 
@@ -2521,7 +2136,7 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
       </div>`;
     }
 
-    
+    footerEl.innerHTML = '';
   } else {
     // Delivered or accepted — full item list
     if (canMark) {
@@ -2530,16 +2145,14 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
     html += buildItemList(st, missingItems, canMark);
 
     if (st.status === 'accepted') {
-      html += `<div class="accepted-notice" style="margin:16px;">✓ Delivery Accepted by ${st.acceptedBy || '—'}</div>`;
+      footerEl.innerHTML = `<div class="accepted-notice">✓ Delivery Accepted by ${st.acceptedBy || '—'}</div>`;
     } else {
-      html += `<div style="padding:16px;">
-        <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:8px;">
+      footerEl.innerHTML = `
+        <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:2px;">
           Delivered by <strong style="color:var(--ink3)">${dispBy}</strong>
         </div>
-        <button class="accept-all-btn" onclick="openAcceptModal()" style="background:#388E3C;color:#fff;">Delivery Accepted →</button>
-      </div>`;
+        <button class="accept-all-btn" onclick="openAcceptModal()">Delivery Accepted →</button>`;
     }
-    
   }
 
   bodyEl.innerHTML = html;
@@ -2547,7 +2160,7 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
 
 function renderDashDeliveryStatus() {
   const bodyEl   = document.getElementById('dash-pending-body');
-  const footerEl = null;
+  const footerEl = document.getElementById('dash-pending-footer');
   if (bodyEl) renderDeliveryStatusInto(bodyEl, footerEl);
 }
 
@@ -2563,8 +2176,6 @@ function toggleMissingInContext(itemId, itemName) {
     document.getElementById('reason-item-name').textContent = itemName;
     document.querySelectorAll('.reason-opt').forEach(o => o.classList.remove('selected'));
     document.getElementById('reason-ok').disabled = true;
-    document.getElementById('reason-other-input').style.display = 'none';
-    document.getElementById('reason-other-input').value = '';
     document.getElementById('reason-modal-back').classList.add('open');
   }
 }
@@ -2587,71 +2198,33 @@ function renderAmendTab() { /* moved to home tab */ }
 /* ─── Delivery history ─── */
 let _historyEntries = []; // cached for detail sheet
 
-
-
 function renderDeliveryHistory() {
   const el = document.getElementById('history-tab-body');
   if (!el) return;
 
+  // Read from restaurant's own log (written on acceptance)
   let log = [];
+  try { log = lsGet('TORI_RESTAURANT_LOG', []); } catch(e){}
 
-  // ── API MODE: fetch history from API response ──
-  if (API_BASE && !_historyCleared && _lastApiData && _lastApiData.history) {
-    const rk = selectedLocation;
-    // Build a lookup from local log so we can enrich API entries with missingItems
-    const localLog = lsGet('TORI_RESTAURANT_LOG', []);
-    const localByOrderId = {};
-    localLog.forEach(e => { if (e.id) localByOrderId[String(e.id)] = e; });
-
-    _lastApiData.history.forEach(h => {
-      if (h.restaurant !== rk) return;
-      if (h.status === 'dispatched' || h.status === 'delivered' || h.status === 'accepted') {
-        // Prefer local missingItems if backend hasn't stored them yet
-        const localEntry = localByOrderId[String(h.id)];
-        const missingItems = (localEntry && Object.keys(localEntry.missingItems || {}).length)
-          ? localEntry.missingItems
-          : (h.missing_items || {});
-        log.push({
-          id:           h.id,
-          restaurant:   h.restaurant,
-          orderedBy:    h.staff_name || '—',
-          orderedAt:    h.created_at || null,
-          orderDate:    h.order_date || '',
-          dispatchedBy: h.dispatched_by || '—',
-          dispatchedAt: h.dispatched_at || null,
-          acceptedBy:   h.delivered_by || '—',
-          acceptedAt:   h.delivered_at || null,
-          items:        h.items || {},
-          missingItems,
-          notDispatched: h.not_dispatched || {},
-          status:       h.status,
-        });
-      }
-    });
-  }
-
-  // ── FALLBACK: localStorage ──
-  if (!API_BASE) {
-    try { log = lsGet('TORI_RESTAURANT_LOG', []); } catch(e){}
-    if (!log.length) {
-      try {
-        const dlog = lsGet('tori_delivery_log', []);
-        const rk = selectedLocation;
-        log = dlog.filter(e => e.restaurant === rk).map(e => ({
-          id:           e.id,
-          restaurant:   e.restaurant,
-          orderedBy:    e.orderedBy || '—',
-          orderedAt:    e.orderedAt || null,
-          dispatchedBy: e.dispatchedBy || '—',
-          dispatchedAt: e.dispatchedAt || null,
-          acceptedBy:   e.deliveredBy || '—',
-          acceptedAt:   e.deliveredAt || null,
-          items:        e.items || {},
-          missingItems: {},
-          notDispatched: {}
-        }));
-      } catch(e){}
-    }
+  // Also check driver delivery log as fallback
+  if (!log.length) {
+    try {
+      const dlog = lsGet('tori_delivery_log', []);
+      const rk = selectedLocation;
+      log = dlog.filter(e => e.restaurant === rk).map(e => ({
+        id:           e.id,
+        restaurant:   e.restaurant,
+        orderedBy:    e.orderedBy || '—',
+        orderedAt:    e.orderedAt || null,
+        dispatchedBy: e.dispatchedBy || '—',
+        dispatchedAt: e.dispatchedAt || null,
+        acceptedBy:   e.deliveredBy || '—',
+        acceptedAt:   e.deliveredAt || null,
+        items:        e.items || {},
+        missingItems: {},
+        notDispatched: {}
+      }));
+    } catch(e){}
   }
 
   _historyEntries = log;
@@ -2805,86 +2378,91 @@ function closeHistoryDetail() {
 }
 
 /* ═══════════════════════════════════════
-   UPDATE DELIVERY TAB DOT
+   STATUS CHANGE NOTIFICATIONS & SOUNDS
    ═══════════════════════════════════════ */
+let _lastKnownStatus = null;
+
+function playSoundA() {
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.connect(g); g.connect(ac.destination);
+    o.type = 'sine'; o.frequency.value = 880;
+    g.gain.setValueAtTime(0.4, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.15);
+    o.start(ac.currentTime); o.stop(ac.currentTime + 0.2);
+  } catch(e){}
+}
+
+function playSoundC() {
+  try {
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    [[660,0],[880,0.16],[1100,0.32]].forEach(([freq, delay]) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.type = 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.4, ac.currentTime + delay);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + delay + 0.15);
+      o.start(ac.currentTime + delay); o.stop(ac.currentTime + delay + 0.2);
+    });
+  } catch(e){}
+}
+
+function showStatusToast(msg) {
+  const el = document.getElementById('status-toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+function checkStatusChange() {
+  if (!selectedLocation) return;
+  const st = getMyDeliveryStatus();
+  const newStatus = st ? st.status : null;
+  if (_lastKnownStatus === null) { _lastKnownStatus = newStatus; return; }
+  if (newStatus === _lastKnownStatus) return;
+
+  if (newStatus === 'in_delivery') {
+    playSoundA();
+    showStatusToast('Your order is on the way');
+  } else if (newStatus === 'delivered') {
+    playSoundC();
+    showStatusToast('Your order has arrived');
+  }
+  _lastKnownStatus = newStatus;
+}
+
+
 function updateDeliveryTabDots() {
   const st = getMyDeliveryStatus();
-  const status = st && st.status && st.status !== 'none' && st.status !== 'accepted' ? st.status : null;
+  // Active = any status with a live order (not accepted/none)
+  const hasLive = st && st.status && st.status !== 'none' && st.status !== 'accepted';
 
-  const tabClasses = ['tab-live','tab-preparing','tab-in_delivery','tab-delivered'];
-  const tabs = [
-    document.getElementById('tab-delivery'),
-    document.getElementById('dtab-delivery')
-  ];
-  tabs.forEach(tab => {
-    if (!tab) return;
-    tabClasses.forEach(c => tab.classList.remove(c));
-    // Only pulse when Status tab is NOT active — avoid double-pulsing
-    if (status && !tab.classList.contains('active')) {
-      tab.classList.add('tab-' + status);
-    }
-  });
+  // Welcome STATUS tab — pulse green text when live
+  const wTab = document.getElementById('tab-delivery');
+  if (wTab) wTab.classList.toggle('tab-live', hasLive);
 
+  // Dashboard DELIVERY tab — pulse green text when live
+  const dTab = document.getElementById('dtab-delivery');
+  if (dTab) dTab.classList.toggle('tab-live', hasLive);
+
+  // Also update the status step highlighting
   updateStatusStepHighlight(st);
 }
 
 function updateStatusStepHighlight(st) {
+  // Re-render delivery views to pick up new status — lightweight
   const delivTab = document.getElementById('tab-delivery-content');
   const dashDTab = document.getElementById('dtab-delivery-content');
   const homeBody = document.getElementById('home-pending-body');
   const dashBody = document.getElementById('dash-pending-body');
-  if (homeBody && delivTab && delivTab.style.display !== 'none') renderDeliveryStatusIntoFull(homeBody, null);
-  if (dashBody && dashDTab && dashDTab.style.display !== 'none') renderDeliveryStatusIntoFull(dashBody, null);
-}
-
-
-// ── ADMIN MODE ──
-function toggleAdminMode() {
-  const on = document.getElementById('admin-toggle').checked;
-  document.getElementById('admin-panel').style.display = on ? 'flex' : 'none';
-}
-
-async function importHistoryFromDB() {
-  if (!API_BASE) { showToast('Only available in API mode'); return; }
-  _historyCleared = false;
-  try {
-    showToast('Importing history...');
-    const res = await fetch(API_BASE + '/api/orders/active', { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    _lastApiData = data;
-    renderDeliveryHistory();
-    showToast('History imported — ' + (data.history || []).length + ' entries');
-  } catch(e) {
-    showToast('Import failed: ' + e.message);
-  }
-}
-
-function clearOrderHistory() {
-  if (!confirm('Clear all delivery history from view?')) return;
-  _historyCleared = true;
-  try { localStorage.removeItem('TORI_RESTAURANT_LOG'); } catch(e) {}
-  try { localStorage.removeItem('tori_delivery_log'); } catch(e) {}
-  _lastApiData = null;
-  renderDeliveryHistory();
-  showToast('History cleared — use Import to restore');
+  const homeFooter = document.getElementById('home-pending-footer');
+  const dashFooter = document.getElementById('dash-pending-footer');
+  if (homeBody && delivTab && delivTab.style.display !== 'none') renderDeliveryStatusInto(homeBody, homeFooter);
+  if (dashBody && dashDTab && dashDTab.style.display !== 'none') renderDeliveryStatusInto(dashBody, dashFooter);
 }
 
 </script>
-<!-- TORI BLOB LOADER -->
-<div id="tori-blob-splash">
-  <svg width="140" height="140" viewBox="0 0 200 200">
-    <ellipse class="orbit-drop-kis" cx="100" cy="100" rx="10" ry="14"/>
-    <ellipse class="orbit-drop-kis" cx="100" cy="100" rx="10" ry="14"/>
-    <ellipse class="orbit-drop-kis" cx="100" cy="100" rx="10" ry="14"/>
-  </svg>
-</div>
-<script>
-setTimeout(function(){
-  var s=document.getElementById('tori-blob-splash');
-  if(s){s.classList.add('hide');setTimeout(function(){s.style.display='none';},400);}
-},1200);
-</script>
-
 </body>
 </html>
