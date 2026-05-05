@@ -18,6 +18,16 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <style>
+.flatpickr-calendar {
+  max-width: 100%;
+  width: calc(100vw - 40px) !important;
+  max-width: 440px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  top: auto !important;
+}
+</style>
+<style>
 :root {
   --bg:     #0F1314;
   --bg2:    #1A1F22;
@@ -472,6 +482,36 @@ body {
 }
 .settings-reset:hover { background: var(--panel4); color: var(--ink); }
 
+/* ── ADD NEW TASK FORM ── */
+.add-task-form {
+  display: none; flex-direction: column; gap: 12px;
+  padding: 16px 18px; border-top: 1px solid var(--line2);
+  background: var(--panel);
+}
+.add-task-form.open { display: flex; }
+.add-task-input {
+  width: 100%; background: var(--panel2);
+  border: 1px solid var(--line2); border-left: 4px solid var(--red);
+  color: var(--ink); font-family: var(--font); font-size: 18px; font-weight: 700;
+  padding: 12px 14px; -webkit-appearance: none; border-radius: 0;
+}
+.add-task-input:focus { outline: none; background: var(--panel); }
+.add-task-input::placeholder { color: var(--ink4); font-weight: 600; }
+.add-task-days { display: flex; gap: 5px; }
+.add-task-btns { display: flex; gap: 10px; }
+.add-task-save {
+  flex: 2; background: var(--red2); border: none; color: var(--ink);
+  font-family: var(--font); font-size: 15px; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer;
+}
+.add-task-save:hover { background: var(--red); }
+.add-task-cancel {
+  flex: 1; background: var(--panel3); border: 1px solid var(--line2); color: var(--ink2);
+  font-family: var(--font); font-size: 15px; font-weight: 900;
+  letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; cursor: pointer;
+}
+.add-task-cancel:hover { background: var(--panel4); }
+
 /* Toast — completely hidden until .show is added */
 .toast {
   position: fixed; bottom: 130px; left: 50%;
@@ -801,10 +841,6 @@ body {
     <div class="review-sub">Confirm before saving the day's preparation</div>
   </div>
   <div class="review-body" id="review-body"></div>
-  <div class="review-footer">
-    <button class="rev-edit-btn" onclick="go('s-checklist')">← Edit</button>
-    <button class="rev-send-btn" id="rev-send-btn" onclick="doSend()">Confirm &amp; Save →</button>
-  </div>
 </div>
 
 
@@ -832,6 +868,25 @@ body {
     Tap a day for any task to add or remove it from that day's schedule. Changes save automatically.
   </div>
   <div class="settings-list" id="settings-list"></div>
+  <!-- ADD NEW TASK -->
+  <div style="padding:16px 18px 8px;">
+    <button onclick="showAddTaskForm()" id="add-task-btn"
+      style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:var(--ink);
+      font-family:var(--font);font-size:15px;font-weight:900;letter-spacing:0.12em;
+      text-transform:uppercase;padding:14px;cursor:pointer;">+ Add New Task</button>
+  </div>
+  <div class="add-task-form" id="add-task-form">
+    <input class="add-task-input" type="text" id="new-task-name" placeholder="Task name…" autocorrect="off" />
+    <div class="add-task-days" id="new-task-days"></div>
+    <div class="add-task-btns">
+      <button class="add-task-save" onclick="saveNewTask()">Save</button>
+      <button class="add-task-cancel" onclick="cancelAddTask()">Cancel</button>
+    </div>
+  </div>
+  <!-- RESET TO DEFAULT -->
+  <div style="padding:0 18px 8px;">
+    <button class="settings-reset" onclick="resetSchedule()" style="width:100%;">Reset to Default</button>
+  </div>
   <div style="padding:0 20px 16px;">
       <div style="font-size:11px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);margin-bottom:10px;">Admin</div>
       <label style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line2);cursor:pointer;user-select:none;">
@@ -847,13 +902,6 @@ body {
         <button onclick="clearPrepHistory()" style="width:100%;background:var(--panel3);border:1px solid var(--line2);color:#DE0000;font-family:var(--font);font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:14px;cursor:pointer;">Clear Prep History</button>
       </div>
     </div>
-    <div style="margin-top:16px;padding:12px 14px;background:var(--panel);border:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:11px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink4);">App Version</div>
-      <div style="font-size:14px;font-weight:700;color:var(--ink3);letter-spacing:0.08em;">v1.0.0</div>
-    </div>
-    <div class="settings-footer">
-    <button class="settings-reset" onclick="resetSchedule()">Reset to Default</button>
-  </div>
 </div>
 
 
@@ -1066,7 +1114,8 @@ function dmyToIso(dmy) { const [d,m,y]=dmy.split('-'); return y+'-'+m+'-'+d; }
 const prepDatePicker = flatpickr('#prep-date', {
   dateFormat: 'd-m-Y',
   defaultDate: (() => { const iso = getDefaultPrepDate(); const [y,m,d] = iso.split('-'); return new Date(y, m-1, d); })(),
-  disableMobile: true
+  disableMobile: true,
+  appendTo: document.getElementById('s-welcome')
 });
 const _savedUser = new URLSearchParams(window.location.search).get('user')
   || localStorage.getItem('TORI_USER_NAME') || '';
@@ -1230,24 +1279,19 @@ function showReview() {
   const totalSched    = scheduledIds.length;
   const missed        = scheduledIds.filter(id => !checked[id]);
 
-  const btn = document.getElementById('rev-send-btn');
-
   let html = `<div class="review-meta">
     <div class="review-meta-row"><span class="rmeta-lbl">Day</span><span class="day-tag">${dayLabel}</span></div>
     <div class="review-meta-row"><span class="rmeta-lbl">Date</span><span class="rmeta-val">${dateStr}</span></div>
     <div class="review-meta-row"><span class="rmeta-lbl">Chef</span><span class="rmeta-val">${chefName}</span></div>
-    <div class="review-meta-row"><span class="rmeta-lbl">Prepared</span><span class="rmeta-val">${allChecked.length}</span></div>
-    <div class="review-meta-row"><span class="rmeta-lbl">Not Done</span><span class="rmeta-val" style="color:var(--amber);">${missed.length} / ${totalSched}</span></div>
   </div>`;
 
-  if (allChecked.length === 0) {
-    html += '<div class="review-empty">No items prepared yet.<br>Go back and tick what you completed.</div>';
-    btn.disabled = true;
-  } else {
-    btn.disabled = false;
+  const noItems = allChecked.length === 0;
 
+  if (noItems) {
+    html += '<div class="review-empty">No items prepared yet.<br>Go back and tick what you completed.</div>';
+  } else {
     // ALL prepared items in one flat list (scheduled + extra together)
-    html += `<div class="review-cat-hdr scheduled">Prepared — ${allChecked.length}</div>`;
+    html += `<div class="review-cat-hdr scheduled">Prepared</div>`;
     allChecked.forEach(id => {
       const t = taskMap[id], c = checked[id];
       html += `<div class="review-row">
@@ -1255,26 +1299,17 @@ function showReview() {
         <span class="review-iqty">${c.qty} ${c.unit}</span>
       </div>`;
     });
-
-    // NOT DONE — collapsed dropdown at the bottom
-    if (missed.length) {
-      const missedRows = missed.map(id => {
-        const t = taskMap[id];
-        return `<div class="review-row">
-          <span class="review-iname" style="color:var(--ink4);">${t.name}</span>
-          <span class="review-iqty" style="color:var(--amber);">—</span>
-        </div>`;
-      }).join('');
-      html += `<div class="review-cat-hdr missed" onclick="toggleMissed(this)">
-        <span>Not Done — ${missed.length}</span>
-        <span class="missed-chevron">▼</span>
-      </div>
-      <div class="missed-items" id="missed-items-list">${missedRows}</div>`;
-    }
   }
 
-  document.getElementById('review-body').innerHTML = html;
-  btn.textContent = 'Confirm & Save →';
+  document.getElementById('review-body').innerHTML = html +
+    `<div class="review-footer" style="position:static;padding:20px 20px 0 20px;backdrop-filter:none;border-top:1px solid var(--line2);margin-top:8px;flex-direction:column;gap:10px;left:auto;transform:none;width:auto;">
+      <button class="rev-send-btn" id="rev-send-btn" onclick="doSend()" style="width:100%;">Confirm &amp; Send to Preparation Kitchen →</button>
+      <button class="rev-edit-btn" onclick="go('s-checklist')" style="width:100%;">← Edit</button>
+    </div>`;
+
+  const btn = document.getElementById('rev-send-btn');
+  btn.disabled = noItems;
+  btn.textContent = 'Confirm & Send to Preparation Kitchen →';
   go('s-review');
 }
 
@@ -1354,7 +1389,7 @@ async function doSend() {
     showSuccess(payload);
   } catch (err) {
     btn.disabled = false;
-    btn.textContent = 'Confirm & Save →';
+    btn.textContent = 'Confirm & Send to Preparation Kitchen →';
     alert('Could not save prep log: ' + (err.message || 'unknown error'));
   }
 }
@@ -1442,13 +1477,54 @@ function toggleTaskDay(taskId, day) {
   if (sumEl) sumEl.textContent = summaryFor(task);
 }
 
-function resetSchedule() {
-  if (!confirm('Reset every task back to the default schedule? Your custom changes will be lost.')) return;
-  TASKS = JSON.parse(JSON.stringify(DEFAULT_TASKS));
+/* ── ADD NEW TASK ── */
+let newTaskDays = [];
+
+function showAddTaskForm() {
+  newTaskDays = [];
+  document.getElementById('new-task-name').value = '';
+  // Render day toggles
+  const daysEl = document.getElementById('new-task-days');
+  daysEl.innerHTML = DAY_LABELS.map((d, i) =>
+    `<button class="day-toggle" id="ntd-${i}" onclick="toggleNewDay(${i})">${d}</button>`
+  ).join('');
+  document.getElementById('add-task-form').classList.add('open');
+  document.getElementById('add-task-btn').style.display = 'none';
+  document.getElementById('new-task-name').focus();
+}
+
+function toggleNewDay(i) {
+  const idx = newTaskDays.indexOf(i);
+  if (idx === -1) { newTaskDays.push(i); newTaskDays.sort((a,b)=>a-b); }
+  else { newTaskDays.splice(idx, 1); }
+  DAY_LABELS.forEach((_, j) => {
+    const btn = document.getElementById('ntd-'+j);
+    if (btn) btn.classList.toggle('on', newTaskDays.includes(j));
+  });
+}
+
+function cancelAddTask() {
+  document.getElementById('add-task-form').classList.remove('open');
+  document.getElementById('add-task-btn').style.display = '';
+}
+
+function saveNewTask() {
+  const name = document.getElementById('new-task-name').value.trim();
+  if (!name) { showToast('Please enter a task name'); return; }
+  const id = 'custom_' + Date.now();
+  const task = { id, cat: 'other', name, unit: 'kg', days: [...newTaskDays] };
+  TASKS.push(task);
   rebuildTaskMap();
   saveSchedule();
   renderSettings();
-  showToast('Schedule reset to default');
+  cancelAddTask();
+  showToast('Task added');
+}
+
+function resetSchedule() {
+  if (!confirm('Reset every task back to the default schedule? Your custom changes will be lost.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
 }
 
 /* ──────────────────────────────────────────────
