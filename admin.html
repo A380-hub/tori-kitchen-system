@@ -101,7 +101,7 @@
 <body>
 
 <div id="auth-screen">
-  <img id="auth-logo" alt="TORI"/>
+  <a href="https://a380-hub.github.io/tori-kitchen-system/index.html"><img id="auth-logo" alt="TORI" style="cursor:pointer;"/></a>
   <div class="auth-title">Admin Panel</div>
   <div class="auth-sub">Enter 4-digit master code</div>
   <div class="pin-dots" id="authDots">
@@ -126,7 +126,7 @@
 
 <div id="admin-app">
   <div class="admin-header">
-    <img id="admin-logo" alt="TORI"/>
+    <a href="https://a380-hub.github.io/tori-kitchen-system/index.html"><img id="admin-logo" alt="TORI" style="cursor:pointer;"/></a>
     <div class="admin-badge">Admin Panel</div>
   </div>
 
@@ -399,21 +399,21 @@
         await checkPendingOrders();
         return;
       }
-      let cleared = 0;
-      for (const order of pending) {
-        const r = await fetch(VERCEL_API + '/api/orders/delivered', {
+      // Get unique restaurants with delivered orders and mark each as accepted
+      const restaurants = [...new Set(pending.map(o => o.restaurant))];
+      let totalUpdated = 0;
+      for (const restaurant of restaurants) {
+        const r = await fetch(VERCEL_API + '/api/orders/accepted', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            restaurant:   order.restaurant,
-            delivered_by: order.delivered_by || 'Admin',
-            accepted_by:  'Admin',
-            missing_items: {}
-          })
+          body: JSON.stringify({ restaurant, accepted_by: 'Admin' })
         });
-        if (r.ok) cleared++;
+        if (r.ok) {
+          const result = await r.json();
+          totalUpdated += result.updated || 0;
+        }
       }
-      showToast('Cleared ' + cleared + ' order' + (cleared !== 1 ? 's' : ''), 'success');
+      showToast('Cleared ' + totalUpdated + ' order' + (totalUpdated !== 1 ? 's' : ''), 'success');
       await checkPendingOrders();
     } catch(e) {
       showToast('Error: ' + (e.message || 'unknown'), 'error');
