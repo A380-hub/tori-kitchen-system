@@ -437,12 +437,17 @@ body {
 
 .settings-list { flex: 1; overflow-y: auto; padding-bottom: 100px; }
 
+
 .setting-row {
   padding: 14px 18px;
   border-bottom: 1px solid rgba(58,63,66,0.5);
   display: flex; flex-direction: column; gap: 10px;
+  transition: opacity 0.2s;
 }
 .setting-row:last-child { border-bottom: none; }
+.setting-row.no-days .setting-name { color: var(--ink4); }
+.setting-row.no-days .setting-summary { color: var(--line2); }
+.setting-row.no-days .day-toggle:not(.on) { opacity: 0.35; }
 .setting-row-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .setting-name {
   font-size: 16px; font-weight: 800; text-transform: uppercase;
@@ -808,7 +813,7 @@ body {
         </div>
       </div>
     </div>
-    <button class="start-btn" id="start-btn" onclick="startPrep()">Start Preparation →</button>
+    <button class="start-btn" id="start-btn" onclick="startPrep()" disabled>Start Preparation →</button>
   </div>
 </div>
 
@@ -863,6 +868,11 @@ body {
       <div class="settings-title">Schedule</div>
       <div class="settings-sub">Set which days each task is prepared</div>
     </div>
+    <button id="sort-toggle" onclick="toggleSort()"
+      style="margin-left:auto;background:transparent;border:1px solid var(--line2);color:var(--ink4);
+      font-family:var(--font);font-size:11px;font-weight:900;letter-spacing:0.14em;
+      text-transform:uppercase;padding:6px 12px;cursor:pointer;white-space:nowrap;
+      touch-action:manipulation;flex-shrink:0;">A–Z</button>
   </div>
   <div class="settings-info">
     Tap a day for any task to add or remove it from that day's schedule. Changes save automatically.
@@ -1070,7 +1080,7 @@ function loadSchedule() {
         days: Array.isArray(s.days) ? s.days.filter(x => x>=0 && x<=5) : [...d.days],
       };
     });
-    const customTasks = saved.filter(s => s && s.id && s.id.startsWith('custom_'));
+    const customTasks = saved.filter(s => s && s.id && s.id.startsWith('custom_') && s.name);
     return [...defaultList, ...customTasks];
   } catch (e) {
     console.warn('Failed to load schedule, using defaults:', e);
@@ -1127,7 +1137,9 @@ if (_savedUser) document.getElementById('prep-name').value = _savedUser;
 );
 
 function chkReady() {
-  document.getElementById('start-btn').disabled = false;
+  document.getElementById('start-btn').disabled =
+    !(document.getElementById('prep-name').value.trim() &&
+      document.getElementById('prep-date').value);
 }
 
 function startPrep() {
@@ -1408,6 +1420,7 @@ function goHome() {
   checked = {};
   document.getElementById('prep-name').value = '';
   prepDatePicker.setDate(getDefaultPrepDate(), false);
+  document.getElementById('start-btn').disabled = true;
   go('s-welcome');
 }
 
@@ -1442,11 +1455,39 @@ function togglesFor(taskId) {
   return html;
 }
 
+let currentSort = 'default'; // 'default' | 'az'
+
+function toggleSort() {
+  currentSort = currentSort === 'default' ? 'az' : 'default';
+  const btn = document.getElementById('sort-toggle');
+  if (currentSort === 'az') {
+    btn.textContent = 'A–Z ✓';
+    btn.style.color = 'var(--ink)';
+    btn.style.borderColor = 'var(--ink4)';
+  } else {
+    btn.textContent = 'A–Z';
+    btn.style.color = 'var(--ink4)';
+    btn.style.borderColor = 'var(--line2)';
+  }
+  renderSettings();
+}
+
 function renderSettings() {
   const listEl = document.getElementById('settings-list');
+  let tasks = [...TASKS];
+  if (currentSort === 'az') {
+    tasks.sort((a, b) => {
+      const na = a.name || '';
+      const nb = b.name || '';
+      if (!na && nb) return 1;
+      if (na && !nb) return -1;
+      return na.localeCompare(nb);
+    });
+  }
   let html = '';
-  TASKS.forEach(task => {
-    html += `<div class="setting-row">
+  tasks.forEach(task => {
+    const noDays = !task.days || task.days.length === 0;
+    html += `<div class="setting-row${noDays ? ' no-days' : ''}" id="row-${task.id}">
       <div class="setting-row-top">
         <div class="setting-name">${task.name}</div>
         <div class="setting-summary" id="summary-${task.id}">${summaryFor(task)}</div>
@@ -1474,6 +1515,8 @@ function toggleTaskDay(taskId, day) {
   if (togglesEl) togglesEl.innerHTML = togglesFor(taskId);
   const sumEl = document.getElementById('summary-'+taskId);
   if (sumEl) sumEl.textContent = summaryFor(task);
+  const rowEl = document.getElementById('row-'+taskId);
+  if (rowEl) rowEl.classList.toggle('no-days', task.days.length === 0);
 }
 
 /* ── ADD NEW TASK ── */
@@ -1511,7 +1554,7 @@ function saveNewTask() {
   const name = document.getElementById('new-task-name').value.trim();
   if (!name) { showToast('Please enter a task name'); return; }
   const id = 'custom_' + Date.now();
-  const task = { id, cat: 'other', name, unit: 'kg', days: [...newTaskDays] };
+  const task = { id, cat: 'other', name, unit: 'kg', days: [...newTaskDays], defaultDays: [...newTaskDays] };
   TASKS.push(task);
   rebuildTaskMap();
   saveSchedule();
@@ -1524,6 +1567,9 @@ function resetSchedule() {
   DEFAULT_TASKS.forEach(def => {
     const t = taskMap[def.id];
     if (t) t.days = [...def.days];
+  });
+  TASKS.filter(t => t.id.startsWith('custom_')).forEach(t => {
+    if (t.defaultDays) t.days = [...t.defaultDays];
   });
   saveSchedule();
   renderSettings();
