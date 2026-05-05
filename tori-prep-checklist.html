@@ -1522,7 +1522,6 @@ function saveNewTask() {
 }
 
 function resetSchedule() {
-  if (!confirm('Reset every task back to the default schedule? Your custom changes will be lost.')) return;
   TASKS = JSON.parse(JSON.stringify(DEFAULT_TASKS));
   rebuildTaskMap();
   saveSchedule();
