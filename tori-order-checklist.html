@@ -1043,10 +1043,14 @@ body {
     <div class="reason-modal-sub">Select the reason this item was not delivered.</div>
     <div class="reason-item-name" id="reason-item-name"></div>
     <div class="reason-opts">
-      <div class="reason-opt" onclick="selectReason(this,'Forgotten')">Forgotten</div>
-      <div class="reason-opt" onclick="selectReason(this,'Destroyed during delivery')">Damaged</div>
-      <div class="reason-opt" onclick="selectReason(this,'Out of stock')">Out of Stock</div>
+      <div class="reason-opt" onclick="selectReason(this,'Not Delivered')">Not Delivered</div>
+      <div class="reason-opt" onclick="selectReason(this,'Damaged')">Damaged</div>
       <div class="reason-opt" onclick="selectReason(this,'Other')">Other</div>
+    </div>
+    <div id="reason-other-wrap" style="display:none;margin-bottom:12px;">
+      <input id="reason-other-input" type="text" placeholder="Please specify…"
+        style="width:100%;background:var(--panel2);border:1px solid var(--line2);border-left:3px solid var(--red2);color:var(--ink);font-family:var(--font);font-size:16px;font-weight:600;padding:10px 12px;"
+        oninput="document.getElementById('reason-ok').disabled=!this.value.trim();" />
     </div>
     <div class="reason-acts">
       <button class="reason-cancel" onclick="closeReasonModal()">Cancel</button>
@@ -1899,18 +1903,36 @@ function selectReason(el, value) {
   document.querySelectorAll('.reason-opt').forEach(o => o.classList.remove('selected'));
   el.classList.add('selected');
   _selectedReason = value;
-  document.getElementById('reason-ok').disabled = false;
+  const otherWrap = document.getElementById('reason-other-wrap');
+  const otherInput = document.getElementById('reason-other-input');
+  if (value === 'Other') {
+    otherWrap.style.display = 'block';
+    otherInput.value = '';
+    document.getElementById('reason-ok').disabled = true;
+    setTimeout(() => otherInput.focus(), 50);
+  } else {
+    otherWrap.style.display = 'none';
+    document.getElementById('reason-ok').disabled = false;
+  }
 }
 
 function closeReasonModal() {
   document.getElementById('reason-modal-back').classList.remove('open');
+  document.getElementById('reason-other-wrap').style.display = 'none';
+  document.getElementById('reason-other-input').value = '';
   _pendingItemForReason = null;
   _selectedReason = null;
 }
 
 function confirmMissing() {
   if (!_pendingItemForReason || !_selectedReason) return;
-  missingItems[_pendingItemForReason.id] = _selectedReason;
+  let reason = _selectedReason;
+  if (reason === 'Other') {
+    const txt = document.getElementById('reason-other-input').value.trim();
+    if (!txt) return;
+    reason = txt;
+  }
+  missingItems[_pendingItemForReason.id] = reason;
   closeReasonModal();
   refreshAllDeliveryViews();
 }
