@@ -183,14 +183,20 @@
 
   // Which modules each role unlocks
   const ROLE_ACCESS = {
+    // Legacy role names (backward compat)
     kitchen:    ['order'],
     management: ['order','prep','delivery'],
     delivery:   ['delivery'],
+    // Direct module names map to themselves
+    order:      ['order'],
+    display:    ['display'],
+    prep:       ['prep'],
+    // Admin: full access
     admin:      ['order','display','prep','delivery']
   };
 
-  // Persistent login if user has ANY of these roles
-  const PERSISTENT_ROLES = ['admin','management'];
+  // Persistent login if user has admin role
+  const PERSISTENT_ROLES = ['admin'];
 
   let currentUser = null;
   let loginPin    = '';
