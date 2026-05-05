@@ -400,7 +400,7 @@ body { display: flex; flex-direction: column; }
   width: 100%; max-width: 420px;
 }
 .dmodal-title { font-size: 22px; font-weight: 900; text-transform: uppercase; margin-bottom: 6px; }
-.dmodal-sub { font-family: var(--body); font-size: 14px; color: var(--ink4); margin-bottom: 18px; line-height: 1.5; }
+.dmodal-sub { font-family: var(--body); font-size: 14px; color: var(--ink4); line-height: 1.5; }
 
 .dmodal-field { margin-bottom: 14px; }
 .dmodal-label {
@@ -1017,9 +1017,8 @@ function buildPackCol(k) {
 function openDeliveryModal(k) {
   pendingDeliveryKey = k;
   const rName = k === 'r1' ? 'TORI — Špansko' : 'TORI — Trnje';
-  document.getElementById('dmodal-title').textContent = 'Confirm Delivery';
-  document.getElementById('dmodal-sub').textContent   =
-    `Confirm delivery for ${rName}?`;
+  document.getElementById('dmodal-title').textContent = `Confirm Deliver To — ${rName}`;
+  document.getElementById('dmodal-sub').textContent   = '';
   document.getElementById('dmodal-confirm').disabled = false;
   document.getElementById('dmodal').classList.add('open');
 }
@@ -1029,7 +1028,7 @@ function closeDModal() {
   pendingDeliveryKey = null;
 }
 
-function confirmDelivery() {
+async function confirmDelivery() {
   const k = pendingDeliveryKey;
   if (!k) return;
   const deliveredBy = dispatchBatch.driverName || '—';
@@ -1058,18 +1057,15 @@ function confirmDelivery() {
   dispatchBatch[k] = null; // remove from packing area
   saveLog();
 
-  // Update TORI_STATUS to 'delivered' so restaurant knows to confirm
-  if (!API_BASE) {
-    try {
-      const statusData = JSON.parse(localStorage.getItem('TORI_STATUS') || '{}');
-      if (statusData[k]) {
-        statusData[k].status = 'delivered';
-        statusData[k].deliveredAt = now;
-        statusData[k].deliveredBy = deliveredBy;
-      }
-      localStorage.setItem('TORI_STATUS', JSON.stringify(statusData));
-    } catch(e) {}
-  }
+  // Always update TORI_STATUS to 'delivered' — localStorage is shared with order-checklist
+  try {
+    const statusData = JSON.parse(localStorage.getItem('TORI_STATUS') || '{}');
+    if (!statusData[k]) statusData[k] = {};
+    statusData[k].status      = 'delivered';
+    statusData[k].deliveredAt = now;
+    statusData[k].deliveredBy = deliveredBy;
+    localStorage.setItem('TORI_STATUS', JSON.stringify(statusData));
+  } catch(e) {}
 
   closeDModal();
   showToast(`Delivery confirmed — ${rName}`);
@@ -1086,13 +1082,18 @@ function confirmDelivery() {
     document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 's-log'));
   }
 
-  // Notify API if backend is set
+  // Notify API
   if (API_BASE) {
-    fetch(API_BASE + '/api/orders/delivered', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ restaurant: k, delivered_by: deliveredBy, delivered_at: now })
-    }).catch(console.error);
+    try {
+      const res = await fetch(API_BASE + '/api/orders/delivered', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restaurant: k, delivered_by: deliveredBy, delivered_at: now })
+      });
+      if (!res.ok) showToast('Warning: API update failed — status may not sync');
+    } catch(e) {
+      showToast('Warning: API unreachable — status may not sync');
+    }
   }
 }
 
