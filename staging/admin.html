@@ -104,12 +104,34 @@
   .toast.error   { border-color: #ff4444; color: #ff4444; }
   .empty-state { text-align: center; color: #333; font-size: 14px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 24px; }
   .pin-note { font-family: 'Barlow', sans-serif; font-size: 11px; color: #444; margin-top: 4px; }
+  /* ── Dual Quantity settings ── */
+  .ou-row, .oi-row { display:flex; align-items:center; gap:10px; background:#111; border:1px solid #1e1e1e; border-radius:10px; padding:12px 14px; margin-bottom:8px; }
+  .ou-name, .oi-name { font-weight:800; color:#ddd; font-size:14px; }
+  .ou-plural { color:#666; font-size:13px; }
+  .oi-info { flex:1; min-width:0; }
+  .oi-cat { font-family:'Barlow',sans-serif; font-size:11px; color:#555; text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
+  .flex-spacer { flex:1; }
+  .dual-badge { font-size:11px; font-weight:800; padding:3px 9px; border-radius:6px; background:#1a0808; border:1px solid #5a1a1a; color:#ff8888; letter-spacing:0.4px; white-space:nowrap; }
+  .dual-badge.off { background:#141414; border-color:#262626; color:#555; }
+  .modal-back { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.78); z-index:200; align-items:center; justify-content:center; padding:20px; }
+  .modal-back.open { display:flex; }
+  .modal-card { background:#0f0f0f; border:1px solid #262626; border-radius:14px; padding:22px; width:100%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.6); }
+  .modal-title { font-size:16px; font-weight:900; letter-spacing:0.5px; color:#eee; margin-bottom:16px; }
+  .switch { position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
+  .switch input { display:none; }
+  .switch-slider { position:absolute; inset:0; background:#2a2a2a; border-radius:26px; transition:0.2s; cursor:pointer; }
+  .switch-slider::before { content:''; position:absolute; width:20px; height:20px; left:3px; top:3px; background:#888; border-radius:50%; transition:0.2s; }
+  .switch input:checked + .switch-slider { background:#cc1010; }
+  .switch input:checked + .switch-slider::before { transform:translateX(20px); background:#fff; }
+  .conv-line { display:flex; align-items:center; gap:8px; font-size:15px; font-weight:800; color:#ccc; flex-wrap:wrap; }
+  .conv-input { width:90px !important; text-align:center; }
+  .conv-preview { font-family:'Barlow',sans-serif; font-size:13px; color:#4caf74; font-weight:700; margin-top:8px; }
 </style>
 </head>
 <body>
 
 <div id="auth-screen">
-  <a href="https://a380-hub.github.io/tori-kitchen-system/index.html"><img id="auth-logo" alt="TORI" style="cursor:pointer;"/></a>
+  <a href="index.html"><img id="auth-logo" alt="TORI" style="cursor:pointer;"/></a>
   <div class="auth-title">Admin Panel</div>
   <div class="auth-sub">Enter 4-digit master code</div>
   <div class="pin-dots" id="authDots">
@@ -134,7 +156,7 @@
 
 <div id="admin-app">
   <div class="admin-header">
-    <a href="https://a380-hub.github.io/tori-kitchen-system/index.html"><img id="admin-logo" alt="TORI" style="cursor:pointer;"/></a>
+    <a href="index.html"><img id="admin-logo" alt="TORI" style="cursor:pointer;"/></a>
     <div class="admin-badge">Admin Panel</div>
   </div>
 
@@ -191,6 +213,20 @@
 
   <button class="btn-add" onclick="showAddForm()">+ Add New User</button>
 
+  <!-- ════ DUAL QUANTITY — ORDER UNITS ════ -->
+  <div class="section" id="sec-order-units" style="margin-top:32px;">
+    <div class="section-title">Order Units</div>
+    <div id="ou-list"><div class="empty-state">Loading…</div></div>
+    <button class="btn-add" onclick="ouAdd()">+ Add order unit</button>
+  </div>
+
+  <!-- ════ DUAL QUANTITY — ITEM CONFIG ════ -->
+  <div class="section" id="sec-order-items">
+    <div class="section-title">Order Items — Dual Quantity</div>
+    <input class="form-input" id="oi-search" placeholder="Search items…" oninput="oiRenderFiltered()" autocomplete="off" style="margin-bottom:12px;"/>
+    <div id="oi-list"><div class="empty-state">Loading…</div></div>
+  </div>
+
   <!-- CLEAR SECTIONS -->
   <div class="section" style="margin-top:32px;">
     <div class="section-title">System — Clear Data</div>
@@ -231,6 +267,62 @@
 
 </div>
 
+<!-- ════ Order Unit add/edit modal ════ -->
+<div class="modal-back" id="ou-modal-back" onclick="if(event.target===this)ouClose()">
+  <div class="modal-card">
+    <div class="modal-title" id="ou-modal-title">Add order unit</div>
+    <input type="hidden" id="ou-edit-id"/>
+    <div class="form-row">
+      <label class="form-label">Unit name (singular)</label>
+      <input class="form-input" id="ou-singular" placeholder="Box" autocomplete="off"/>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Plural</label>
+      <input class="form-input" id="ou-plural" placeholder="Boxes" autocomplete="off"/>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" onclick="ouSave()">Save</button>
+      <button class="btn-secondary" onclick="ouClose()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Item edit modal (dual quantity) ════ -->
+<div class="modal-back" id="oi-modal-back" onclick="if(event.target===this)oiClose()">
+  <div class="modal-card">
+    <div class="modal-title" id="oi-modal-title">Edit item — </div>
+    <input type="hidden" id="oi-edit-id"/>
+    <div class="form-row" style="flex-direction:row; align-items:center; justify-content:space-between;">
+      <label class="form-label" style="margin:0;">Show dual quantity</label>
+      <label class="switch"><input type="checkbox" id="oi-toggle" onchange="oiToggleChange()"/><span class="switch-slider"></span></label>
+    </div>
+    <div id="oi-dual-fields" style="display:none;">
+      <div class="form-row">
+        <label class="form-label">Order unit</label>
+        <select class="form-input" id="oi-unit" onchange="oiUpdatePreview()">
+          <option value="" disabled selected>Select unit…</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Output unit</label>
+        <input class="form-input" id="oi-output" readonly style="opacity:0.6; cursor:not-allowed;"/>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Conversion</label>
+        <div class="conv-line">1 <span id="oi-conv-unit">unit</span> =
+          <input class="form-input conv-input" id="oi-factor" type="number" min="0" step="any" inputmode="decimal" placeholder="0" oninput="oiUpdatePreview()"/>
+          <span id="oi-conv-output">—</span>
+        </div>
+        <div class="conv-preview" id="oi-conv-preview">1 unit = —</div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" onclick="oiSave()">Save</button>
+      <button class="btn-secondary" onclick="oiClose()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -267,6 +359,7 @@
         document.getElementById('admin-app').classList.add('visible');
         loadUsers();
         checkAllModules();
+        loadOrderUnits().then(() => loadOrderItems());
       }, 400);
     } else {
       updateAuthDots('error'); authBusy = true;
@@ -404,6 +497,172 @@
       });
       if (res.ok) { showToast('User deleted', 'success'); loadUsers(); }
       else showToast('Delete failed', 'error');
+    } catch(e) { showToast('Connection error', 'error'); }
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  // DUAL QUANTITY — Order Units + per-item config (admin-only, service key).
+  // Reads via anon; writes via service role (RLS bars anon writes).
+  // ════════════════════════════════════════════════════════════════════════
+  const SB_WRITE_HEADERS = { 'apikey': SUPABASE_SERVICE, 'Authorization': 'Bearer ' + SUPABASE_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
+  const SB_DELETE_HEADERS = { 'apikey': SUPABASE_SERVICE, 'Authorization': 'Bearer ' + SUPABASE_SERVICE };
+  let ouUnits = [];   // cached order_units
+  let oiItems = [];   // cached order_items
+
+  // ── Order Units ──
+  async function loadOrderUnits() {
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/order_units?select=*&order=sort_order', {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }
+      });
+      ouUnits = await res.json();
+      ouRender();
+      oiPopulateUnitDropdown();
+    } catch(e) { showToast('Failed to load order units', 'error'); }
+  }
+  function ouRender() {
+    const el = document.getElementById('ou-list');
+    if (!ouUnits.length) { el.innerHTML = '<div class="empty-state">No order units yet — add your first below</div>'; return; }
+    el.innerHTML = ouUnits.map(u => `<div class="ou-row">
+      <span class="ou-name">${u.name_singular}</span>
+      <span class="ou-plural">→ ${u.name_plural}</span>
+      <span class="flex-spacer"></span>
+      <button class="btn-icon" onclick="ouEdit(${u.id})">Edit</button>
+      <button class="btn-icon danger" onclick="ouDelete(${u.id})">Del</button>
+    </div>`).join('');
+  }
+  function ouAdd() {
+    document.getElementById('ou-modal-title').textContent = 'Add order unit';
+    document.getElementById('ou-edit-id').value = '';
+    document.getElementById('ou-singular').value = '';
+    document.getElementById('ou-plural').value = '';
+    document.getElementById('ou-modal-back').classList.add('open');
+    document.getElementById('ou-singular').focus();
+  }
+  function ouEdit(id) {
+    const u = ouUnits.find(x => x.id === id); if (!u) return;
+    document.getElementById('ou-modal-title').textContent = 'Edit order unit';
+    document.getElementById('ou-edit-id').value = u.id;
+    document.getElementById('ou-singular').value = u.name_singular;
+    document.getElementById('ou-plural').value = u.name_plural;
+    document.getElementById('ou-modal-back').classList.add('open');
+  }
+  function ouClose() { document.getElementById('ou-modal-back').classList.remove('open'); }
+  async function ouSave() {
+    const id = document.getElementById('ou-edit-id').value;
+    const singular = document.getElementById('ou-singular').value.trim();
+    const plural   = document.getElementById('ou-plural').value.trim();
+    if (!singular || !plural) { showToast('Enter singular and plural', 'error'); return; }
+    let body;
+    if (id) { body = JSON.stringify({ name_singular: singular, name_plural: plural }); }
+    else {
+      const nextSort = ouUnits.length ? Math.max(...ouUnits.map(u => u.sort_order || 0)) + 1 : 0;
+      body = JSON.stringify({ name_singular: singular, name_plural: plural, sort_order: nextSort });
+    }
+    try {
+      const res = id
+        ? await fetch(SUPABASE_URL + '/rest/v1/order_units?id=eq.' + id, { method:'PATCH', headers: SB_WRITE_HEADERS, body })
+        : await fetch(SUPABASE_URL + '/rest/v1/order_units', { method:'POST', headers: SB_WRITE_HEADERS, body });
+      if (res.ok) { showToast(id ? 'Order unit updated' : 'Order unit added', 'success'); ouClose(); loadOrderUnits(); }
+      else { const err = await res.json().catch(()=>({})); showToast('Error: ' + (err.message || res.status), 'error'); }
+    } catch(e) { showToast('Connection error', 'error'); }
+  }
+  async function ouDelete(id) {
+    const u = ouUnits.find(x => x.id === id);
+    if (!confirm('Delete order unit "' + (u ? u.name_singular : id) + '"?\nItems using it will revert to single-unit display.')) return;
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/order_units?id=eq.' + id, { method:'DELETE', headers: SB_DELETE_HEADERS });
+      if (res.ok) { showToast('Order unit deleted', 'success'); loadOrderUnits(); loadOrderItems(); }
+      else showToast('Delete failed', 'error');
+    } catch(e) { showToast('Connection error', 'error'); }
+  }
+
+  // ── Order Items (dual config) ──
+  async function loadOrderItems() {
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/order_items?select=*&order=sort_order', {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON }
+      });
+      oiItems = await res.json();
+      oiRenderFiltered();
+    } catch(e) { showToast('Failed to load items', 'error'); }
+  }
+  function ouNameById(id) { const u = ouUnits.find(x => x.id === id); return u ? u.name_singular : null; }
+  function oiRenderFiltered() {
+    const q = (document.getElementById('oi-search').value || '').toLowerCase().trim();
+    const el = document.getElementById('oi-list');
+    const items = q ? oiItems.filter(i => i.name.toLowerCase().includes(q) || (i.category||'').toLowerCase().includes(q)) : oiItems;
+    if (!items.length) { el.innerHTML = '<div class="empty-state">No items</div>'; return; }
+    el.innerHTML = items.map(it => {
+      const isDual = it.dual_enabled && it.order_unit_id != null;
+      const uname  = isDual ? ouNameById(it.order_unit_id) : null;
+      const badge  = isDual
+        ? `<span class="dual-badge">1 ${uname || '?'} = ${it.factor} ${it.output_unit}</span>`
+        : `<span class="dual-badge off">Single · ${it.output_unit}</span>`;
+      return `<div class="oi-row">
+        <div class="oi-info">
+          <div class="oi-name">${it.name}</div>
+          <div class="oi-cat">${it.category}</div>
+        </div>
+        ${badge}
+        <button class="btn-icon" onclick="oiEdit('${it.id}')">Edit</button>
+      </div>`;
+    }).join('');
+  }
+  function oiPopulateUnitDropdown() {
+    const sel = document.getElementById('oi-unit'); if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="" disabled>Select unit…</option>' +
+      ouUnits.map(u => `<option value="${u.id}">${u.name_singular} → ${u.name_plural}</option>`).join('');
+    if (cur) sel.value = cur;
+  }
+  function oiEdit(id) {
+    const it = oiItems.find(x => x.id === id); if (!it) return;
+    document.getElementById('oi-modal-title').textContent = 'Edit item — ' + it.name;
+    document.getElementById('oi-edit-id').value = it.id;
+    document.getElementById('oi-output').value = it.output_unit;
+    oiPopulateUnitDropdown();
+    document.getElementById('oi-toggle').checked = !!it.dual_enabled;
+    document.getElementById('oi-unit').value = it.order_unit_id != null ? String(it.order_unit_id) : '';
+    document.getElementById('oi-factor').value = (it.factor != null ? it.factor : '');
+    oiSyncToggle();
+    document.getElementById('oi-modal-back').classList.add('open');
+  }
+  function oiToggleChange() { oiSyncToggle(); }
+  function oiSyncToggle() {
+    const on = document.getElementById('oi-toggle').checked;
+    document.getElementById('oi-dual-fields').style.display = on ? 'block' : 'none';
+    oiUpdatePreview();
+  }
+  function oiUpdatePreview() {
+    const sel = document.getElementById('oi-unit');
+    const u = ouUnits.find(x => String(x.id) === String(sel.value));
+    const output = document.getElementById('oi-output').value;
+    const factorRaw = document.getElementById('oi-factor').value;
+    const word = u ? u.name_singular : 'unit';
+    document.getElementById('oi-conv-unit').textContent = word;
+    document.getElementById('oi-conv-output').textContent = output || '—';
+    const f = (factorRaw === '' || isNaN(Number(factorRaw))) ? '—' : Number(factorRaw);
+    document.getElementById('oi-conv-preview').textContent = '1 ' + word + ' = ' + f + ' ' + (output || '');
+  }
+  function oiClose() { document.getElementById('oi-modal-back').classList.remove('open'); }
+  async function oiSave() {
+    const id = document.getElementById('oi-edit-id').value;
+    const on = document.getElementById('oi-toggle').checked;
+    let body;
+    if (on) {
+      const unitId = document.getElementById('oi-unit').value;
+      const factorRaw = document.getElementById('oi-factor').value;
+      if (!unitId) { showToast('Select an order unit', 'error'); return; }
+      if (factorRaw === '' || isNaN(Number(factorRaw)) || Number(factorRaw) <= 0) { showToast('Enter a valid conversion factor', 'error'); return; }
+      body = JSON.stringify({ dual_enabled: true, order_unit_id: Number(unitId), factor: Number(factorRaw) });
+    } else {
+      body = JSON.stringify({ dual_enabled: false, order_unit_id: null, factor: null });
+    }
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/order_items?id=eq.' + id, { method:'PATCH', headers: SB_WRITE_HEADERS, body });
+      if (res.ok) { showToast('Item saved', 'success'); oiClose(); loadOrderItems(); }
+      else { const err = await res.json().catch(()=>({})); showToast('Error: ' + (err.message || res.status), 'error'); }
     } catch(e) { showToast('Connection error', 'error'); }
   }
 
