@@ -312,9 +312,16 @@
         <div class="conv-preview" id="oi-conv-preview">1 unit = —</div>
       </div>
     </div>
-    <div class="form-actions">
-      <button class="btn-primary" onclick="oiSave()">Save</button>
-      <button class="btn-secondary" onclick="oiClose()">Cancel</button>
+    <div class="form-row" style="margin-top:6px;">
+      <label class="form-label">Item name</label>
+      <input class="form-input" id="oi-name" placeholder="Item name" autocomplete="off"/>
+    </div>
+    <div class="form-actions" style="justify-content:space-between;">
+      <button onclick="oiDelete()" style="background:#2a0808;color:#ff6666;border:1px solid #5a1a1a;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit;">Delete item</button>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-secondary" onclick="oiClose()">Cancel</button>
+        <button class="btn-primary" onclick="oiSave()">Save</button>
+      </div>
     </div>
   </div>
 </div>
@@ -648,6 +655,7 @@
     const it = oiItems.find(x => x.id === id); if (!it) return;
     document.getElementById('oi-modal-title').textContent = 'Edit item — ' + it.name;
     document.getElementById('oi-edit-id').value = it.id;
+    document.getElementById('oi-name').value = it.name;
     document.getElementById('oi-output').value = it.output_unit;
     oiPopulateUnitDropdown();
     document.getElementById('oi-toggle').checked = !!it.dual_enabled;
@@ -676,6 +684,8 @@
   function oiClose() { document.getElementById('oi-modal-back').classList.remove('open'); }
   async function oiSave() {
     const id = document.getElementById('oi-edit-id').value;
+    const name = document.getElementById('oi-name').value.trim();
+    if (!name) { showToast('Enter an item name', 'error'); return; }
     const on = document.getElementById('oi-toggle').checked;
     let body;
     if (on) {
@@ -683,13 +693,24 @@
       const factorRaw = document.getElementById('oi-factor').value;
       if (!unitId) { showToast('Select an order unit', 'error'); return; }
       if (factorRaw === '' || isNaN(Number(factorRaw)) || Number(factorRaw) <= 0) { showToast('Enter a valid conversion factor', 'error'); return; }
-      body = JSON.stringify({ dual_enabled: true, order_unit_id: Number(unitId), factor: Number(factorRaw) });
+      body = JSON.stringify({ name, dual_enabled: true, order_unit_id: Number(unitId), factor: Number(factorRaw) });
     } else {
-      body = JSON.stringify({ dual_enabled: false, order_unit_id: null, factor: null });
+      body = JSON.stringify({ name, dual_enabled: false, order_unit_id: null, factor: null });
     }
     try {
       const res = await fetch(SUPABASE_URL + '/rest/v1/order_items?id=eq.' + id, { method:'PATCH', headers: SB_WRITE_HEADERS, body });
       if (res.ok) { showToast('Item saved', 'success'); oiClose(); loadOrderItems(); }
+      else { const err = await res.json().catch(()=>({})); showToast('Error: ' + (err.message || res.status), 'error'); }
+    } catch(e) { showToast('Connection error', 'error'); }
+  }
+  async function oiDelete() {
+    const id = document.getElementById('oi-edit-id').value;
+    const it = oiItems.find(x => x.id === id);
+    const nm = it ? it.name : id;
+    if (!confirm('Delete item "' + nm + '"?\nIt will be removed from the order, kitchen display and dispatch lists. This cannot be undone.')) return;
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/order_items?id=eq.' + encodeURIComponent(id), { method:'DELETE', headers: SB_DELETE_HEADERS });
+      if (res.ok) { showToast('Item deleted', 'success'); oiClose(); loadOrderItems(); }
       else { const err = await res.json().catch(()=>({})); showToast('Error: ' + (err.message || res.status), 'error'); }
     } catch(e) { showToast('Connection error', 'error'); }
   }
