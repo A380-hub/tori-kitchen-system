@@ -786,7 +786,8 @@
     if (!output) { showToast('Enter an output unit', 'error'); return; }
 
     // Same-name guard: steer the user to Restore an archived match instead of duplicating.
-    const sameName = oiItems.find(i => i.name.toLowerCase() === name.toLowerCase());
+    const norm = s => String(s).trim().toLowerCase().replace(/\s+/g, ' ');
+    const sameName = oiItems.find(i => norm(i.name) === norm(name));
     if (sameName) {
       if (sameName.archived) {
         if (confirm('An archived item "' + sameName.name + '" already exists.\n\nRestore it instead of creating a new one?\n(OK = restore — keeps it linked to past orders. Cancel = keep separate and create a new item.)')) {
