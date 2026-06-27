@@ -225,6 +225,7 @@
     <div class="section-title">Order Items — Dual Quantity</div>
     <input class="form-input" id="oi-search" placeholder="Search items…" oninput="oiRenderFiltered()" autocomplete="off" style="margin-bottom:12px;"/>
     <div id="oi-list"><div class="empty-state">Loading…</div></div>
+    <button class="btn-add" onclick="oiAddOpen()">+ Add item</button>
   </div>
 
   <!-- CLEAR SECTIONS -->
@@ -322,6 +323,30 @@
         <button class="btn-secondary" onclick="oiClose()">Cancel</button>
         <button class="btn-primary" onclick="oiSave()">Save</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ Add new item modal ════ -->
+<div class="modal-back" id="oi-add-back" onclick="if(event.target===this)oiAddClose()">
+  <div class="modal-card">
+    <div class="modal-title">Add new item</div>
+    <div class="form-row">
+      <label class="form-label">Item name</label>
+      <input class="form-input" id="oi-add-name" placeholder="e.g. Teriyaki Chicken" autocomplete="off"/>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Category</label>
+      <select class="form-input" id="oi-add-cat"></select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Output unit (kitchen unit)</label>
+      <input class="form-input" id="oi-add-output" placeholder="kg / L / pcs / bottles / boxes / rolls" autocomplete="off"/>
+    </div>
+    <div style="font-family:'Barlow',sans-serif;font-size:11px;color:#555;line-height:1.5;margin:-4px 2px 4px;">Created as a single-unit item. Use Edit afterward to set a dual quantity.</div>
+    <div class="form-actions">
+      <button class="btn-primary" onclick="oiAddSave()">Create item</button>
+      <button class="btn-secondary" onclick="oiAddClose()">Cancel</button>
     </div>
   </div>
 </div>
@@ -732,6 +757,64 @@
         { method:'PATCH', headers: SB_WRITE_HEADERS, body: JSON.stringify({ archived: toArchive }) });
       if (res.ok) { showToast(toArchive ? 'Item archived' : 'Item restored', 'success'); oiClose(); loadOrderItems(); }
       else { const err = await res.json().catch(()=>({})); showToast('Error: ' + (err.message || res.status), 'error'); }
+    } catch(e) { showToast('Connection error', 'error'); }
+  }
+
+  // ── Add new item (id-safe: never reuses or collides with an existing id) ──
+  function oiSlug(name) {
+    return String(name).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,60) || 'item';
+  }
+  function oiAddOpen() {
+    document.getElementById('oi-add-name').value = '';
+    document.getElementById('oi-add-output').value = '';
+    // Category options = the categories already in use (keeps display grouping intact)
+    const cats = [];
+    oiItems.forEach(i => { if (i.category && cats.indexOf(i.category) === -1) cats.push(i.category); });
+    if (!cats.length) ['Sauces','Foods','Vegetables','Drinks','Dry Items'].forEach(c => cats.push(c));
+    document.getElementById('oi-add-cat').innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+    document.getElementById('oi-add-back').classList.add('open');
+    document.getElementById('oi-add-name').focus();
+  }
+  function oiAddClose() { document.getElementById('oi-add-back').classList.remove('open'); }
+  async function oiAddSave() {
+    const name = document.getElementById('oi-add-name').value.trim();
+    const category = document.getElementById('oi-add-cat').value;
+    const output = document.getElementById('oi-add-output').value.trim();
+    if (!name) { showToast('Enter an item name', 'error'); return; }
+    if (!category) { showToast('Pick a category', 'error'); return; }
+    if (!output) { showToast('Enter an output unit', 'error'); return; }
+
+    // Same-name guard: steer the user to Restore an archived match instead of duplicating.
+    const sameName = oiItems.find(i => i.name.toLowerCase() === name.toLowerCase());
+    if (sameName) {
+      if (sameName.archived) {
+        if (confirm('An archived item "' + sameName.name + '" already exists.\n\nRestore it instead of creating a new one?\n(OK = restore — keeps it linked to past orders. Cancel = keep separate and create a new item.)')) {
+          try {
+            const res = await fetch(SUPABASE_URL + '/rest/v1/order_items?id=eq.' + encodeURIComponent(sameName.id),
+              { method:'PATCH', headers: SB_WRITE_HEADERS, body: JSON.stringify({ archived: false }) });
+            if (res.ok) { showToast('Item restored', 'success'); oiAddClose(); loadOrderItems(); }
+            else { const err = await res.json().catch(()=>({})); showToast('Error: ' + (err.message || res.status), 'error'); }
+          } catch(e) { showToast('Connection error', 'error'); }
+          return;
+        }
+        // else: fall through and create a brand-new, separately-id'd item
+      } else {
+        showToast('An item named "' + sameName.name + '" already exists', 'error');
+        return;
+      }
+    }
+
+    // Generate an id that collides with NOTHING (active or archived) — protects history.
+    const existing = new Set(oiItems.map(i => i.id));
+    let id = oiSlug(name), n = 2;
+    while (existing.has(id)) { id = oiSlug(name) + '_' + n; n++; }
+    const nextSort = oiItems.length ? Math.max(...oiItems.map(i => i.sort_order || 0)) + 1 : 0;
+    const body = JSON.stringify({ id, name, category, output_unit: output, dual_enabled: false, order_unit_id: null, factor: null, archived: false, sort_order: nextSort });
+    try {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/order_items', { method:'POST', headers: SB_WRITE_HEADERS, body });
+      if (res.ok) { showToast('Item added', 'success'); oiAddClose(); loadOrderItems(); }
+      else { const err = await res.json().catch(()=>({})); showToast('Error: ' + (err.message || err.code || res.status), 'error'); }
     } catch(e) { showToast('Connection error', 'error'); }
   }
 
