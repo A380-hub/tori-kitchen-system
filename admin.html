@@ -347,16 +347,52 @@
       else if (i < authPin.length) d.classList.add('filled');
     }
   }
+  function enterAdmin() {
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('admin-app').classList.add('visible');
+    loadUsers();
+    checkAllModules();
+    loadOrderUnits().then(() => loadOrderItems());
+  }
+
+  // Parse Postgres text[] ("{a,b}") or JS array of role groups.
+  function parseGroups(g) {
+    if (!g) return [];
+    if (Array.isArray(g)) return g;
+    if (typeof g === 'string') return g.replace(/^\{|\}$/g, '').split(',').map(s => s.trim()).filter(Boolean);
+    return [];
+  }
+
+  // Bypass the master-code screen ONLY for someone already logged in as an
+  // admin on the hub — re-verified against the database, so it can't be faked
+  // by just opening this URL.
+  async function tryAutoAdmin() {
+    let hid = false;
+    try {
+      const saved = localStorage.getItem('TORI_SESSION');
+      if (!saved) return;
+      const pin = (JSON.parse(saved) || {}).pin;
+      if (!pin) return;
+      // optimistically hide the PIN screen to avoid a flash for returning admins
+      document.getElementById('auth-screen').style.display = 'none';
+      hid = true;
+      const res = await fetch(SUPABASE_URL + '/rest/v1/users?pin=eq.' + encodeURIComponent(pin) + '&select=groups',
+        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } });
+      const data = await res.json();
+      if (data && data.length && parseGroups(data[0].groups).includes('admin')) {
+        enterAdmin();
+        return;
+      }
+    } catch (e) {}
+    // not a verified admin — show the master-code screen as normal
+    if (hid) document.getElementById('auth-screen').style.display = 'flex';
+  }
+  tryAutoAdmin();
+
   function checkAuth() {
     if (authPin === ADMIN_CODE) {
       updateAuthDots('success');
-      setTimeout(() => {
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('admin-app').classList.add('visible');
-        loadUsers();
-        checkAllModules();
-        loadOrderUnits().then(() => loadOrderItems());
-      }, 400);
+      setTimeout(enterAdmin, 400);
     } else {
       updateAuthDots('error'); authBusy = true;
       document.getElementById('authPad').classList.add('shake');
