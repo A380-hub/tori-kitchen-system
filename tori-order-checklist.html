@@ -1295,6 +1295,7 @@ function buildCatsFromRows(items, units){
       factor: (r.factor == null ? null : Number(r.factor)),
       order_unit: (r.order_unit_id != null && unitById[r.order_unit_id]) ? unitById[r.order_unit_id] : null,
       sort_order: r.sort_order || 0,
+      archived: !!r.archived,
     };
     (byCat[r.category] = byCat[r.category] || []).push(it);
   });
@@ -1379,7 +1380,7 @@ function launch() {
   sel.innerHTML = '<option value="" disabled>Jump to section…</option>';
   CATS.forEach((c,i) => {
     const o = document.createElement('option');
-    o.value=i; o.textContent=c.label+' ('+c.items.length+' items)'; sel.appendChild(o);
+    o.value=i; o.textContent=c.label+' ('+c.items.filter(it=>!it.archived).length+' items)'; sel.appendChild(o);
   });
   sel.value='';
 
@@ -1399,8 +1400,12 @@ function showCat(idx) {
   const cat = CATS[idx];
   const isLast = idx===CATS.length-1;
 
+  // Archived items stay in the catalog (so past orders keep their names) but
+  // are not orderable — exclude them from the ordering list.
+  const orderable = cat.items.filter(item => !item.archived);
+
   document.getElementById('cat-title').textContent = cat.label;
-  document.getElementById('cat-count').textContent = cat.items.length+' items';
+  document.getElementById('cat-count').textContent = orderable.length+' items';
 
   // Progress
   CATS.forEach((_,i)=>{
@@ -1411,7 +1416,7 @@ function showCat(idx) {
   // Rows
   const list = document.getElementById('items-list');
   list.innerHTML='';
-  cat.items.forEach(item => {
+  orderable.forEach(item => {
     const isc = checked[item.id]!==undefined;
     const qty = checked[item.id]||'';
     const row = document.createElement('div');

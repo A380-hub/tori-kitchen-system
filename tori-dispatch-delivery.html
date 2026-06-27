@@ -846,6 +846,7 @@ function buildCatsFromRows(items, units){
       factor: (r.factor == null ? null : Number(r.factor)),
       order_unit: (r.order_unit_id != null && unitById[r.order_unit_id]) ? unitById[r.order_unit_id] : null,
       sort_order: r.sort_order || 0,
+      archived: !!r.archived,
     };
     (byCat[r.category] = byCat[r.category] || []).push(it);
   });

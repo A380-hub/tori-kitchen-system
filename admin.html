@@ -317,7 +317,7 @@
       <input class="form-input" id="oi-name" placeholder="Item name" autocomplete="off"/>
     </div>
     <div class="form-actions" style="justify-content:space-between;">
-      <button onclick="oiDelete()" style="background:#2a0808;color:#ff6666;border:1px solid #5a1a1a;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit;">Delete item</button>
+      <button id="oi-del-btn" onclick="oiToggleArchive()" style="background:#2a0808;color:#ff6666;border:1px solid #5a1a1a;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer;font-family:inherit;">Delete item</button>
       <div style="display:flex; gap:8px;">
         <button class="btn-secondary" onclick="oiClose()">Cancel</button>
         <button class="btn-primary" onclick="oiSave()">Save</button>
@@ -626,15 +626,19 @@
   function oiRenderFiltered() {
     const q = (document.getElementById('oi-search').value || '').toLowerCase().trim();
     const el = document.getElementById('oi-list');
-    const items = q ? oiItems.filter(i => i.name.toLowerCase().includes(q) || (i.category||'').toLowerCase().includes(q)) : oiItems;
+    let items = q ? oiItems.filter(i => i.name.toLowerCase().includes(q) || (i.category||'').toLowerCase().includes(q)) : oiItems.slice();
+    // active items first, archived grouped at the bottom (sort_order within each)
+    items = items.sort((a,b) => (a.archived?1:0)-(b.archived?1:0) || (a.sort_order||0)-(b.sort_order||0));
     if (!items.length) { el.innerHTML = '<div class="empty-state">No items</div>'; return; }
     el.innerHTML = items.map(it => {
       const isDual = it.dual_enabled && it.order_unit_id != null;
       const uname  = isDual ? ouNameById(it.order_unit_id) : null;
-      const badge  = isDual
-        ? `<span class="dual-badge">1 ${uname || '?'} = ${it.factor} ${it.output_unit}</span>`
-        : `<span class="dual-badge off">Single · ${it.output_unit}</span>`;
-      return `<div class="oi-row">
+      const badge  = it.archived
+        ? `<span class="dual-badge off" style="color:#caa15a;border-color:#5a4a1a;background:#1a1505;">Archived</span>`
+        : (isDual
+            ? `<span class="dual-badge">1 ${uname || '?'} = ${it.factor} ${it.output_unit}</span>`
+            : `<span class="dual-badge off">Single · ${it.output_unit}</span>`);
+      return `<div class="oi-row"${it.archived ? ' style="opacity:0.55;"' : ''}>
         <div class="oi-info">
           <div class="oi-name">${it.name}</div>
           <div class="oi-cat">${it.category}</div>
@@ -661,6 +665,14 @@
     document.getElementById('oi-toggle').checked = !!it.dual_enabled;
     document.getElementById('oi-unit').value = it.order_unit_id != null ? String(it.order_unit_id) : '';
     document.getElementById('oi-factor').value = (it.factor != null ? it.factor : '');
+    const delBtn = document.getElementById('oi-del-btn');
+    if (it.archived) {
+      delBtn.textContent = 'Restore item';
+      delBtn.style.background = '#08220f'; delBtn.style.color = '#7fd49a'; delBtn.style.borderColor = '#1f5a33';
+    } else {
+      delBtn.textContent = 'Delete item';
+      delBtn.style.background = '#2a0808'; delBtn.style.color = '#ff6666'; delBtn.style.borderColor = '#5a1a1a';
+    }
     oiSyncToggle();
     document.getElementById('oi-modal-back').classList.add('open');
   }
@@ -703,14 +715,22 @@
       else { const err = await res.json().catch(()=>({})); showToast('Error: ' + (err.message || res.status), 'error'); }
     } catch(e) { showToast('Connection error', 'error'); }
   }
-  async function oiDelete() {
+  // Soft delete: archive (hide from ordering) or restore. Never hard-deletes —
+  // the row stays so past orders always keep the item's name.
+  async function oiToggleArchive() {
     const id = document.getElementById('oi-edit-id').value;
     const it = oiItems.find(x => x.id === id);
     const nm = it ? it.name : id;
-    if (!confirm('Delete item "' + nm + '"?\nIt will be removed from the order, kitchen display and dispatch lists. This cannot be undone.')) return;
+    const toArchive = !(it && it.archived);
+    if (toArchive) {
+      if (!confirm('Delete (archive) "' + nm + '"?\nIt will be removed from the order, kitchen and dispatch lists so staff can no longer order it.\n\nIt stays on record — past orders keep its name and are never changed. You can restore it any time.')) return;
+    } else {
+      if (!confirm('Restore "' + nm + '" so it can be ordered again?')) return;
+    }
     try {
-      const res = await fetch(SUPABASE_URL + '/rest/v1/order_items?id=eq.' + encodeURIComponent(id), { method:'DELETE', headers: SB_DELETE_HEADERS });
-      if (res.ok) { showToast('Item deleted', 'success'); oiClose(); loadOrderItems(); }
+      const res = await fetch(SUPABASE_URL + '/rest/v1/order_items?id=eq.' + encodeURIComponent(id),
+        { method:'PATCH', headers: SB_WRITE_HEADERS, body: JSON.stringify({ archived: toArchive }) });
+      if (res.ok) { showToast(toArchive ? 'Item archived' : 'Item restored', 'success'); oiClose(); loadOrderItems(); }
       else { const err = await res.json().catch(()=>({})); showToast('Error: ' + (err.message || res.status), 'error'); }
     } catch(e) { showToast('Connection error', 'error'); }
   }
