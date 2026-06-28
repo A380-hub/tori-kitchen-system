@@ -632,6 +632,7 @@ body {
 .orbit-drop-kis:nth-child(2){animation:orbit2-kis 2.1s ease-in-out infinite,dropMorph-kis 1.4s .47s ease-in-out infinite;}
 .orbit-drop-kis:nth-child(3){animation:orbit3-kis 2.1s ease-in-out infinite,dropMorph-kis 1.4s .94s ease-in-out infinite;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -2261,7 +2262,13 @@ function fmtDT(iso) {
 
 // ── BOOT ──
 fetchAll(false);
-setInterval(() => fetchAll(true), 3000);
+setInterval(() => fetchAll(true), 30000); // fallback poll — realtime handles instant updates
+if (window.supabase) {
+  window.supabase.createClient(SB_URL, SB_ANON)
+    .channel('orders-rt')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchAll(true))
+    .subscribe();
+}
 
 // ── KITCHEN ADMIN MODE ──
 function toggleKitchenAdmin() {

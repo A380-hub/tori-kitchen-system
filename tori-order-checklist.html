@@ -869,6 +869,7 @@ body {
 }
 .modal-back.open { display: flex !important; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -2002,9 +2003,15 @@ async function syncStatusFromAPI() {
   finally { _apiSyncBusy = false; }
 }
 
-// Run immediately and then every 5 seconds
+// Run immediately; realtime handles instant updates, 30s poll is fallback only
 syncStatusFromAPI();
-setInterval(syncStatusFromAPI, 5000);
+setInterval(syncStatusFromAPI, 30000);
+if (window.supabase) {
+  window.supabase.createClient(SB_URL, SB_ANON)
+    .channel('orders-rt')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => syncStatusFromAPI())
+    .subscribe();
+}
 
 /* ═══════════════════════════════════════
    STATUS POLLING & BADGE

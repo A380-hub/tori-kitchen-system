@@ -548,6 +548,7 @@ body { display: flex; flex-direction: column; }
 .orbit-drop-kis:nth-child(2){animation:orbit2-kis 2.1s ease-in-out infinite,dropMorph-kis 1.4s .47s ease-in-out infinite;}
 .orbit-drop-kis:nth-child(3){animation:orbit3-kis 2.1s ease-in-out infinite,dropMorph-kis 1.4s .94s ease-in-out infinite;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -1390,10 +1391,19 @@ setInterval(() => {
   // Refresh column headers to update timers with correct dispatchedAt
   if (dispatchBatch.dispatchedAt) renderPackingArea();
 }, 5000);
-// Poll API for newly dispatched orders — catches kitchen pressing DISPATCH on a different device
+// Fallback poll — realtime handles instant updates
 setInterval(() => {
   if (API_BASE && !dispatchBatch.r1 && !dispatchBatch.r2) loadDispatchFromAPI();
-}, 5000);
+}, 30000);
+if (window.supabase) {
+  window.supabase.createClient(SB_URL, SB_ANON)
+    .channel('orders-rt')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+      if (!dispatchBatch.r1 && !dispatchBatch.r2) loadDispatchFromAPI();
+      else { renderDispatchTracker(); renderPackingArea(); }
+    })
+    .subscribe();
+}
 
 // ── START DELIVERY MODAL ──
 function openLoadCheckModal() {
