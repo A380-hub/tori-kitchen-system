@@ -97,6 +97,17 @@ async def amend_order(request: Request):
     return {"ok": True, "id": result[0]["id"] if result else None}
 
 
+@app.post("/api/orders/cancel")
+async def cancel_order(request: Request):
+    """Restaurant cancels its own still-active (preparing) order — supersedes it."""
+    body = await request.json()
+    restaurant = body.get("restaurant")
+    if restaurant not in ("r1", "r2"):
+        raise HTTPException(400, "restaurant must be r1 or r2")
+    result = await sb_patch("orders", f"restaurant=eq.{restaurant}&status=eq.active", {"status": "superseded"})
+    return {"ok": True, "cancelled": len(result) if isinstance(result, list) else 0}
+
+
 @app.get("/api/orders/active")
 async def get_active_orders():
     active = await sb_get("orders", "status=eq.active&select=*")

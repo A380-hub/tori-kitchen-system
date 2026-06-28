@@ -332,6 +332,12 @@ body {
   text-transform: uppercase; padding: 16px; cursor: pointer; transition: background 0.15s;
 }
 .amend-btn:hover { background: var(--panel4); }
+.cancel-order-btn {
+  width: 100%; background: #2a0808; border: 1px solid #5a1a1a; color: #ff6666;
+  font-family: var(--font); font-size: 15px; font-weight: 900; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 14px; cursor: pointer; transition: background 0.15s;
+}
+.cancel-order-btn:active { background: #3a0a0a; }
 .new-btn {
   width: 100%; background: transparent; border: 1px solid var(--line2); color: var(--ink4);
   font-family: var(--font); font-size: 15px; font-weight: 700; letter-spacing: 0.1em;
@@ -1793,6 +1799,28 @@ function fmtDTLocal(iso) {
   return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' ' + d.toTimeString().slice(0,5);
 }
 
+// Cancel this restaurant's still-preparing order (server-side supersede + clear local).
+async function cancelMyOrder() {
+  const rk = selectedLocation;
+  if (!rk) return;
+  if (!confirm('Cancel this order?\n\nIt will be removed from the kitchen. This cannot be undone.')) return;
+  try {
+    const res = await fetch(_API_BASE + '/api/orders/cancel', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ restaurant: rk })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    // Clear local traces so the status returns to no-order immediately.
+    ['TORI_STATUS','TORI_ORDERS','TORI_DISPATCH'].forEach(k => {
+      try { const o = JSON.parse(localStorage.getItem(k) || '{}'); if (o[rk]) { delete o[rk]; localStorage.setItem(k, JSON.stringify(o)); } } catch(e){}
+    });
+    lastPayload = null;
+    refreshAllDeliveryViews();
+    updateWelcomeStatusBadge();
+  } catch(e) {
+    alert('Could not cancel the order — check your connection and try again.');
+  }
+}
+
 function startAmend(){
   isAmending = true;
   catIdx = 0;
@@ -2549,6 +2577,8 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
       html += `<div style="padding:0 16px 16px;">
         <button class="amend-btn" id="status-amend-btn" onclick="startAmend()"
           style="width:100%;margin-top:8px;">Amend / Add to This Order</button>
+        <button class="cancel-order-btn" onclick="cancelMyOrder()"
+          style="width:100%;margin-top:10px;">Cancel Order</button>
       </div>`;
     }
 
