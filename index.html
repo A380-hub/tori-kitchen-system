@@ -218,13 +218,26 @@
   });
 
   // ── SPLASH + SESSION CHECK ──
-  setTimeout(() => {
-    document.getElementById('splash').classList.add('hide');
+  // Skip splash when returning from another page with an active session.
+  const _skipSplash = (() => {
+    try {
+      const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      return s && PERSISTENT_ROLES.some(r => parseGroups(s.groups).includes(r));
+    } catch(e) { return false; }
+  })();
+
+  if (_skipSplash) {
+    document.getElementById('splash').style.display = 'none';
+    checkSavedSession();
+  } else {
     setTimeout(() => {
-      document.getElementById('splash').style.display = 'none';
-      checkSavedSession();
-    }, 400);
-  }, 1400);
+      document.getElementById('splash').classList.add('hide');
+      setTimeout(() => {
+        document.getElementById('splash').style.display = 'none';
+        checkSavedSession();
+      }, 400);
+    }, 1400);
+  }
 
   function checkSavedSession() {
     try {
