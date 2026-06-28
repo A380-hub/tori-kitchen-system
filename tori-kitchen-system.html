@@ -1604,6 +1604,9 @@ async function renderPrepLog() {
     _prepHistory = [];
   }
 
+  // Always newest first: latest preparation at the top, oldest at the bottom.
+  _prepHistory.sort((a, b) => new Date(b.cleared_at || b.created_at || 0).getTime() - new Date(a.cleared_at || a.created_at || 0).getTime());
+
   total.textContent = _prepHistory.length;
 
   if (!_prepHistory.length) {
@@ -2055,7 +2058,10 @@ function renderHistory() {
     body.innerHTML = '<div class="hist-empty">No delivery history yet</div>';
     return;
   }
-  const rows = hist.slice().reverse().map((h, idx) => {
+  // Newest first: latest dispatched/delivered orders at the top, oldest at the bottom.
+  const histTs = h => new Date(h.delivered_at || h.dispatched_at || h.created_at || 0).getTime() || 0;
+  const ordered = hist.map((h, i) => ({ h, i })).sort((a, b) => histTs(b.h) - histTs(a.h));
+  const rows = ordered.map(({ h, i }) => {
     const rk      = normKey(h.restaurant) || 'r1';
     const rName   = rk === 'r1' ? 'Tori 1 — Špansko' : 'Tori 2 — Trnje';
     const shortId = '#' + String(h.id || '').slice(-6);
@@ -2066,8 +2072,7 @@ function renderHistory() {
     const dispDate = h.dispatched_at ? new Date(h.dispatched_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'}) : '—';
     const dispTime = h.dispatched_at ? new Date(h.dispatched_at).toTimeString().slice(0,5) : '';
     const status   = h.status || 'dispatched';
-    const realIdx  = hist.length - 1 - idx;
-    return `<tr style="cursor:pointer;" onclick="openKitchenHistoryDetail(${realIdx})">
+    return `<tr style="cursor:pointer;" onclick="openKitchenHistoryDetail(${i})">
       <td><span class="pill ${rk}">${rName}</span></td>
       <td style="color:var(--ink4);font-size:12px;">${shortId}</td>
       <td style="font-weight:700;color:var(--ink);">${staff}</td>
