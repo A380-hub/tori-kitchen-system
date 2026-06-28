@@ -1395,15 +1395,25 @@ setInterval(() => {
 setInterval(() => {
   if (API_BASE && !dispatchBatch.r1 && !dispatchBatch.r2) loadDispatchFromAPI();
 }, 5000);
-if (window.supabase) {
-  window.supabase.createClient(SB_URL, SB_ANON)
-    .channel('orders-rt')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
-      if (!dispatchBatch.r1 && !dispatchBatch.r2) loadDispatchFromAPI();
-      else { renderDispatchTracker(); renderPackingArea(); }
+let _sbClient = null, _ordersChannel = null;
+function subscribeOrdersRealtime() {
+  if (!window.supabase) return;
+  if (!_sbClient) _sbClient = window.supabase.createClient(SB_URL, SB_ANON);
+  _ordersChannel = _sbClient.channel('orders-rt')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+      console.log('[rt] orders', payload.eventType, payload.new?.id ?? payload.old?.id);
+      loadDispatchFromAPI(); // re-sync from server truth on any order change
     })
-    .subscribe();
+    .subscribe((status, err) => {
+      if (status === 'SUBSCRIBED') console.log('[rt] orders SUBSCRIBED — realtime LIVE');
+      else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        console.warn('[rt] orders', status, err || '');
+        try { _sbClient.removeChannel(_ordersChannel); } catch(e) {}
+        setTimeout(subscribeOrdersRealtime, 3000); // auto-recover (e.g. iPad wake from sleep)
+      }
+    });
 }
+subscribeOrdersRealtime();
 
 // â”€â”€ START DELIVERY MODAL â”€â”€
 function openLoadCheckModal() {

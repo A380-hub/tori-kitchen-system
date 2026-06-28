@@ -2005,12 +2005,25 @@ async function syncStatusFromAPI() {
 
 syncStatusFromAPI();
 setInterval(syncStatusFromAPI, 5000);
-if (window.supabase) {
-  window.supabase.createClient(SB_URL, SB_ANON)
-    .channel('orders-rt')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => syncStatusFromAPI())
-    .subscribe();
+let _sbClient = null, _ordersChannel = null;
+function subscribeOrdersRealtime() {
+  if (!window.supabase) return;
+  if (!_sbClient) _sbClient = window.supabase.createClient(SB_URL, SB_ANON);
+  _ordersChannel = _sbClient.channel('orders-rt')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+      console.log('[rt] orders', payload.eventType, payload.new?.id ?? payload.old?.id);
+      syncStatusFromAPI();
+    })
+    .subscribe((status, err) => {
+      if (status === 'SUBSCRIBED') console.log('[rt] orders SUBSCRIBED — realtime LIVE');
+      else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        console.warn('[rt] orders', status, err || '');
+        try { _sbClient.removeChannel(_ordersChannel); } catch(e) {}
+        setTimeout(subscribeOrdersRealtime, 3000); // auto-recover (e.g. iPad wake from sleep)
+      }
+    });
 }
+subscribeOrdersRealtime();
 
 /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    STATUS POLLING & BADGE
