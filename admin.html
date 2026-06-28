@@ -21,6 +21,8 @@
   .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid #1a1a1a; }
   .admin-header img { width: 120px; }
   .admin-badge { background: #cc1010; color: #fff; font-size: 11px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; }
+  .back-btn { display: inline-flex; align-items: center; gap: 7px; background: #1a1a1a; border: 1px solid #333; color: #ccc; font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; padding: 8px 14px; border-radius: 8px; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .back-btn:active { background: #252525; }
 
   .section { margin-bottom: 32px; }
   .section-title { font-size: 12px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: #444; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #1a1a1a; }
@@ -108,7 +110,7 @@
   @keyframes loginShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
   .pin-pad.shake { animation: loginShake 0.4s ease; }
 
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 10px 20px; font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #aaa; text-transform: uppercase; opacity: 0; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; z-index: 200; }
+  .toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 10px 20px; font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #aaa; text-transform: uppercase; opacity: 0; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; z-index: 300; box-shadow: 0 6px 22px rgba(0,0,0,0.5); }
   .toast.show { opacity: 1; }
   .toast.success { border-color: #22cc66; color: #22cc66; }
   .toast.error   { border-color: #ff4444; color: #ff4444; }
@@ -166,7 +168,10 @@
 
 <div id="admin-app">
   <div class="admin-header">
-    <a href="index.html"><img id="admin-logo" alt="TORI" style="cursor:pointer;"/></a>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <a class="back-btn" href="index.html">← Hub</a>
+      <a href="index.html"><img id="admin-logo" alt="TORI" style="cursor:pointer;"/></a>
+    </div>
     <div class="admin-badge">Admin Panel</div>
   </div>
 
