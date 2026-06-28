@@ -154,12 +154,17 @@ body {
 .jump-select:focus { outline: none; border-left-color: var(--red); }
 .jump-select option { background: #1A1F22; color: var(--ink); font-size: 15px; }
 .jump-bar-row { display: flex; gap: 8px; margin-top: 8px; }
+.oc-search-wrap { position: relative; flex: 1; min-width: 0; }
 .oc-search {
-  flex: 1; min-width: 0; background: var(--panel2); border: 1px solid var(--line2);
-  color: var(--ink); font-family: var(--body); font-size: 15px; padding: 10px 12px; border-radius: 0;
+  width: 100%; background: var(--panel2); border: 1px solid var(--line2);
+  color: var(--ink); font-family: var(--body); font-size: 15px; padding: 10px 40px 10px 12px; border-radius: 0;
 }
 .oc-search:focus { outline: none; border-color: var(--red); }
 .oc-search::placeholder { color: var(--ink4); }
+.oc-search::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.oc-search-clear { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); display: none; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; border: none; background: rgba(255,255,255,0.14); color: var(--ink); font-size: 12px; line-height: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.oc-search-clear.show { display: inline-flex; }
+.oc-search-clear:active { background: rgba(255,255,255,0.24); }
 .oc-sort { display: flex; flex-shrink: 0; border: 1px solid var(--line2); }
 .oc-sort-btn {
   font-family: var(--body); font-size: 12px; font-weight: 800; letter-spacing: 0.03em;
@@ -939,7 +944,10 @@ body {
       <option value="" disabled selected>Jump to section…</option>
     </select>
     <div class="jump-bar-row">
-      <input class="oc-search" id="oc-search" type="search" placeholder="Search items…" oninput="onSearchInput()" autocomplete="off"/>
+      <div class="oc-search-wrap">
+        <input class="oc-search" id="oc-search" type="search" placeholder="Search items…" oninput="onSearchInput()" autocomplete="off"/>
+        <button type="button" class="oc-search-clear" id="oc-search-clear" onclick="ocClearSearch()" aria-label="Clear search">✕</button>
+      </div>
       <div class="oc-sort">
         <button class="oc-sort-btn active" id="sort-freq" onclick="setSort('freq')">Frequent</button>
         <button class="oc-sort-btn" id="sort-az" onclick="setSort('az')">A-Z</button>
@@ -1490,8 +1498,17 @@ function showCat(idx) {
 
 // Search across ALL non-archived items (any category); empty -> category view.
 function onSearchInput() {
-  searchQ = (document.getElementById('oc-search').value || '').trim();
+  const raw = document.getElementById('oc-search').value || '';
+  searchQ = raw.trim();
+  const clr = document.getElementById('oc-search-clear');
+  if (clr) clr.classList.toggle('show', raw.length > 0);
   rerenderList();
+}
+function ocClearSearch() {
+  const inp = document.getElementById('oc-search');
+  inp.value = '';
+  onSearchInput();
+  inp.focus();
 }
 function setSort(mode) {
   sortMode = mode;
