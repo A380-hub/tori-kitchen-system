@@ -1533,7 +1533,15 @@ function toggle(id) {
   const row=document.getElementById('row-'+id);
   const was=row.classList.contains('checked');
   if(was){ row.classList.remove('checked'); delete checked[id]; document.getElementById('badge-'+id).textContent=''; }
-  else   { row.classList.add('checked'); setTimeout(()=>{const inp=document.getElementById('qty-'+id);if(inp){inp.focus();inp.select();}},230); }
+  else {
+    row.classList.add('checked');
+    // Focus the quantity field synchronously inside the tap gesture so mobile
+    // browsers (iOS/Android) open the numeric keypad immediately. A deferred
+    // focus (setTimeout) loses the user-gesture and the keyboard won't appear,
+    // forcing a second tap. inputmode="decimal" keeps it numeric.
+    const inp=document.getElementById('qty-'+id);
+    if(inp){ inp.focus(); try{ inp.select(); }catch(e){} }
+  }
 }
 
 function qtyChange(id) {
