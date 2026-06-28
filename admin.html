@@ -23,6 +23,11 @@
   .admin-badge { background: #cc1010; color: #fff; font-size: 11px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; }
   .back-btn { display: inline-flex; align-items: center; gap: 7px; background: #1a1a1a; border: 1px solid #333; color: #ccc; font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; padding: 8px 14px; border-radius: 8px; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .back-btn:active { background: #252525; }
+  .oi-search-wrap { position: relative; }
+  .oi-search-wrap .form-input { padding-right: 42px; }
+  .oi-search-clear { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); display: none; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; border: none; background: #2f2f2f; color: #ddd; font-size: 12px; line-height: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .oi-search-clear.show { display: inline-flex; }
+  .oi-search-clear:active { background: #444; }
 
   .section { margin-bottom: 32px; }
   .section-title { font-size: 12px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: #d6d6d6; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #1a1a1a; }
@@ -245,7 +250,10 @@
   <div class="section is-collapsible collapsed" id="sec-order-items">
     <div class="section-title" onclick="toggleSection(this)">Order Items — Dual Quantity</div>
     <div class="section-body">
-      <input class="form-input" id="oi-search" placeholder="Search items…" oninput="oiRenderFiltered()" autocomplete="off" style="margin-bottom:12px;"/>
+      <div class="oi-search-wrap" style="margin-bottom:12px;">
+        <input class="form-input" id="oi-search" placeholder="Search items…" oninput="oiRenderFiltered()" autocomplete="off"/>
+        <button type="button" class="oi-search-clear" id="oi-search-clear" onclick="oiClearSearch()" aria-label="Clear search">✕</button>
+      </div>
       <div id="oi-list"><div class="empty-state">Loading…</div></div>
       <button class="btn-add" onclick="oiAddOpen()">+ Add item</button>
     </div>
@@ -683,8 +691,17 @@
     } catch(e) { showToast('Failed to load items', 'error'); }
   }
   function ouNameById(id) { const u = ouUnits.find(x => x.id === id); return u ? u.name : null; }
+  function oiClearSearch() {
+    const inp = document.getElementById('oi-search');
+    inp.value = '';
+    oiRenderFiltered();
+    inp.focus();
+  }
   function oiRenderFiltered() {
-    const q = (document.getElementById('oi-search').value || '').toLowerCase().trim();
+    const raw = document.getElementById('oi-search').value || '';
+    const q = raw.toLowerCase().trim();
+    const clr = document.getElementById('oi-search-clear');
+    if (clr) clr.classList.toggle('show', raw.length > 0);
     const el = document.getElementById('oi-list');
     let items = q ? oiItems.filter(i => i.name.toLowerCase().includes(q) || (i.category||'').toLowerCase().includes(q)) : oiItems.slice();
     // active items first, archived grouped at the bottom (sort_order within each)
