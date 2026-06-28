@@ -1950,12 +1950,17 @@ async function syncStatusFromAPI() {
       }
     }
 
-    // If no active order and no history at all, clear stale status
-    // But never clear a fresh local 'preparing' (it may not be in API yet)
-    const localTs2 = existing[rk] && existing[rk].order ? (existing[rk].order.ts || 0) : 0;
-    const latestApiTs2 = myHistory.length ? new Date(myHistory[0].created_at).getTime() : 0;
-    if (!data[rk] && myHistory.length === 0 && !(existing[rk] && existing[rk].status === 'preparing')) {
+    // If the server shows NO active order AND NO history for this restaurant, the
+    // order is gone (e.g. cleared/cancelled by admin) — clear ALL local traces so
+    // the status screen stops showing "preparing". A *fresh* just-submitted order
+    // (< 15s) is kept in case the API hasn't indexed it yet.
+    let localOrderTs = (existing[rk] && existing[rk].order && existing[rk].order.ts) ? existing[rk].order.ts : 0;
+    try { const _o = JSON.parse(localStorage.getItem('TORI_ORDERS') || '{}'); if (_o[rk] && _o[rk].ts) localOrderTs = Math.max(localOrderTs, _o[rk].ts); } catch(e){}
+    const orderIsFresh = localOrderTs && (Date.now() - localOrderTs < 15000);
+    if (!data[rk] && myHistory.length === 0 && !orderIsFresh) {
       delete existing[rk];
+      try { const o2 = JSON.parse(localStorage.getItem('TORI_ORDERS') || '{}'); if (o2[rk]) { delete o2[rk]; localStorage.setItem('TORI_ORDERS', JSON.stringify(o2)); } } catch(e){}
+      try { const d2 = JSON.parse(localStorage.getItem('TORI_DISPATCH') || '{}'); if (d2[rk]) { delete d2[rk]; localStorage.setItem('TORI_DISPATCH', JSON.stringify(d2)); } } catch(e){}
     }
 
     localStorage.setItem('TORI_STATUS', JSON.stringify(existing));
