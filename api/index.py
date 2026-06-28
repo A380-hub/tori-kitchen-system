@@ -123,7 +123,7 @@ async def get_active_orders():
             "ts": to_ms(row.get("created_at")),
             "status": row["status"],
         }
-    history_rows = await sb_get("orders", "status=in.(dispatched,delivered,accepted)&order=created_at.desc&limit=50&select=*")
+    history_rows = await sb_get("orders", "status=in.(dispatched,in_transit,delivered,accepted)&order=created_at.desc&limit=50&select=*")
     history = []
     for row in history_rows:
         history.append({
@@ -178,6 +178,19 @@ async def dispatch_orders(request: Request):
         result = await sb_patch("orders", f"restaurant=eq.{rk}&status=eq.active", update_data)
         updated += len(result) if isinstance(result, list) else 0
     return {"ok": True, "dispatched": updated}
+
+
+@app.post("/api/orders/start-delivery")
+async def start_delivery(request: Request):
+    """Driver confirmed items loaded — advances status from dispatched → in_transit."""
+    body = await request.json()
+    target = body.get("restaurant", "all")
+    targets = ["r1", "r2"] if target == "all" else [target]
+    updated = 0
+    for rk in targets:
+        result = await sb_patch("orders", f"restaurant=eq.{rk}&status=eq.dispatched", {"status": "in_transit"})
+        updated += len(result) if isinstance(result, list) else 0
+    return {"ok": True, "started": updated}
 
 
 @app.post("/api/orders/delivered")

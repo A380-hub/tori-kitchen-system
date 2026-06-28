@@ -1945,11 +1945,17 @@ async function syncStatusFromAPI() {
 
       if (localIsNewer) { /* fresh local submit — do not overwrite with old history */ }
       else if (localStatus === 'accepted') { /* keep — already accepted */ }
-      else if (localStatus === 'in_delivery' && latest.status === 'dispatched') { /* keep — driver started, API still shows dispatched */ }
       else if (localStatus === 'delivered') { /* keep — already delivered */ }
       else if (latest.status === 'dispatched') {
-        // Server says the order is dispatched → it's out for delivery. Derive this
-        // from the server (not a local-only flag) so every device shows "In Delivery".
+        // Items packed, driver loading — not yet in delivery
+        existing[rk] = {
+          status:       'preparing',
+          order:        { id: latest.id, staffName: latest.staff_name, items: latest.items, ts: new Date(latest.created_at).getTime() },
+          dispatchedAt: latest.dispatched_at,
+          dispatchedBy: latest.dispatched_by
+        };
+      } else if (latest.status === 'in_transit') {
+        // Driver started — now show In Delivery on all devices
         existing[rk] = {
           status:       'in_delivery',
           order:        { id: latest.id, staffName: latest.staff_name, items: latest.items, ts: new Date(latest.created_at).getTime() },

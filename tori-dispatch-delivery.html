@@ -957,7 +957,7 @@ async function loadDispatchFromAPI() {
     // Find dispatched orders in history
     let found = false;
     (data.history || []).forEach(h => {
-      if (h.status === 'dispatched') {
+      if (h.status === 'dispatched' || h.status === 'in_transit') {
         const rk = h.restaurant;
         dispatchBatch[rk] = {
           id: h.id, staffName: h.staff_name, items: h.items,
@@ -966,6 +966,7 @@ async function loadDispatchFromAPI() {
         };
         dispatchBatch.dispatchedAt = h.dispatched_at;
         dispatchBatch.dispatchedBy = h.dispatched_by || 'Kitchen Staff';
+        if (h.status === 'in_transit') dispatchBatch._serverInTransit = true;
         found = true;
       }
     });
@@ -981,6 +982,9 @@ async function loadDispatchFromAPI() {
         if (saved.transitAt && dispatchBatch.dispatchedAt && saved.transitAt > dispatchBatch.dispatchedAt) {
           dispatchBatch.transitAt  = saved.transitAt;
           dispatchBatch.driverName = saved.driverName || '';
+        } else if (dispatchBatch._serverInTransit && !dispatchBatch.transitAt) {
+          // Server says in_transit but no valid localStorage timestamp — use dispatchedAt as fallback
+          dispatchBatch.transitAt = dispatchBatch.dispatchedAt;
         }
       } catch(e) {}
       renderPackingArea();
@@ -1420,6 +1424,16 @@ function confirmStartDelivery() {
     });
     localStorage.setItem('TORI_STATUS', JSON.stringify(statusData));
   } catch(e) {}
+
+  // Advance server status to in_transit so all devices show "In Delivery"
+  const rests = ['r1','r2'].filter(k => dispatchBatch[k]);
+  rests.forEach(rk => {
+    fetch(API_BASE + '/api/orders/start-delivery', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ restaurant: rk })
+    }).catch(() => {});
+  });
 
   document.getElementById('load-check-modal').classList.remove('open');
   showToast('Delivery started — ' + name);
