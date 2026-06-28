@@ -153,6 +153,21 @@ body {
 }
 .jump-select:focus { outline: none; border-left-color: var(--red); }
 .jump-select option { background: #1A1F22; color: var(--ink); font-size: 15px; }
+.jump-bar-row { display: flex; gap: 8px; margin-top: 8px; }
+.oc-search {
+  flex: 1; min-width: 0; background: var(--panel2); border: 1px solid var(--line2);
+  color: var(--ink); font-family: var(--body); font-size: 15px; padding: 10px 12px; border-radius: 0;
+}
+.oc-search:focus { outline: none; border-color: var(--red); }
+.oc-search::placeholder { color: var(--ink4); }
+.oc-sort { display: flex; flex-shrink: 0; border: 1px solid var(--line2); }
+.oc-sort-btn {
+  font-family: var(--body); font-size: 12px; font-weight: 800; letter-spacing: 0.03em;
+  text-transform: uppercase; padding: 0 12px; background: var(--panel2); color: var(--ink4);
+  border: none; cursor: pointer; white-space: nowrap;
+}
+.oc-sort-btn + .oc-sort-btn { border-left: 1px solid var(--line2); }
+.oc-sort-btn.active { background: var(--red2); color: #fff; }
 
 .cat-title-bar {
   background: var(--panel3); padding: 12px 18px; border-bottom: 1px solid var(--line);
@@ -923,6 +938,13 @@ body {
     <select class="jump-select" id="jump-select" onchange="jumpTo(this.value)">
       <option value="" disabled selected>Jump to section…</option>
     </select>
+    <div class="jump-bar-row">
+      <input class="oc-search" id="oc-search" type="search" placeholder="Search items…" oninput="onSearchInput()" autocomplete="off"/>
+      <div class="oc-sort">
+        <button class="oc-sort-btn active" id="sort-freq" onclick="setSort('freq')">Frequent</button>
+        <button class="oc-sort-btn" id="sort-az" onclick="setSort('az')">A-Z</button>
+      </div>
+    </div>
   </div>
 
   <div class="cat-title-bar">
@@ -1395,34 +1417,27 @@ function jumpTo(v) {
 }
 
 // ── SHOW CATEGORY ──
-function showCat(idx) {
-  catIdx = idx;
-  const cat = CATS[idx];
-  const isLast = idx===CATS.length-1;
+// ── SEARCH + SORT state ──
+let sortMode = 'freq';   // 'freq' (frequently ordered, default) | 'az'
+let freqMap  = {};       // item_id -> times ordered (tracked over time)
+let searchQ  = '';
 
-  // Archived items stay in the catalog (so past orders keep their names) but
-  // are not orderable — exclude them from the ordering list.
-  const orderable = cat.items.filter(item => !item.archived);
+function applySort(items) {
+  const arr = items.slice();
+  if (sortMode === 'az') {
+    arr.sort((a,b) => a.name.localeCompare(b.name));
+  } else {
+    arr.sort((a,b) => {
+      const d = (freqMap[b.id] || 0) - (freqMap[a.id] || 0);
+      return d !== 0 ? d : a.name.localeCompare(b.name);
+    });
+  }
+  return arr;
+}
 
-  document.getElementById('cat-title').textContent = cat.label;
-  document.getElementById('cat-count').textContent = orderable.length+' items';
-
-  // Progress
-  CATS.forEach((_,i)=>{
-    const el=document.getElementById('step-'+i);
-    if(el) el.className='progress-step'+(i<idx?' done':i===idx?' active':'');
-  });
-
-  // Rows
-  const list = document.getElementById('items-list');
-  list.innerHTML='';
-  orderable.forEach(item => {
-    const isc = checked[item.id]!==undefined;
-    const qty = checked[item.id]||'';
-    const row = document.createElement('div');
-    row.className='item-row'+(isc?' checked':'');
-    row.id='row-'+item.id;
-    row.innerHTML=`
+function buildItemRowHTML(item) {
+  const qty = checked[item.id] || '';
+  return `<div class="item-row${checked[item.id]!==undefined?' checked':''}" id="row-${item.id}">
       <div class="item-main" onclick="toggle('${item.id}')">
         <div class="item-check"></div>
         <div class="item-name">${item.name}</div>
@@ -1438,9 +1453,32 @@ function showCat(idx) {
           <span class="qty-preview" id="qprev-${item.id}">${dualPreview(item,qty)}</span>
         </div>
       </div>`;
-    list.appendChild(row);
+}
+
+function renderRows(items) {
+  const list = document.getElementById('items-list');
+  list.innerHTML = items.map(buildItemRowHTML).join('');
+  list.scrollTop = 0;
+}
+
+function showCat(idx) {
+  catIdx = idx;
+  // Showing a category exits any active search.
+  if (searchQ) { searchQ = ''; const s = document.getElementById('oc-search'); if (s) s.value = ''; }
+  const cat = CATS[idx];
+  // Archived items stay in the catalog (so past orders keep their names) but
+  // are not orderable — exclude them; then sort by the active mode.
+  const orderable = applySort(cat.items.filter(item => !item.archived));
+
+  document.getElementById('cat-title').textContent = cat.label;
+  document.getElementById('cat-count').textContent = orderable.length+' items';
+
+  CATS.forEach((_,i)=>{
+    const el=document.getElementById('step-'+i);
+    if(el) el.className='progress-step'+(i<idx?' done':i===idx?' active':'');
   });
-  list.scrollTop=0;
+
+  renderRows(orderable);
 
   document.getElementById('prev-btn').disabled = idx===0;
   const nb = document.getElementById('next-btn');
@@ -1448,6 +1486,47 @@ function showCat(idx) {
   nb.className = 'nav-btn fwd';
   nb.disabled = idx===CATS.length-1;
 }
+
+// Search across ALL non-archived items (any category); empty -> category view.
+function onSearchInput() {
+  searchQ = (document.getElementById('oc-search').value || '').trim();
+  rerenderList();
+}
+function setSort(mode) {
+  sortMode = mode;
+  document.getElementById('sort-freq').classList.toggle('active', mode==='freq');
+  document.getElementById('sort-az').classList.toggle('active', mode==='az');
+  rerenderList();
+}
+function rerenderList() {
+  if (searchQ) renderSearch();
+  else showCat(catIdx);
+}
+function renderSearch() {
+  const ql = searchQ.toLowerCase();
+  const matches = [];
+  CATS.forEach(c => c.items.forEach(i => { if (!i.archived && i.name.toLowerCase().includes(ql)) matches.push(i); }));
+  const sorted = applySort(matches);
+  document.getElementById('cat-title').textContent = 'Search';
+  document.getElementById('cat-count').textContent = sorted.length + ' result' + (sorted.length===1?'':'s');
+  renderRows(sorted);
+  document.getElementById('prev-btn').disabled = true;
+  document.getElementById('next-btn').disabled = true;
+}
+
+// Frequency = how many past orders included each item (tracked over time).
+function loadFreq() {
+  fetch(SB_URL + '/rest/v1/rpc/item_order_counts', {
+    method: 'POST',
+    headers: { apikey: SB_ANON, Authorization: 'Bearer ' + SB_ANON, 'Content-Type': 'application/json' },
+    body: '{}'
+  }).then(r => r.ok ? r.json() : []).then(rows => {
+    const m = {}; (rows || []).forEach(x => { m[x.item_id] = Number(x.cnt) || 0; });
+    freqMap = m;
+    if (document.getElementById('s-checklist').classList.contains('active')) rerenderList();
+  }).catch(() => {});
+}
+loadFreq();
 
 function toggle(id) {
   const row=document.getElementById('row-'+id);
