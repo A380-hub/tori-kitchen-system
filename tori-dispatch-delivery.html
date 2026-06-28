@@ -1390,6 +1390,10 @@ setInterval(() => {
   // Refresh column headers to update timers with correct dispatchedAt
   if (dispatchBatch.dispatchedAt) renderPackingArea();
 }, 5000);
+// Poll API for newly dispatched orders — catches kitchen pressing DISPATCH on a different device
+setInterval(() => {
+  if (API_BASE && !dispatchBatch.r1 && !dispatchBatch.r2) loadDispatchFromAPI();
+}, 5000);
 
 // ── START DELIVERY MODAL ──
 function openLoadCheckModal() {
