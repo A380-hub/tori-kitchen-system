@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>TORI Order Checklist â€” DEMO</title>
+<title>TORI Order Checklist — DEMO</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -42,7 +42,7 @@ body {
 .screen { display: none; flex-direction: column; min-height: 100vh; }
 .screen.active { display: flex; }
 
-/* â•â•â•â•â•â•â•â•â•â• WELCOME â•â•â•â•â•â•â•â•â•â• */
+/* ══════════ WELCOME ══════════ */
 .welcome-header {
   background: #0F1314;
   border-bottom: 1px solid var(--line2);
@@ -115,7 +115,7 @@ body {
 .start-btn:hover { background: var(--red); }
 .start-btn:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
 
-/* â•â•â•â•â•â•â•â•â•â• CHECKLIST â•â•â•â•â•â•â•â•â•â• */
+/* ══════════ CHECKLIST ══════════ */
 .check-header {
   background: rgba(15,19,20,0.98); border-bottom: 1px solid var(--line2);
   padding: 14px 18px 0; position: sticky; top: 0; z-index: 100;
@@ -249,7 +249,7 @@ body {
 .nav-btn.review { background: var(--red2); border-color: var(--red2); flex: 2; }
 .nav-btn.review:hover { background: var(--red); border-color: var(--red); }
 
-/* â•â•â•â•â•â•â•â•â•â• REVIEW â•â•â•â•â•â•â•â•â•â• */
+/* ══════════ REVIEW ══════════ */
 .review-header {
   background: rgba(15,19,20,0.98); border-bottom: 1px solid var(--line2);
   padding: 18px 20px; flex-shrink: 0;
@@ -311,7 +311,7 @@ body {
 .rev-send-btn:hover { background: var(--red); }
 .rev-send-btn:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
 
-/* â•â•â•â•â•â•â•â•â•â• SUCCESS â•â•â•â•â•â•â•â•â•â• */
+/* ══════════ SUCCESS ══════════ */
 .success-screen {
   align-items: center; justify-content: center;
   padding: 40px 24px; text-align: center; gap: 20px;
@@ -345,7 +345,7 @@ body {
 }
 .new-btn:hover { color: var(--ink); border-color: var(--ink4); }
 
-/* â•â•â•â•â•â•â•â•â•â• ERROR â•â•â•â•â•â•â•â•â•â• */
+/* ══════════ ERROR ══════════ */
 .error-screen {
   align-items: center; justify-content: center;
   padding: 40px 24px; text-align: center; gap: 16px;
@@ -424,7 +424,7 @@ body {
 .view-pending-btn.pulsing .vpb-dot { animation: gpulse 1.2s ease-in-out infinite; }
 @keyframes gpulse { 0%,100%{opacity:1;box-shadow:0 0 8px var(--green)} 50%{opacity:0.4;box-shadow:0 0 3px var(--green)} }
 
-/* â•â•â•â•â•â•â•â•â•â• PENDING DELIVERY SCREEN â•â•â•â•â•â•â•â•â•â• */
+/* ══════════ PENDING DELIVERY SCREEN ══════════ */
 .pending-header {
   background: rgba(15,19,20,0.98); border-bottom: 1px solid var(--line2);
   padding: 0 18px; flex-shrink: 0; box-shadow: 0 3px 14px rgba(0,0,0,0.35);
@@ -470,7 +470,7 @@ body {
 .pending-item-qty  { font-size: 22px; font-weight: 900; color: var(--ink); }
 .pending-item-unit { font-size: 12px; font-weight: 700; color: var(--ink4); text-transform: uppercase; letter-spacing: 0.1em; }
 .missing-cb { width: 26px; height: 26px; border: 2px solid var(--line2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-.missing-cb::after { content:'âœ•'; font-size:13px; font-weight:900; color:var(--red); opacity:0; transform:scale(0.3); transition:all 0.15s; }
+.missing-cb::after { content:'✕'; font-size:13px; font-weight:900; color:var(--red); opacity:0; transform:scale(0.3); transition:all 0.15s; }
 .pending-item-row.missing .missing-cb { border-color: var(--red); background: rgba(222,0,0,0.1); }
 .pending-item-row.missing .missing-cb::after { opacity:1; transform:scale(1); }
 .missing-reason-tag { font-size:11px; font-family:var(--body); color: var(--red); margin-left: 4px; font-style:italic; }
@@ -539,7 +539,7 @@ body {
 .delivery-status-badge.pulsing .dsb-dot { animation: gpulse 1.2s ease-in-out infinite; }
 
 
-/* â•â•â•â•â•â•â•â•â•â• TOP BAR (welcome) â•â•â•â•â•â•â•â•â•â• */
+/* ══════════ TOP BAR (welcome) ══════════ */
 .topbar {
   background: #0F1314;
   border-bottom: 1px solid var(--line2);
@@ -570,7 +570,7 @@ body {
 @keyframes tab-green-pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 .topbar-tab-dot { display: none; /* dot removed, using text pulse instead */ }
 
-/* â•â•â•â•â•â•â•â•â•â• DELIVERY SUB-NAV â•â•â•â•â•â•â•â•â•â• */
+/* ══════════ DELIVERY SUB-NAV ══════════ */
 .delivery-subnav {
   display: flex; background: var(--panel2);
   border-bottom: 1px solid var(--line); flex-shrink: 0;
@@ -586,7 +586,7 @@ body {
 .dsub-content { display: none; }
 .dsub-content.active { display: flex; }
 
-/* â•â•â•â•â•â•â•â•â•â• DASHBOARD TOP BAR (success) â•â•â•â•â•â•â•â•â•â• */
+/* ══════════ DASHBOARD TOP BAR (success) ══════════ */
 .dashboard-topbar {
   background: #0F1314;
   border-bottom: 1px solid var(--line2);
@@ -619,7 +619,7 @@ body {
 }
 .dash-home-btn:hover { color: var(--ink); background: var(--panel3); }
 
-/* â•â•â•â•â•â•â•â•â•â• SUCCESS INFO BOX â•â•â•â•â•â•â•â•â•â• */
+/* ══════════ SUCCESS INFO BOX ══════════ */
 .suc-info-box {
   width: 100%; background: var(--panel);
   border: 1px solid var(--line2); border-left: 4px solid var(--red2);
@@ -639,7 +639,7 @@ body {
 .amended-notice-title { font-size: 22px; font-weight: 900; text-transform: uppercase; color: #F59E0B; }
 .amended-notice-sub   { font-size: 15px; font-weight: 700; color: var(--ink2); margin-top: 4px; }
 
-/* â•â•â•â•â•â•â•â•â•â• DELIVERY HISTORY â•â•â•â•â•â•â•â•â•â• */
+/* ══════════ DELIVERY HISTORY ══════════ */
 .hist-entry {
   background: var(--panel); border: 1px solid var(--line2);
   margin-bottom: 12px; overflow: hidden;
@@ -655,12 +655,12 @@ body {
 .hist-entry-items { padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 5px; }
 .hist-chip { background: var(--panel3); border: 1px solid var(--line2); font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--ink3); padding: 2px 8px; }
 
-/* â•â•â•â•â•â•â•â•â•â• PENDING SCREEN: all-ticked items + missing below â•â•â•â•â•â•â•â•â•â• */
+/* ══════════ PENDING SCREEN: all-ticked items + missing below ══════════ */
 .pending-item-row.delivered-ok { background: rgba(76,175,80,0.05); }
 .pending-item-row.delivered-ok .pending-item-name { color: var(--ink3); }
 .pending-item-row.delivered-ok .pending-item-qty  { color: var(--ink3); }
 .pending-item-row.delivered-ok .missing-cb { border-color: var(--green); background: rgba(76,175,80,0.12); }
-.pending-item-row.delivered-ok .missing-cb::after { content: "âœ“"; color: var(--green); font-size: 14px; font-weight: 900; opacity: 1; transform: scale(1); }
+.pending-item-row.delivered-ok .missing-cb::after { content: "✓"; color: var(--green); font-size: 14px; font-weight: 900; opacity: 1; transform: scale(1); }
 
 .missing-section-hdr {
   padding: 10px 18px 6px; font-size: 11px; font-weight: 900; letter-spacing: 0.2em;
@@ -691,7 +691,7 @@ body {
   line-height: 1.6; padding: 10px 0;
 }
 
-/* â•â• STATUS DISPLAY â•â• */
+/* ══ STATUS DISPLAY ══ */
 .pulsing-dot {
   animation: gpulse 1s ease-in-out infinite !important;
   box-shadow: 0 0 8px var(--green) !important;
@@ -728,7 +728,7 @@ body {
 }
 .amend-home-btn:hover { background: var(--panel4); }
 
-/* â•â• HISTORY TABLE â•â• */
+/* ══ HISTORY TABLE ══ */
 .hist-row {
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 20px; border-bottom: 1px solid rgba(84,84,84,0.3);
@@ -741,7 +741,7 @@ body {
 .hist-row-rest { font-size: 13px; font-weight: 700; color: var(--ink4); text-transform: uppercase; letter-spacing: 0.06em; width: 50%; }
 .hist-row-chevron { font-size: 20px; color: var(--ink4); font-weight: 300; flex-shrink: 0; }
 
-/* â•â• HISTORY DETAIL SHEET â•â• */
+/* ══ HISTORY DETAIL SHEET ══ */
 .history-detail-sheet {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -826,7 +826,7 @@ body {
 .detail-unit    { font-size: 11px; font-weight: 700; color: var(--ink4); text-transform: uppercase; }
 .detail-reason  { font-size: 12px; font-family: var(--body); color: #C06060; font-style: italic; flex-shrink: 0; white-space: nowrap; }
 
-/* â•â• STATUS TAB â€” ORDER INFO CARD â•â• */
+/* ══ STATUS TAB — ORDER INFO CARD ══ */
 .status-order-card {
   margin: 16px 16px 0;
   background: var(--panel);
@@ -843,7 +843,7 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--line2); }
 
-/* â•â•â•â•â•â•â•â•â•â• STATUS TOAST NOTIFICATION â•â•â•â•â•â•â•â•â•â• */
+/* ══════════ STATUS TOAST NOTIFICATION ══════════ */
 .status-toast {
   position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-120px);
   z-index: 99999; background: var(--panel2); border: 1px solid var(--line2);
@@ -873,10 +873,10 @@ body {
 </head>
 <body>
 
-<!-- â•â• STATUS TOAST â•â• -->
+<!-- ══ STATUS TOAST ══ -->
 <div class="status-toast" id="status-toast"></div>
 
-<!-- â•â• SCREEN: WELCOME â•â• -->
+<!-- ══ SCREEN: WELCOME ══ -->
 <div class="screen active" id="s-welcome" style="flex-direction:column;">
   <!-- Top bar with tabs -->
   <div class="topbar">
@@ -892,7 +892,7 @@ body {
       </button>
       <button class="topbar-tab" id="tab-history" onclick="switchTab('history')">History</button>
     </div>
-    <button class="settings-icon-btn" onclick="go('s-settings')" title="Settings">âš™</button>
+    <button class="settings-icon-btn" onclick="go('s-settings')" title="Settings">⚙</button>
   </div>
 
   <!-- TAB: HOME -->
@@ -907,14 +907,14 @@ body {
         <div>
           <div class="field-label">Your Name &amp; Surname</div>
           <input class="field-input" type="text" id="order-name"
-            placeholder="e.g. Ana KovaÄ" autocomplete="name" autocorrect="off" />
+            placeholder="e.g. Ana Kovač" autocomplete="name" autocorrect="off" />
         </div>
       </div>
     </div>
-    <button class="start-btn" id="start-btn" onclick="startChecklist()" disabled>Start Order â†’</button>
+    <button class="start-btn" id="start-btn" onclick="startChecklist()" disabled>Start Order →</button>
   </div><!-- /tab-home-content -->
 
-  <!-- TAB: DELIVERY STATUS â€” status only, no sub-tabs -->
+  <!-- TAB: DELIVERY STATUS — status only, no sub-tabs -->
   <div id="tab-delivery-content" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
     <div id="home-pending-body" style="flex:1;overflow-y:auto;padding-bottom:100px;"></div>
     <div class="pending-footer" id="home-pending-footer"></div>
@@ -928,7 +928,7 @@ body {
 </div><!-- /s-welcome -->
 
 
-<!-- â•â• SCREEN: CHECKLIST â•â• -->
+<!-- ══ SCREEN: CHECKLIST ══ -->
 <div class="screen" id="s-checklist" style="flex-direction:column;">
   <div class="check-header">
     <div class="check-top">
@@ -938,22 +938,22 @@ body {
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
         <div class="check-rest-tag" id="check-rest-tag"></div>
-        <button class="pending-back-btn" onclick="cancelChecklist()" style="flex-shrink:0;">âœ• Cancel</button>
+        <button class="pending-back-btn" onclick="cancelChecklist()" style="flex-shrink:0;">✕ Cancel</button>
       </div>
     </div>
     <div class="progress-track" id="progress-track"></div>
   </div>
 
-  <div class="amend-banner" id="amend-banner">âš  Amending sent order â€” changes will be re-sent</div>
+  <div class="amend-banner" id="amend-banner">⚠ Amending sent order — changes will be re-sent</div>
 
   <div class="jump-bar">
     <select class="jump-select" id="jump-select" onchange="jumpTo(this.value)">
-      <option value="" disabled selected>Jump to sectionâ€¦</option>
+      <option value="" disabled selected>Jump to section…</option>
     </select>
     <div class="jump-bar-row">
       <div class="oc-search-wrap">
-        <input class="oc-search" id="oc-search" type="search" placeholder="Search itemsâ€¦" oninput="onSearchInput()" autocomplete="off"/>
-        <button type="button" class="oc-search-clear" id="oc-search-clear" onclick="ocClearSearch()" aria-label="Clear search">âœ•</button>
+        <input class="oc-search" id="oc-search" type="search" placeholder="Search items…" oninput="onSearchInput()" autocomplete="off"/>
+        <button type="button" class="oc-search-clear" id="oc-search-clear" onclick="ocClearSearch()" aria-label="Clear search">✕</button>
       </div>
       <div class="oc-sort">
         <button class="oc-sort-btn active" id="sort-freq" onclick="setSort('freq')">Frequent</button>
@@ -970,14 +970,14 @@ body {
   <div class="items-list" id="items-list"></div>
 
   <div class="bottom-nav">
-    <button class="nav-btn" id="prev-btn" onclick="prevCat()">â† Prev</button>
-    <button class="nav-btn fwd" id="next-btn" onclick="showCat(catIdx+1<CATS.length?catIdx+1:catIdx)">Next â†’</button>
+    <button class="nav-btn" id="prev-btn" onclick="prevCat()">← Prev</button>
+    <button class="nav-btn fwd" id="next-btn" onclick="showCat(catIdx+1<CATS.length?catIdx+1:catIdx)">Next →</button>
     <button class="nav-btn review" id="review-btn" onclick="showReview()">Review</button>
   </div>
 </div>
 
 
-<!-- â•â• SCREEN: REVIEW â•â• -->
+<!-- ══ SCREEN: REVIEW ══ -->
 <div class="screen" id="s-review" style="flex-direction:column;">
   <div class="review-header">
     <div class="review-title">Review Order</div>
@@ -985,14 +985,14 @@ body {
   </div>
   <div class="review-body" id="review-body"></div>
   <div class="review-footer">
-    <button class="rev-edit-btn" onclick="go('s-checklist')">â† Edit</button>
-    <button class="rev-edit-btn" onclick="cancelChecklist()" style="flex:0.6;background:transparent;border-color:var(--line2);color:var(--ink4);">âœ• Cancel</button>
-    <button class="rev-send-btn" id="rev-send-btn" onclick="doSend()">Confirm &amp; Send â†’</button>
+    <button class="rev-edit-btn" onclick="go('s-checklist')">← Edit</button>
+    <button class="rev-edit-btn" onclick="cancelChecklist()" style="flex:0.6;background:transparent;border-color:var(--line2);color:var(--ink4);">✕ Cancel</button>
+    <button class="rev-send-btn" id="rev-send-btn" onclick="doSend()">Confirm &amp; Send →</button>
   </div>
 </div>
 
 
-<!-- â•â• SCREEN: SUCCESS (Dashboard) â•â• -->
+<!-- ══ SCREEN: SUCCESS (Dashboard) ══ -->
 <div class="screen" id="s-success" style="flex-direction:column;overflow:hidden;">
   <!-- Dashboard top bar -->
   <div class="dashboard-topbar">
@@ -1006,12 +1006,12 @@ body {
         <span class="dash-tab-dot" id="dtab-delivery-dot" style="display:none;"></span>
       </button>
     </div>
-    <button class="dash-home-btn" onclick="goHome()" title="Home">âŒ‚</button>
+    <button class="dash-home-btn" onclick="goHome()" title="Home">⌂</button>
   </div>
 
   <!-- DASH TAB: ORDER -->
   <div id="dtab-order-content" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;gap:18px;overflow-y:auto;">
-    <div class="success-icon" id="suc-icon">âœ“</div>
+    <div class="success-icon" id="suc-icon">✓</div>
     <div class="success-title" id="suc-title">Order Sent!</div>
     <div class="suc-info-box" id="suc-info-box"></div>
     <div id="suc-dispatch-info" style="display:none;width:100%;"></div>
@@ -1030,9 +1030,9 @@ body {
 </div>
 
 
-<!-- â•â• SCREEN: ERROR â•â• -->
+<!-- ══ SCREEN: ERROR ══ -->
 <div class="screen error-screen" id="s-error">
-  <div class="error-icon">âœ•</div>
+  <div class="error-icon">✕</div>
   <div class="error-title">Send Failed</div>
   <div class="error-body" id="err-body"></div>
   <button class="err-retry-btn" onclick="retrySend()">Try Again</button>
@@ -1040,14 +1040,14 @@ body {
 </div>
 
 
-<!-- s-pending removed â€” delivery status now in STATUS tab -->
+<!-- s-pending removed — delivery status now in STATUS tab -->
 
 
-<!-- â•â• SCREEN: SETTINGS â•â• -->
+<!-- ══ SCREEN: SETTINGS ══ -->
 <div class="screen" id="s-settings" style="flex-direction:column;">
   <div class="settings-header">
     <div class="settings-title">Settings</div>
-    <button class="pending-back-btn" onclick="go('s-welcome')">â† Back</button>
+    <button class="pending-back-btn" onclick="go('s-welcome')">← Back</button>
   </div>
   <div class="settings-body">
     <div>
@@ -1057,7 +1057,7 @@ body {
           <div class="location-radio"></div>
           <div>
             <div class="location-name">Tori 1</div>
-            <div class="location-sub">Å pansko</div>
+            <div class="location-sub">Špansko</div>
           </div>
         </div>
         <div class="location-card" id="loc-r2" onclick="pickLocation('r2')">
@@ -1069,7 +1069,7 @@ body {
         </div>
       </div>
     </div>
-    <button class="settings-save-btn" onclick="saveSettings()">Save Settings â†’</button>
+    <button class="settings-save-btn" onclick="saveSettings()">Save Settings →</button>
 
   </div>
 </div>
@@ -1087,13 +1087,13 @@ body {
       <div class="reason-opt" onclick="selectReason(this,'Other')">Other</div>
     </div>
     <div id="reason-other-wrap" style="display:none;margin-bottom:12px;">
-      <input id="reason-other-input" type="text" placeholder="Please specifyâ€¦"
+      <input id="reason-other-input" type="text" placeholder="Please specify…"
         style="width:100%;background:var(--panel2);border:1px solid var(--line2);border-left:3px solid var(--red2);color:var(--ink);font-family:var(--font);font-size:16px;font-weight:600;padding:10px 12px;"
         oninput="document.getElementById('reason-ok').disabled=!this.value.trim();" />
     </div>
     <div class="reason-acts">
       <button class="reason-cancel" onclick="closeReasonModal()">Cancel</button>
-      <button class="reason-ok" id="reason-ok" disabled onclick="confirmMissing()">Confirm Missing â†’</button>
+      <button class="reason-ok" id="reason-ok" disabled onclick="confirmMissing()">Confirm Missing →</button>
     </div>
   </div>
 </div>
@@ -1105,11 +1105,11 @@ body {
     <div class="anm-sub">Enter the name of the person accepting this delivery at the restaurant.</div>
     <div class="anm-label">Accepted by (name &amp; surname)</div>
     <input class="anm-input" id="anm-input" type="text"
-      placeholder="e.g. Ana KovaÄ" autocomplete="off"
+      placeholder="e.g. Ana Kovač" autocomplete="off"
       oninput="const b=document.getElementById('anm-ok');const v=this.value.trim();b.disabled=!v;b.style.background=v?'#388E3C':'';" />
     <div class="anm-acts">
       <button class="anm-cancel" onclick="closeAcceptModal()">Cancel</button>
-      <button class="anm-ok" id="anm-ok" disabled onclick="confirmAcceptDelivery()" style="background:#388E3C;">Delivery Accepted â†’</button>
+      <button class="anm-ok" id="anm-ok" disabled onclick="confirmAcceptDelivery()" style="background:#388E3C;">Delivery Accepted →</button>
     </div>
   </div>
 </div>
@@ -1119,7 +1119,7 @@ body {
 <!-- HISTORY DETAIL SHEET -->
 <div class="history-detail-sheet" id="history-detail-sheet">
   <div class="detail-sheet-topbar">
-    <button class="detail-back-btn" onclick="closeHistoryDetail()">â† Back</button>
+    <button class="detail-back-btn" onclick="closeHistoryDetail()">← Back</button>
     <div class="detail-sheet-title" id="detail-sheet-title"></div>
   </div>
   <div class="detail-sheet-meta" id="detail-sheet-meta"></div>
@@ -1130,7 +1130,7 @@ body {
 <script>
 const API_BASE = ''; // set to your backend URL
 
-// Safe localStorage JSON parse â€” handles null, undefined, and empty string
+// Safe localStorage JSON parse — handles null, undefined, and empty string
 function lsGet(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
@@ -1156,7 +1156,7 @@ const DEFAULT_CATS = [
     {id:'vinegar',         name:'Vinegar',               unit:'L'},
     {id:'sushi_vinegar',   name:'Sushi Vinegar',         unit:'L'},
     {id:'soy',             name:'Soy Sauce',             unit:'L'},
-    {id:'soy_less_salt',   name:'Soy â€” Less Salt',       unit:'L'},
+    {id:'soy_less_salt',   name:'Soy — Less Salt',       unit:'L'},
     {id:'tan_tan',         name:'Tan-Tan Men Ramen',     unit:'L'},
     {id:'laksa',           name:'Laksa',                 unit:'L'},
     {id:'oil',             name:'Oil',                   unit:'L'},
@@ -1218,7 +1218,7 @@ const DEFAULT_CATS = [
     {id:'cola_zero',    name:'Coca Cola Zero',    unit:'bottles'},
     {id:'jana',         name:'Jana',              unit:'bottles'},
     {id:'jamnica',      name:'Jamnica',           unit:'bottles'},
-    {id:'romerquelle',  name:'RÃ¶merquelle',       unit:'bottles'},
+    {id:'romerquelle',  name:'Römerquelle',       unit:'bottles'},
     {id:'honey_lemon',  name:'Honey Lemon Tea',   unit:'bottles'},
     {id:'tea_original', name:'Tea Original',      unit:'bottles'},
     {id:'tea_no_sugar', name:'Tea No Sugar',      unit:'bottles'},
@@ -1229,7 +1229,7 @@ const DEFAULT_CATS = [
     {id:'therapy',      name:'Therapy',           unit:'bottles'},
     {id:'pils',         name:'Pils',              unit:'bottles'},
     {id:'merlot',       name:'Merlot',            unit:'bottles'},
-    {id:'grasevina',    name:'GraÅ¡evina',         unit:'bottles'},
+    {id:'grasevina',    name:'Graševina',         unit:'bottles'},
   ]},
   { id:'dry', label:'Dry Items', items:[
     {id:'gloves',          name:'Gloves',           unit:'boxes'},
@@ -1268,10 +1268,10 @@ const DEFAULT_CATS = [
   ]},
 ];
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// DUAL QUANTITY â€” runtime catalog (Supabase, anon read) + localStorage cache
+// ──────────────────────────────────────────────────────────────────────────
+// DUAL QUANTITY — runtime catalog (Supabase, anon read) + localStorage cache
 // Existing render code keeps using `CATS` / `itemMap` unchanged in shape.
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ──────────────────────────────────────────────────────────────────────────
 const SB_URL  = 'https://skrecohmpufrhkdjrwas.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrcmVjb2htcHVmcmhrZGpyd2FzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MzI1NzMsImV4cCI6MjA5MzMwODU3M30.Lvl3gPNs6iwA-n_rVe7QXSt06lfDmCs2CSfIP9DGNYE';
 const CATALOG_CACHE_KEY = 'TORI_CATALOG_V1';
@@ -1288,7 +1288,7 @@ DEFAULT_CATS.forEach(c => c.items.forEach(i => {
   i.output_unit = i.unit; i.dual_enabled = false; i.factor = null; i.order_unit = null;
 }));
 
-// Shared display helpers (identical across the 3 display pages) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Shared display helpers (identical across the 3 display pages) ───────────────
 function roundOut(x, unit){
   if (unit === 'pcs') return Math.round(Number(x));
   return parseFloat(Number(x).toFixed(2)); // 2 dp, trailing zeros dropped
@@ -1306,7 +1306,7 @@ function dualWord(item, qty){
   if (!item || !item.dual_enabled || !item.order_unit) return item ? (item.output_unit || item.unit || '') : '';
   return item.order_unit;
 }
-// Live output preview, e.g. "(15 kg)" â€” empty for single-unit / invalid qty.
+// Live output preview, e.g. "(15 kg)" — empty for single-unit / invalid qty.
 function dualPreview(item, qty){
   if (!item || !item.dual_enabled || !item.order_unit || qty === '' || qty == null || isNaN(Number(qty))) return '';
   return `(${roundOut(Number(qty) * item.factor, item.output_unit)} ${item.output_unit})`;
@@ -1358,24 +1358,24 @@ async function fetchCatalog(){
   return cats;
 }
 
-// Live catalog: cache (last-good) â†’ built-in fallback; refreshed async below.
+// Live catalog: cache (last-good) → built-in fallback; refreshed async below.
 let CATS = loadCachedCats() || DEFAULT_CATS;
 
 // item lookup
 const itemMap = {};
 CATS.forEach(c => c.items.forEach(i => { itemMap[i.id] = i; }));
 
-// â”€â”€ STATE â”€â”€
+// ── STATE ──
 let restaurant = null, staffName = '', orderDate = '';
 let catIdx = 0, checked = {}, isAmending = false, lastPayload = null;
 
-// â”€â”€ INIT â”€â”€
+// ── INIT ──
 document.getElementById('order-date').value = new Date().toISOString().slice(0,10);
 ['order-name','order-date'].forEach(id => document.getElementById(id).addEventListener('input', chkReady));
 
 function pickRest(k) { restaurant = k; } // kept for amend compatibility
 function chkReady() {
-  // Red when name entered â€” location check happens on press
+  // Red when name entered — location check happens on press
   document.getElementById('start-btn').disabled =
     !document.getElementById('order-name').value.trim();
 }
@@ -1384,7 +1384,7 @@ function startChecklist() {
   // Restaurant is always the device's configured location from Settings
   restaurant = selectedLocation;
   if (!restaurant) {
-    if (confirm('No restaurant selected.\n\nPlease go to Settings âš™ and select your restaurant location first.\n\nOpen Settings now?')) {
+    if (confirm('No restaurant selected.\n\nPlease go to Settings ⚙ and select your restaurant location first.\n\nOpen Settings now?')) {
       go('s-settings');
     }
     return;
@@ -1395,13 +1395,13 @@ function startChecklist() {
   launch();
 }
 
-// â”€â”€ LAUNCH CHECKLIST â”€â”€
+// ── LAUNCH CHECKLIST ──
 function launch() {
-  const restLabel = restaurant==='r1' ? 'Tori 1 â€” Å pansko' : 'Tori 2 â€” Trnje';
+  const restLabel = restaurant==='r1' ? 'Tori 1 — Špansko' : 'Tori 2 — Trnje';
   document.getElementById('check-rest-tag').textContent = restLabel;
   const d = new Date(orderDate+'T12:00:00');
   document.getElementById('check-meta').textContent =
-    staffName + ' Â· ' + d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+    staffName + ' · ' + d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
   document.getElementById('amend-banner').classList.toggle('on', isAmending);
 
   // Progress steps
@@ -1414,7 +1414,7 @@ function launch() {
 
   // Jump dropdown
   const sel = document.getElementById('jump-select');
-  sel.innerHTML = '<option value="" disabled>Jump to sectionâ€¦</option>';
+  sel.innerHTML = '<option value="" disabled>Jump to section…</option>';
   CATS.forEach((c,i) => {
     const o = document.createElement('option');
     o.value=i; o.textContent=c.label+' ('+c.items.filter(it=>!it.archived).length+' items)'; sel.appendChild(o);
@@ -1431,8 +1431,8 @@ function jumpTo(v) {
   document.getElementById('jump-select').value='';
 }
 
-// â”€â”€ SHOW CATEGORY â”€â”€
-// â”€â”€ SEARCH + SORT state â”€â”€
+// ── SHOW CATEGORY ──
+// ── SEARCH + SORT state ──
 let sortMode = 'freq';   // 'freq' (frequently ordered, default) | 'az'
 let freqMap  = {};       // item_id -> times ordered (tracked over time)
 let searchQ  = '';
@@ -1483,7 +1483,7 @@ function showCat(idx) {
   if (searchQ) { searchQ = ''; const s = document.getElementById('oc-search'); if (s) s.value = ''; }
   const cat = CATS[idx];
   // Archived items stay in the catalog (so past orders keep their names) but
-  // are not orderable â€” exclude them; then sort by the active mode.
+  // are not orderable — exclude them; then sort by the active mode.
   const orderable = applySort(cat.items.filter(item => !item.archived));
 
   document.getElementById('cat-title').textContent = cat.label;
@@ -1498,7 +1498,7 @@ function showCat(idx) {
 
   document.getElementById('prev-btn').disabled = idx===0;
   const nb = document.getElementById('next-btn');
-  nb.textContent = 'Next â†’';
+  nb.textContent = 'Next →';
   nb.className = 'nav-btn fwd';
   nb.disabled = idx===CATS.length-1;
 }
@@ -1583,11 +1583,11 @@ function qtyChange(id) {
 function prevCat(){ if(catIdx>0) showCat(catIdx-1); }
 function nextOrReview(){ catIdx<CATS.length-1 ? showCat(catIdx+1) : showReview(); }
 
-// â”€â”€ REVIEW â”€â”€
+// ── REVIEW ──
 function showReview() {
   const d = new Date(orderDate+'T12:00:00');
   const dateStr=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const restName=restaurant==='r1'?'Tori 1 â€” Å pansko':'Tori 2 â€” Trnje';
+  const restName=restaurant==='r1'?'Tori 1 — Špansko':'Tori 2 — Trnje';
   const total=Object.keys(checked).length;
   const btn=document.getElementById('rev-send-btn');
 
@@ -1595,7 +1595,7 @@ function showReview() {
     <div class="review-meta-row"><span class="rmeta-lbl">Restaurant</span><span class="rest-tag">${restName}</span></div>
     <div class="review-meta-row"><span class="rmeta-lbl">Date</span><span class="rmeta-val">${dateStr}</span></div>
     <div class="review-meta-row"><span class="rmeta-lbl">Submitted by</span><span class="rmeta-val">${staffName}</span></div>
-    ${isAmending?'<div class="amend-notice">âš  This will amend the previously sent order</div>':''}
+    ${isAmending?'<div class="amend-notice">⚠ This will amend the previously sent order</div>':''}
   </div>`;
 
   if(total===0){
@@ -1606,7 +1606,7 @@ function showReview() {
     CATS.forEach(cat=>{
       const ci=cat.items.filter(i=>checked[i.id]!==undefined);
       if(!ci.length) return;
-      html+=`<div class="review-cat-hdr">${cat.label} â€” ${ci.length} item${ci.length!==1?'s':''}</div>`;
+      html+=`<div class="review-cat-hdr">${cat.label} — ${ci.length} item${ci.length!==1?'s':''}</div>`;
       ci.forEach(item=>{
         html+=`<div class="review-row">
           <span class="review-iname">${item.name}</span>
@@ -1617,14 +1617,14 @@ function showReview() {
   }
 
   document.getElementById('review-body').innerHTML=html;
-  btn.textContent='Confirm & Send â†’';
+  btn.textContent='Confirm & Send →';
   go('s-review');
 }
 
-// â”€â”€ SEND â”€â”€
+// ── SEND ──
 async function doSend() {
   const btn=document.getElementById('rev-send-btn');
-  btn.disabled=true; btn.textContent='Sendingâ€¦';
+  btn.disabled=true; btn.textContent='Sending…';
 
   const payload={
     restaurant, staff_name:staffName, order_date:orderDate,
@@ -1686,7 +1686,7 @@ async function doSend() {
     await new Promise(r=>setTimeout(r,400));
     showSuccess(payload);
   } catch(err) {
-    btn.disabled=false; btn.textContent='Confirm & Send â†’';
+    btn.disabled=false; btn.textContent='Confirm & Send →';
     document.getElementById('err-body').textContent='Could not reach the kitchen system.'+(err.message?' ('+err.message+')':'')+' Check your connection and try again.';
     go('s-error');
   }
@@ -1710,7 +1710,7 @@ async function retrySend(){
 }
 
 function showSuccess(p){
-  const restName = p.restaurant==='r1' ? 'Tori 1 â€” Å pansko' : 'Tori 2 â€” Trnje';
+  const restName = p.restaurant==='r1' ? 'Tori 1 — Špansko' : 'Tori 2 — Trnje';
   const itemCount = Object.keys(p.items).length;
   const d = new Date(p.order_date+'T12:00:00');
   const dateStr = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
@@ -1720,7 +1720,7 @@ function showSuccess(p){
     document.getElementById('suc-icon').style.display = 'none';
     document.getElementById('suc-info-box').innerHTML = `
       <div class="amended-notice">
-        <div class="amended-notice-title">âœ“ Order Updated</div>
+        <div class="amended-notice-title">✓ Order Updated</div>
         <div class="amended-notice-sub">${restName}</div>
         <div class="amended-notice-sub">${dateStr}</div>
         <div class="amended-notice-sub" style="margin-top:8px;color:var(--ink4);font-size:13px;">Your changes have been sent to the kitchen.</div>
@@ -1738,7 +1738,7 @@ function showSuccess(p){
       </div>`;
   }
 
-  // Navigate to welcome STATUS tab â€” this becomes the persistent home for order+delivery info
+  // Navigate to welcome STATUS tab — this becomes the persistent home for order+delivery info
   lastPayload = p;
   go('s-welcome');
   switchTab('delivery');
@@ -1771,12 +1771,12 @@ function checkDispatchStatus(p) {
     return;
   }
 
-  // Dispatched â€” disable amend, show dispatch time only (no name needed)
+  // Dispatched — disable amend, show dispatch time only (no name needed)
   amendBtn.disabled = true;
-  amendBtn.title = 'Cannot amend â€” order has already been dispatched';
+  amendBtn.title = 'Cannot amend — order has already been dispatched';
 
-  // Read dispatch time â€” prefer TORI_STATUS (more reliable after TORI_DISPATCH is cleared)
-  let dispAt = 'â€”';
+  // Read dispatch time — prefer TORI_STATUS (more reliable after TORI_DISPATCH is cleared)
+  let dispAt = '—';
   try {
     const statusData = lsGet('TORI_STATUS', {});
     const rk = p.restaurant;
@@ -1788,14 +1788,14 @@ function checkDispatchStatus(p) {
   } catch(e) {}
 
   infoEl.innerHTML = `<div class="dispatch-status-panel">
-    <div class="dsp-title">âœ“ Order Dispatched</div>
+    <div class="dsp-title">✓ Order Dispatched</div>
     <div class="dsp-meta">Dispatched at <strong>${dispAt}</strong></div>
   </div>`;
   infoEl.style.display = 'block';
 }
 
 function fmtDTLocal(iso) {
-  if (!iso) return 'â€”';
+  if (!iso) return '—';
   const d = new Date(iso);
   return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}) + ' ' + d.toTimeString().slice(0,5);
 }
@@ -1818,7 +1818,7 @@ async function cancelMyOrder() {
     refreshAllDeliveryViews();
     updateWelcomeStatusBadge();
   } catch(e) {
-    alert('Could not cancel the order â€” check your connection and try again.');
+    alert('Could not cancel the order — check your connection and try again.');
   }
 }
 
@@ -1866,10 +1866,10 @@ function go(id){
   window.scrollTo(0,0);
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ═══════════════════════════════════════
    SETTINGS & LOCATION
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
-const LOCATIONS = { r1:'Å pansko', r2:'Trnje' };
+   ═══════════════════════════════════════ */
+const LOCATIONS = { r1:'Špansko', r2:'Trnje' };
 let selectedLocation = null;
 
 function loadSettings() {
@@ -1901,16 +1901,16 @@ function saveSettings() {
   try { localStorage.setItem('TORI_LOCATION', selectedLocation); } catch(e){}
   restaurant = selectedLocation;
   applyLocationUI();
-  showToast('Settings saved â€” ' + LOCATIONS[selectedLocation]);
+  showToast('Settings saved — ' + LOCATIONS[selectedLocation]);
   go('s-welcome');
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ═══════════════════════════════════════
    API STATUS SYNC
    Polls Vercel API every 5s and writes
    result into localStorage so all existing
    rendering functions pick it up automatically
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ═══════════════════════════════════════ */
 const _API_BASE = 'https://tori-kitchen-system.vercel.app';
 let _apiSyncBusy = false;
 
@@ -1931,7 +1931,7 @@ async function syncStatusFromAPI() {
       existing[rk] = { status: 'preparing', order: data[rk] };
     }
 
-    // Check history for this restaurant â€” find most recent dispatched/delivered/accepted
+    // Check history for this restaurant — find most recent dispatched/delivered/accepted
     const myHistory = (data.history || []).filter(h => h.restaurant === rk);
     if (myHistory.length) {
       const latest = myHistory[0]; // history is newest-first
@@ -1944,11 +1944,11 @@ async function syncStatusFromAPI() {
       // A local preparing is "fresh" if its ts is newer than the API history entry
       const localIsNewer = localStatus === 'preparing' && localOrderTs > apiLatestTs;
 
-      if (localIsNewer) { /* fresh local submit â€” do not overwrite with old history */ }
-      else if (localStatus === 'accepted') { /* keep â€” already accepted */ }
-      else if (localStatus === 'delivered') { /* keep â€” already delivered */ }
+      if (localIsNewer) { /* fresh local submit — do not overwrite with old history */ }
+      else if (localStatus === 'accepted') { /* keep — already accepted */ }
+      else if (localStatus === 'delivered') { /* keep — already delivered */ }
       else if (latest.status === 'dispatched') {
-        // Items packed, driver loading â€” not yet in delivery
+        // Items packed, driver loading — not yet in delivery
         existing[rk] = {
           status:       'preparing',
           order:        { id: latest.id, staffName: latest.staff_name, items: latest.items, ts: new Date(latest.created_at).getTime() },
@@ -1956,7 +1956,7 @@ async function syncStatusFromAPI() {
           dispatchedBy: latest.dispatched_by
         };
       } else if (latest.status === 'in_transit') {
-        // Driver started â€” now show In Delivery on all devices
+        // Driver started — now show In Delivery on all devices
         existing[rk] = {
           status:       'in_delivery',
           order:        { id: latest.id, staffName: latest.staff_name, items: latest.items, ts: new Date(latest.created_at).getTime() },
@@ -1986,7 +1986,7 @@ async function syncStatusFromAPI() {
     }
 
     // If the server shows NO active order AND NO history for this restaurant, the
-    // order is gone (e.g. cleared/cancelled by admin) â€” clear ALL local traces so
+    // order is gone (e.g. cleared/cancelled by admin) — clear ALL local traces so
     // the status screen stops showing "preparing". A *fresh* just-submitted order
     // (< 15s) is kept in case the API hasn't indexed it yet.
     let localOrderTs = (existing[rk] && existing[rk].order && existing[rk].order.ts) ? existing[rk].order.ts : 0;
@@ -1999,12 +1999,13 @@ async function syncStatusFromAPI() {
     }
 
     localStorage.setItem('TORI_STATUS', JSON.stringify(existing));
-  } catch(e) { /* silent fail â€” will retry */ }
+  } catch(e) { /* silent fail — will retry */ }
   finally { _apiSyncBusy = false; }
 }
 
+// Run immediately; realtime handles instant updates, poll is fallback only
 syncStatusFromAPI();
-setInterval(syncStatusFromAPI, 5000);
+setInterval(syncStatusFromAPI, 15000);
 let _sbClient = null, _ordersChannel = null;
 function subscribeOrdersRealtime() {
   if (!window.supabase) return;
@@ -2025,9 +2026,9 @@ function subscribeOrdersRealtime() {
 }
 subscribeOrdersRealtime();
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ═══════════════════════════════════════
    STATUS POLLING & BADGE
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ═══════════════════════════════════════ */
 function getMyDeliveryStatus() {
   if (!selectedLocation) return null;
   const rk = selectedLocation;
@@ -2038,7 +2039,7 @@ function getMyDeliveryStatus() {
       const data = JSON.parse(raw);
       if (data[rk]) return data[rk];
     }
-    // Fallback: TORI_DISPATCH (written by kitchen) â€” order dispatched but driver hasn't started yet = 'preparing'
+    // Fallback: TORI_DISPATCH (written by kitchen) — order dispatched but driver hasn't started yet = 'preparing'
     const disp = localStorage.getItem('TORI_DISPATCH');
     if (disp) {
       const d = JSON.parse(disp);
@@ -2051,7 +2052,7 @@ function getMyDeliveryStatus() {
         };
       }
     }
-    // Also check TORI_ORDERS â€” order submitted but not yet dispatched = 'preparing'
+    // Also check TORI_ORDERS — order submitted but not yet dispatched = 'preparing'
     const orders = localStorage.getItem('TORI_ORDERS');
     if (orders) {
       const o = JSON.parse(orders);
@@ -2081,7 +2082,7 @@ function updateWelcomeStatusBadge() {
     txtEl.textContent = 'In Delivery';
   } else if (st.status === 'delivered') {
     badge.classList.remove('pulsing');
-    txtEl.textContent = 'Delivered â€” Tap to Accept';
+    txtEl.textContent = 'Delivered — Tap to Accept';
   }
 }
 
@@ -2096,9 +2097,9 @@ function updateViewPendingBtn() {
     if (lbl) lbl.textContent = 'View Pending Delivery';
     return;
   }
-  if (st.status === 'preparing')   { if(lbl) lbl.textContent = 'View Order â€” Preparing'; }
-  if (st.status === 'in_delivery') { if(lbl) lbl.textContent = 'View Order â€” In Delivery'; btn.classList.add('pulsing'); }
-  if (st.status === 'delivered')   { if(lbl) lbl.textContent = 'Delivery Arrived â€” Accept Now'; btn.classList.add('pulsing'); }
+  if (st.status === 'preparing')   { if(lbl) lbl.textContent = 'View Order — Preparing'; }
+  if (st.status === 'in_delivery') { if(lbl) lbl.textContent = 'View Order — In Delivery'; btn.classList.add('pulsing'); }
+  if (st.status === 'delivered')   { if(lbl) lbl.textContent = 'Delivery Arrived — Accept Now'; btn.classList.add('pulsing'); }
 }
 
 setInterval(() => {
@@ -2139,7 +2140,7 @@ function pollDispatchStatus() {
 
   if (dispatched && !amendBtn.disabled) {
     amendBtn.disabled = true;
-    amendBtn.title = 'Cannot amend â€” order has already been dispatched';
+    amendBtn.title = 'Cannot amend — order has already been dispatched';
     // Show dispatch panel if not already shown
     if (document.getElementById('suc-dispatch-info').style.display === 'none') {
       checkDispatchStatus(lastPayload);
@@ -2147,9 +2148,9 @@ function pollDispatchStatus() {
   }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ═══════════════════════════════════════
    PENDING DELIVERY SCREEN
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ═══════════════════════════════════════ */
 const CATS_META = {};
 CATS.forEach(c => c.items.forEach(i => { CATS_META[i.id] = { ...i, catLabel:c.label }; }));
 
@@ -2169,7 +2170,7 @@ fetchCatalog().then(cats => {
   // If a category screen is currently shown, re-render it (typed values live in `checked`).
   const cs = document.getElementById('s-checklist');
   if (cs && cs.classList.contains('active') && typeof catIdx === 'number') { try { showCat(catIdx); } catch(e){} }
-}).catch(() => { /* keep last-good cache / built-in fallback â€” ordering never breaks */ });
+}).catch(() => { /* keep last-good cache / built-in fallback — ordering never breaks */ });
 
 let missingItems = {}; // { itemId: reason }
 let _pendingItemForReason = null;
@@ -2289,9 +2290,9 @@ function confirmAcceptDelivery() {
     log.unshift({
       id:           entry.order ? entry.order.id : Date.now(),
       restaurant:   rk2,
-      orderedBy:    entry.order ? entry.order.staffName : 'â€”',
+      orderedBy:    entry.order ? entry.order.staffName : '—',
       orderedAt:    entry.order ? new Date(entry.order.ts).toISOString() : null,
-      dispatchedBy: entry.dispatchedBy || 'â€”',
+      dispatchedBy: entry.dispatchedBy || '—',
       dispatchedAt: entry.dispatchedAt || null,
       acceptedBy:   name,
       acceptedAt:   new Date().toISOString(),
@@ -2305,7 +2306,7 @@ function confirmAcceptDelivery() {
   missingItems = {};
   showToast('Delivery accepted by ' + name);
 
-  // POST to Vercel API â€” mark order as accepted in the database
+  // POST to Vercel API — mark order as accepted in the database
   fetch(_API_BASE + '/api/orders/accepted', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -2315,7 +2316,7 @@ function confirmAcceptDelivery() {
     })
   }).catch(e => console.warn('Could not post accept to API:', e));
 
-  // Auto-logout after acceptance â€” redirect to index after short delay
+  // Auto-logout after acceptance — redirect to index after short delay
   updateWelcomeStatusBadge();
   updateDeliveryTabDots();
   refreshAllDeliveryViews();
@@ -2326,9 +2327,9 @@ function confirmAcceptDelivery() {
   }, 2000);
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ═══════════════════════════════════════
    TOAST
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ═══════════════════════════════════════ */
 let _toastTimer;
 function showToast(msg) {
   const el = document.getElementById('toast');
@@ -2338,9 +2339,9 @@ function showToast(msg) {
   _toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ═══════════════════════════════════════
    INIT
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ═══════════════════════════════════════ */
 loadSettings();
 
 // Auto-fill name from PIN login (URL param takes priority, then localStorage)
@@ -2359,9 +2360,9 @@ updateDeliveryTabDots();
 updateAmendHomeBtn();
 switchTab('home');
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   TAB SWITCHING â€” WELCOME SCREEN
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════
+   TAB SWITCHING — WELCOME SCREEN
+   ═══════════════════════════════════════ */
 function switchTab(which) {
   ['home','delivery','history'].forEach(t => {
     const btn = document.getElementById('tab-'+t);
@@ -2376,9 +2377,9 @@ function switchTab(which) {
 
 function switchDeliverySub(which) { /* no-op, sub-tabs removed */ }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   TAB SWITCHING â€” DASHBOARD (SUCCESS)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ═══════════════════════════════════════
+   TAB SWITCHING — DASHBOARD (SUCCESS)
+   ═══════════════════════════════════════ */
 function switchDashTab(which) {
   ['order','delivery'].forEach(t => {
     const btn = document.getElementById('dtab-'+t);
@@ -2389,9 +2390,9 @@ function switchDashTab(which) {
   if (which === 'delivery') renderDashDeliveryStatus();
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ═══════════════════════════════════════
    RENDER DELIVERY STATUS
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ═══════════════════════════════════════ */
 
 function buildStatusBadge(st) {
   if (!st) return '';
@@ -2410,7 +2411,7 @@ function buildStatusBadge(st) {
       const isPast = steps.indexOf(current) > i;
       const dotCls = isActive && cfg.pulse ? 'ss-dot pulsing-dot' : 'ss-dot';
       const stepCls = 'status-step' + (isActive ? ' ' + cfg.cls : (isPast ? ' st-past' : ''));
-      return (i > 0 ? '<div class="status-arrow">â†’</div>' : '') +
+      return (i > 0 ? '<div class="status-arrow">→</div>' : '') +
         `<div class="${stepCls}"><span class="${dotCls}"></span>${cfg.label}</div>`;
     }).join('') + '</div>';
 }
@@ -2444,11 +2445,11 @@ function buildItemList(st, missingItemsRef, canMark) {
 
   // Not dispatched by kitchen
   if (notDispIds.size > 0) {
-    html += `<div class="missing-section-hdr">âœ• Not Dispatched by Kitchen</div>`;
+    html += `<div class="missing-section-hdr">✕ Not Dispatched by Kitchen</div>`;
     notDispIds.forEach(id => {
       const m = itemMap[id] || { name: id, unit: '' };
       const qty = items[id] || '';
-      const reason = notDisp[id] || 'â€”';
+      const reason = notDisp[id] || '—';
       html += `<div class="missing-row">
         <span class="missing-row-name">${m.name}</span>
         <span class="missing-row-reason">${reason}</span>
@@ -2459,7 +2460,7 @@ function buildItemList(st, missingItemsRef, canMark) {
 
   // Missing items marked by restaurant on delivery
   if (missingItemsRef && Object.keys(missingItemsRef).length) {
-    html += `<div class="missing-section-hdr">âœ• Not Delivered</div>`;
+    html += `<div class="missing-section-hdr">✕ Not Delivered</div>`;
     Object.entries(missingItemsRef).forEach(([id, reason]) => {
       const m = itemMap[id] || { name: id, unit: '' };
       const qty = items[id] || '';
@@ -2478,7 +2479,7 @@ function renderDeliveryStatusInto(bodyEl, footerEl) {
 
   if (!st || !st.order) {
     bodyEl.innerHTML = `<div class="no-delivery-state">
-      <div class="no-delivery-icon">â—»</div>
+      <div class="no-delivery-icon">◻</div>
       <div>No active delivery</div>
     </div>`;
     footerEl.innerHTML = '';
@@ -2487,33 +2488,33 @@ function renderDeliveryStatusInto(bodyEl, footerEl) {
 
   const showList = (st.status === 'delivered' || st.status === 'accepted');
   const canMark  = st.status === 'delivered';
-  const dispBy   = st.dispatchedBy || 'â€”';
+  const dispBy   = st.dispatchedBy || '—';
 
   let html = buildStatusBadge(st);
 
   if (!showList) {
-    // Preparing or in_delivery â€” just the status, no list
+    // Preparing or in_delivery — just the status, no list
     const msg = st.status === 'preparing'
       ? 'Your order is being prepared in the kitchen.'
-      : `Your order is on its way â€” driver: <strong>${dispBy}</strong>`;
+      : `Your order is on its way — driver: <strong>${dispBy}</strong>`;
     html += `<div class="delivery-waiting-msg">${msg}</div>`;
     footerEl.innerHTML = '';
   } else {
-    // Delivered or accepted â€” show full list
+    // Delivered or accepted — show full list
     if (canMark) {
       html += `<div class="delivery-tap-hint">Tap an item to mark it as not delivered</div>`;
     }
     html += buildItemList(st, missingItems, canMark);
 
     if (st.status === 'accepted') {
-      html += `<div class="accepted-notice">âœ“ Delivery Accepted by ${st.acceptedBy || 'â€”'}</div>`;
+      html += `<div class="accepted-notice">✓ Delivery Accepted by ${st.acceptedBy || '—'}</div>`;
       footerEl.innerHTML = '';
     } else {
       html += `<div style="padding:16px;">
         <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:8px;">
           Delivered by <strong style="color:var(--ink3)">${dispBy}</strong>
         </div>
-        <button style="width:100%;background:#388E3C;border:none;color:#fff;font-family:var(--font);font-size:17px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;padding:16px;cursor:pointer;" onclick="openAcceptModal()">Delivery Accepted â†’</button>
+        <button style="width:100%;background:#388E3C;border:none;color:#fff;font-family:var(--font);font-size:17px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;padding:16px;cursor:pointer;" onclick="openAcceptModal()">Delivery Accepted →</button>
       </div>`;
       footerEl.innerHTML = '';
     }
@@ -2548,7 +2549,7 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
   // 'accepted' = delivery cycle complete, treat as no active delivery
   if (!st || !st.order || st.status === 'accepted' || st.status === 'none') {
     bodyEl.innerHTML = `<div class="no-delivery-state">
-      <div class="no-delivery-icon">â—»</div>
+      <div class="no-delivery-icon">◻</div>
       <div>No deliveries in progress</div>
       <div style="font-size:11px;margin-top:4px;opacity:0.6;">Submit a new order from the Home tab</div>
     </div>`;
@@ -2560,7 +2561,7 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
   const showInfo    = st.status === 'preparing' || st.status === 'in_delivery';
   const canAmend    = st.status === 'preparing';
   const canMark     = st.status === 'delivered';
-  const dispBy      = st.dispatchedBy || 'â€”';
+  const dispBy      = st.dispatchedBy || '—';
 
   let html = '';
 
@@ -2573,14 +2574,14 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
       items: st.order.items || {}
     } : null);
     if (p) {
-    const restName = p.restaurant==='r1' ? 'Tori 1 â€” Å pansko' : 'Tori 2 â€” Trnje';
+    const restName = p.restaurant==='r1' ? 'Tori 1 — Špansko' : 'Tori 2 — Trnje';
     const itemCount = Object.keys(p.items || {}).length;
     const d = new Date((p.order_date||'')+'T12:00:00');
     const dateStr = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
     html += `<div class="status-order-card">
       <div class="soc-row"><span class="soc-label">Restaurant</span><span class="soc-val">${restName}</span></div>
       <div class="soc-row"><span class="soc-label">Date</span><span class="soc-val">${dateStr}</span></div>
-      <div class="soc-row"><span class="soc-label">Submitted by</span><span class="soc-val">${p.staff_name || 'â€”'}</span></div>
+      <div class="soc-row"><span class="soc-label">Submitted by</span><span class="soc-val">${p.staff_name || '—'}</span></div>
       <div class="soc-row"><span class="soc-label">Items</span><span class="soc-val green">${itemCount}</span></div>
     </div>`;
     } // close if(p)
@@ -2590,10 +2591,10 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
   html += buildStatusBadge(st);
 
   if (!showList) {
-    // Preparing or in_delivery â€” message only
+    // Preparing or in_delivery — message only
     const msg = st.status === 'preparing'
       ? 'Your order is being prepared in the kitchen.'
-      : `On its way â€” driver: <strong>${dispBy}</strong>`;
+      : `On its way — driver: <strong>${dispBy}</strong>`;
     html += `<div class="delivery-waiting-msg">${msg}</div>`;
 
     // Amend button (preparing only)
@@ -2609,21 +2610,21 @@ function renderDeliveryStatusIntoFull(bodyEl, footerEl) {
 
     footerEl.innerHTML = '';
   } else {
-    // Delivered or accepted â€” full item list
+    // Delivered or accepted — full item list
     if (canMark) {
       html += `<div class="delivery-tap-hint">Tap an item to mark it as not delivered</div>`;
     }
     html += buildItemList(st, missingItems, canMark);
 
     if (st.status === 'accepted') {
-      html += `<div class="accepted-notice">âœ“ Delivery Accepted by ${st.acceptedBy || 'â€”'}</div>`;
+      html += `<div class="accepted-notice">✓ Delivery Accepted by ${st.acceptedBy || '—'}</div>`;
       footerEl.innerHTML = '';
     } else {
       html += `<div style="padding:16px;">
         <div style="font-family:var(--body);font-size:12px;color:var(--ink4);text-align:center;padding-bottom:8px;">
           Delivered by <strong style="color:var(--ink3)">${dispBy}</strong>
         </div>
-        <button style="width:100%;background:#388E3C;border:none;color:#fff;font-family:var(--font);font-size:17px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;padding:16px;cursor:pointer;" onclick="openAcceptModal()">Delivery Accepted â†’</button>
+        <button style="width:100%;background:#388E3C;border:none;color:#fff;font-family:var(--font);font-size:17px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;padding:16px;cursor:pointer;" onclick="openAcceptModal()">Delivery Accepted →</button>
       </div>`;
       footerEl.innerHTML = '';
     }
@@ -2669,7 +2670,7 @@ function startAmendFromHome() { go('s-success'); startAmend(); }
 
 function renderAmendTab() { /* moved to home tab */ }
 
-/* â”€â”€â”€ Delivery history â”€â”€â”€ */
+/* ─── Delivery history ─── */
 let _historyEntries = []; // cached for detail sheet
 
 function renderDeliveryHistory() {
@@ -2688,11 +2689,11 @@ function renderDeliveryHistory() {
       log = dlog.filter(e => e.restaurant === rk).map(e => ({
         id:           e.id,
         restaurant:   e.restaurant,
-        orderedBy:    e.orderedBy || 'â€”',
+        orderedBy:    e.orderedBy || '—',
         orderedAt:    e.orderedAt || null,
-        dispatchedBy: e.dispatchedBy || 'â€”',
+        dispatchedBy: e.dispatchedBy || '—',
         dispatchedAt: e.dispatchedAt || null,
-        acceptedBy:   e.deliveredBy || 'â€”',
+        acceptedBy:   e.deliveredBy || '—',
         acceptedAt:   e.deliveredAt || null,
         items:        e.items || {},
         missingItems: {},
@@ -2708,19 +2709,19 @@ function renderDeliveryHistory() {
     return;
   }
 
-  const RNAMES = { r1:'Tori 1 â€” Å pansko', r2:'Tori 2 â€” Trnje' };
+  const RNAMES = { r1:'Tori 1 — Špansko', r2:'Tori 2 — Trnje' };
 
   el.innerHTML = log.map((entry, idx) => {
     const date = entry.acceptedAt
       ? new Date(entry.acceptedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})
-      : (entry.orderedAt ? new Date(entry.orderedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'â€”');
-    const rest = RNAMES[entry.restaurant] || entry.restaurant || 'â€”';
+      : (entry.orderedAt ? new Date(entry.orderedAt).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : '—');
+    const rest = RNAMES[entry.restaurant] || entry.restaurant || '—';
     return `<div class="hist-row" onclick="openHistoryDetail(${idx})">
       <div class="hist-row-main">
         <div class="hist-row-date">${date}</div>
         <div class="hist-row-rest">${rest}</div>
       </div>
-      <div class="hist-row-chevron">â€º</div>
+      <div class="hist-row-chevron">›</div>
     </div>`;
   }).join('');
 }
@@ -2729,9 +2730,9 @@ function openHistoryDetail(idx) {
   const entry = _historyEntries[idx];
   if (!entry) return;
 
-  const RNAMES = { r1:'Tori 1 â€” Å pansko', r2:'Tori 2 â€” Trnje' };
-  const date = entry.acceptedAt ? new Date(entry.acceptedAt).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : 'â€”';
-  const rest = RNAMES[entry.restaurant] || 'â€”';
+  const RNAMES = { r1:'Tori 1 — Špansko', r2:'Tori 2 — Trnje' };
+  const date = entry.acceptedAt ? new Date(entry.acceptedAt).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
+  const rest = RNAMES[entry.restaurant] || '—';
 
   const allItems = entry.items || {};
   const missing  = entry.missingItems || {};
@@ -2754,7 +2755,7 @@ function openHistoryDetail(idx) {
       deliveredHtml += `<div class="detail-cat">${cat.label}</div>`;
       catDelivered.forEach(item => {
         deliveredHtml += `<div class="detail-row">
-          <span class="detail-check">âœ“</span>
+          <span class="detail-check">✓</span>
           <span class="detail-name">${item.name}</span>
           <span class="detail-qty">${allItems[item.id]} <span class="detail-unit">${unitLabel(item, allItems[item.id])}</span></span>
         </div>`;
@@ -2767,7 +2768,7 @@ function openHistoryDetail(idx) {
     const m = itemMap[id] || { name: id, unit: '' };
     const qty = allItems[id] || '';
     notDispHtml += `<div class="detail-row detail-row-bad">
-      <span class="detail-check-bad">âœ•</span>
+      <span class="detail-check-bad">✕</span>
       <span class="detail-name">${m.name}</span>
       <span class="detail-qty-bad">${qty} <span class="detail-unit">${unitLabel(m, qty)}</span></span>
       <span class="detail-reason">${reason}</span>
@@ -2779,7 +2780,7 @@ function openHistoryDetail(idx) {
     const m = itemMap[id] || { name: id, unit: '' };
     const qty = allItems[id] || '';
     notDelivHtml += `<div class="detail-row detail-row-bad">
-      <span class="detail-check-bad">âœ•</span>
+      <span class="detail-check-bad">✕</span>
       <span class="detail-name">${m.name}</span>
       <span class="detail-qty-bad">${qty} <span class="detail-unit">${unitLabel(m, qty)}</span></span>
       <span class="detail-reason">${reason}</span>
@@ -2788,13 +2789,13 @@ function openHistoryDetail(idx) {
 
   let body = '';
   if (deliveredHtml) {
-    body += `<div class="detail-section-hdr delivered-hdr">âœ“ Delivered</div>${deliveredHtml}`;
+    body += `<div class="detail-section-hdr delivered-hdr">✓ Delivered</div>${deliveredHtml}`;
   }
   if (notDispHtml) {
-    body += `<div class="detail-section-hdr bad-hdr">âœ• Not Dispatched</div>${notDispHtml}`;
+    body += `<div class="detail-section-hdr bad-hdr">✕ Not Dispatched</div>${notDispHtml}`;
   }
   if (notDelivHtml) {
-    body += `<div class="detail-section-hdr bad-hdr">âœ• Not Delivered</div>${notDelivHtml}`;
+    body += `<div class="detail-section-hdr bad-hdr">✕ Not Delivered</div>${notDelivHtml}`;
   }
   if (!body) {
     body = `<div style="padding:30px;text-align:center;color:var(--ink4);font-size:12px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;">No item details recorded</div>`;
@@ -2805,21 +2806,21 @@ function openHistoryDetail(idx) {
 
   // Populate meta grid
   const shortId   = '#' + String(entry.id || '').slice(-6);
-  const submTime  = entry.orderedAt   ? new Date(entry.orderedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : 'â€”';
-  const dispTime  = entry.dispatchedAt ? new Date(entry.dispatchedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : 'â€”';
-  const accTime   = entry.acceptedAt  ? new Date(entry.acceptedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : 'â€”';
+  const submTime  = entry.orderedAt   ? new Date(entry.orderedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+  const dispTime  = entry.dispatchedAt ? new Date(entry.dispatchedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
+  const accTime   = entry.acceptedAt  ? new Date(entry.acceptedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—';
   const fullDate  = entry.acceptedAt  ? new Date(entry.acceptedAt).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : date;
 
   document.getElementById('detail-sheet-meta').innerHTML = `
     <div class="detail-accepted-banner" style="grid-column:1/-1;">
-      âœ“ Delivery Accepted â€” ${fullDate}
+      ✓ Delivery Accepted — ${fullDate}
     </div>
     <div class="detail-meta-item"><div class="detail-meta-label">Order ID</div><div class="detail-meta-val">${shortId}</div></div>
-    <div class="detail-meta-item"><div class="detail-meta-label">Ordered by</div><div class="detail-meta-val">${entry.orderedBy || 'â€”'}</div></div>
+    <div class="detail-meta-item"><div class="detail-meta-label">Ordered by</div><div class="detail-meta-val">${entry.orderedBy || '—'}</div></div>
     <div class="detail-meta-item"><div class="detail-meta-label">Submitted</div><div class="detail-meta-val">${submTime}</div></div>
-    <div class="detail-meta-item"><div class="detail-meta-label">Dispatched by</div><div class="detail-meta-val">${entry.dispatchedBy || 'â€”'}</div></div>
+    <div class="detail-meta-item"><div class="detail-meta-label">Dispatched by</div><div class="detail-meta-val">${entry.dispatchedBy || '—'}</div></div>
     <div class="detail-meta-item"><div class="detail-meta-label">Dispatch time</div><div class="detail-meta-val">${dispTime}</div></div>
-    <div class="detail-meta-item"><div class="detail-meta-label">Accepted by</div><div class="detail-meta-val">${entry.acceptedBy || 'â€”'}</div></div>
+    <div class="detail-meta-item"><div class="detail-meta-label">Accepted by</div><div class="detail-meta-val">${entry.acceptedBy || '—'}</div></div>
     <div class="detail-meta-item"><div class="detail-meta-label">Delivery time</div><div class="detail-meta-val">${accTime}</div></div>
   `;
 
@@ -2831,16 +2832,16 @@ function closeHistoryDetail() {
   document.getElementById('history-detail-sheet').classList.remove('open');
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ═══════════════════════════════════════
    STATUS CHANGE NOTIFICATIONS & SOUNDS
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ═══════════════════════════════════════ */
 let _lastKnownStatus = null;
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   AUDIO UNLOCK â€” iOS/Chrome require a user
+/* ═══════════════════════════════════════
+   AUDIO UNLOCK — iOS/Chrome require a user
    gesture before AudioContext will play.
    We unlock silently on first tap/click.
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   ═══════════════════════════════════════ */
 let _audioUnlocked = false;
 let _unlockedAC = null;
 
@@ -2918,11 +2919,11 @@ function updateDeliveryTabDots() {
   // Active = any status with a live order (not accepted/none)
   const hasLive = st && st.status && st.status !== 'none' && st.status !== 'accepted';
 
-  // Welcome STATUS tab â€” pulse green text when live
+  // Welcome STATUS tab — pulse green text when live
   const wTab = document.getElementById('tab-delivery');
   if (wTab) wTab.classList.toggle('tab-live', hasLive);
 
-  // Dashboard DELIVERY tab â€” pulse green text when live
+  // Dashboard DELIVERY tab — pulse green text when live
   const dTab = document.getElementById('dtab-delivery');
   if (dTab) dTab.classList.toggle('tab-live', hasLive);
 
@@ -2931,7 +2932,7 @@ function updateDeliveryTabDots() {
 }
 
 function updateStatusStepHighlight(st) {
-  // Re-render delivery views to pick up new status â€” lightweight
+  // Re-render delivery views to pick up new status — lightweight
   const delivTab = document.getElementById('tab-delivery-content');
   const dashDTab = document.getElementById('dtab-delivery-content');
   const homeBody = document.getElementById('home-pending-body');

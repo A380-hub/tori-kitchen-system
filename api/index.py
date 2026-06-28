@@ -199,7 +199,7 @@ async def confirm_delivery(request: Request):
     restaurant = body.get("restaurant")
     if restaurant not in ("r1", "r2"):
         raise HTTPException(400, "restaurant must be r1 or r2")
-    result = await sb_patch("orders", f"restaurant=eq.{restaurant}&status=eq.dispatched", {
+    result = await sb_patch("orders", f"restaurant=eq.{restaurant}&status=in.(dispatched,in_transit)", {
         "status": "delivered",
         "delivered_at": body.get("delivered_at", now_iso()),
         "delivered_by": body.get("delivered_by", ""),
