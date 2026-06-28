@@ -971,10 +971,14 @@ async function loadDispatchFromAPI() {
     });
 
     if (found) {
-      // Restore transitAt from localStorage if it belongs to this dispatch session
+      // Restore transitAt from localStorage ONLY if it belongs to THIS dispatched
+      // order — i.e. the saved load-check happened after the current order's server
+      // dispatch time. Comparing against the live dispatchedAt (not the stale saved
+      // one) prevents a previous session's load-check from making a new order skip
+      // straight to "Confirm Delivered".
       try {
         const saved = JSON.parse(localStorage.getItem('TORI_DISPATCH') || '{}');
-        if (saved.transitAt && saved.dispatchedAt && saved.transitAt > saved.dispatchedAt) {
+        if (saved.transitAt && dispatchBatch.dispatchedAt && saved.transitAt > dispatchBatch.dispatchedAt) {
           dispatchBatch.transitAt  = saved.transitAt;
           dispatchBatch.driverName = saved.driverName || '';
         }
