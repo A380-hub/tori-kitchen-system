@@ -243,13 +243,11 @@ Session persistence: only admin users have their session persisted across page r
 - **Amendment banner** (amber, shown when amending): "⚠ Amending sent order — changes will be re-sent"
 - **Jump dropdown** — jump to any category by name with item count
 - **Search box** — real-time search across all items; clear button appears when active
-- Items organised by category (PRODUCE, PROTEINS, DAIRY, etc.) with sticky category headers
+- Items organised by category with sticky category headers. Default categories (from `DEFAULT_CATS`): **Sauces**, **Foods**, **Vegetables**, **Drinks**, **Dry Items** (can be overridden by Supabase catalog)
 - **Item row (unchecked):** checkbox (grey) + item name (uppercase)
-- **Item row (checked):** checkbox turns green with ✓; quantity input + unit input appear inline; quantity badge preview shown
-- Dual-unit items show formatted output (e.g., "2 boxes (48 pieces)")
-- Amendment badges on items:
-  - Red **NEW** badge (pulsing) — item not in previous order
-  - Amber **UPDATE** badge (pulsing) — quantity changed from previous order
+- **Item row (checked):** checkbox turns green with ✓; row expands (CSS `max-height` animation) revealing quantity input + unit label; mobile keyboard opens automatically
+- Dual-unit items show live output preview in red next to the quantity (e.g., "(15 kg)") as the user types
+- No per-item amendment badges on the checklist — amendment state is communicated only via the amber banner at the top; previous quantities are pre-filled when amending
 - Bottom nav: **← BACK** | **REVIEW →** (disabled until ≥1 item checked with qty > 0)
 
 **Review (s-review)**
@@ -1012,11 +1010,11 @@ Tap START ORDER to open the checklist."
 
 **[SCREEN: Checklist with categories and items]**
 
-"The checklist shows all food items grouped by category — Produce, Proteins, Dairy, and so on. The category header stays visible as you scroll.
+"The checklist shows all food items grouped by category — Sauces, Foods, Vegetables, Drinks, Dry Items. The category header stays visible as you scroll.
 
-If you've ordered before, items that have changed from last time will have coloured badges — a red NEW badge for items not previously ordered, and an amber UPDATE badge for items with changed quantities. Tap any badge to see the exact difference between the old and new quantity.
+If you are amending a previous order, a yellow banner at the top reminds you. The items from your last order are already ticked and pre-filled so you can see what was sent before.
 
-To order an item, tap its row. The row expands and shows a quantity input. Enter the amount and move to the next item. Checked items show a green tick and their quantity. Skip any items you don't need."
+To order an item, tap its row. The row expands and shows a quantity input — the keyboard opens automatically. Enter the amount. For items with a unit conversion, you'll see a live preview in red showing the output quantity as you type. Checked items show a green tick. Skip any items you don't need."
 
 ---
 
