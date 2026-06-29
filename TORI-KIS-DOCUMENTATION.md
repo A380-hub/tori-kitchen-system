@@ -1028,6 +1028,60 @@ Tap the tile for the module you want to open."
 
 ---
 
+### Script 2b — Tracking Delivery Status (Restaurant Staff)
+**Module:** Order Checklist — Status tab  
+**Perspective:** Restaurant staff waiting for their order
+
+---
+
+**[SCREEN: Status tab — shows "Preparing" with pulsing green dot]**
+
+"After sending the order, the app moves to the Status tab automatically. This is where you track the delivery. Right now it shows Preparing — the kitchen has received the order and is packing it.
+
+You don't need to refresh. The status updates on its own."
+
+---
+
+**[SCREEN: Status tab — "In Delivery" with pulsing green dot]**
+
+"When the driver loads the vehicle and leaves the kitchen, the status changes to In Delivery. This happens automatically — the moment the driver confirms on their device, it updates here."
+
+---
+
+**[SCREEN: Status tab — "Delivered", item list with green ticks, Accept Delivery button at bottom]**
+
+"When the driver arrives and confirms delivery on their end, the status changes to Delivered. You'll see the full list of items that were sent — each one shows a green tick.
+
+If anything is missing from the delivery, tap that item. A reason selection opens — choose Not Delivered, Damaged, or Other. The item will be marked in red.
+
+When you've checked everything, tap Accept Delivery at the bottom."
+
+---
+
+**[SCREEN: Accept modal — name field, Confirm button]**
+
+"Enter the name of the person accepting the delivery and tap Confirm. The order is now complete. The entry moves to your History."
+
+---
+
+### Script 2c — Delivery History (Restaurant Staff)
+**Module:** Order Checklist — History tab  
+**Perspective:** Restaurant staff reviewing past orders
+
+---
+
+**[SCREEN: History tab — list of rows with date and restaurant]**
+
+"The History tab shows all completed deliveries for this device. Each row shows the date and the restaurant. Tap any row to see the full detail."
+
+---
+
+**[SCREEN: History detail sheet — items by category, delivered and missing sections]**
+
+"The detail view shows everything from that delivery — which items arrived, their quantities, and if anything was marked as missing or not dispatched by the kitchen, that appears separately at the bottom."
+
+---
+
 ### Script 3 — Monitoring & Dispatching Orders (Kitchen Staff)
 **Module:** Central Kitchen Monitor (`tori-kitchen-system.html`)  
 **Perspective:** Head chef or kitchen coordinator
