@@ -7,235 +7,193 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:     #0F1314;
-  --bg2:    #1A1F22;
-  --panel:  #242C30;
-  --panel2: #2B3236;
-  --panel3: #3C3D3C;
-  --line:   #3A3F42;
-  --line2:  #545454;
-  --ink:    #FFFFFF;
-  --ink2:   #E1E1E1;
-  --ink3:   #BCC0C2;
-  --ink4:   #7A7E80;
-  --red:    #DE0000;
-  --red2:   #B50000;
-  --green:  #4CAF50;
-  --amber:  #F59E0B;
-  --font:   'Barlow Condensed', sans-serif;
-  --body:   'Barlow', sans-serif;
+  --bg:    #0F1314;
+  --bg2:   #1A1F22;
+  --panel: #242C30;
+  --panel2:#2B3236;
+  --panel3:#3C3D3C;
+  --line:  #3A3F42;
+  --line2: #545454;
+  --ink:   #FFFFFF;
+  --ink2:  #E1E1E1;
+  --ink3:  #BCC0C2;
+  --ink4:  #7A7E80;
+  --red:   #DE0000;
+  --red2:  #B50000;
+  --green: #4CAF50;
+  --amber: #F59E0B;
+  --font:  'Barlow Condensed', sans-serif;
+  --body:  'Barlow', sans-serif;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-html, body { height: 100%; overflow: hidden; }
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+html,body { height:100%; overflow:hidden; }
 body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: var(--font);
-  display: flex;
-  flex-direction: column;
-  max-width: 480px;
-  margin: 0 auto;
-  height: 100%;
+  background:var(--bg); color:var(--ink); font-family:var(--font);
+  display:flex; flex-direction:column; max-width:480px; margin:0 auto; height:100%;
 }
 
 /* ── TOP BAR ── */
 .topbar {
-  background: var(--bg);
-  border-bottom: 1px solid var(--line2);
-  padding: 14px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
+  background:var(--bg); border-bottom:1px solid var(--line2);
+  padding:10px 16px; display:flex; align-items:center;
+  justify-content:space-between; flex-shrink:0; gap:10px;
 }
-.topbar-left { display: flex; align-items: center; gap: 12px; }
-.logo { font-size: 24px; font-weight: 900; letter-spacing: -0.04em; }
-.logo-dot { width: 8px; height: 8px; background: var(--red); border-radius: 50%; box-shadow: 0 0 7px var(--red); animation: blink 2s ease-in-out infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-.brand-label { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink4); }
-.voice-toggle {
-  display: flex; align-items: center; gap: 7px;
-  font-family: var(--body); font-size: 12px; font-weight: 600; color: var(--ink4);
-  cursor: pointer; user-select: none;
-}
-.voice-toggle input { accent-color: var(--green); width: 15px; height: 15px; cursor: pointer; }
-.voice-toggle.on { color: var(--green); }
+.topbar-brand { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.logo { font-size:22px; font-weight:900; letter-spacing:-0.04em; display:flex; align-items:center; gap:6px; }
+.logo-dot { width:7px; height:7px; background:var(--red); border-radius:50%; box-shadow:0 0 6px var(--red); animation:blink 2s ease-in-out infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.brand-sub { font-size:10px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink4); }
 
-/* ── CHAT AREA ── */
-.chat-area {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 14px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  scroll-behavior: smooth;
+.topbar-controls { display:flex; align-items:center; gap:8px; }
+
+/* language toggle */
+.lang-toggle { display:flex; border:1px solid var(--line2); }
+.lang-btn {
+  font-family:var(--font); font-size:13px; font-weight:900; letter-spacing:0.08em;
+  text-transform:uppercase; padding:6px 12px; background:var(--panel2);
+  border:none; color:var(--ink4); cursor:pointer; transition:all 0.15s;
 }
-.chat-area::-webkit-scrollbar { width: 4px; }
-.chat-area::-webkit-scrollbar-track { background: transparent; }
-.chat-area::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 2px; }
+.lang-btn+.lang-btn { border-left:1px solid var(--line2); }
+.lang-btn.active { background:var(--red2); color:var(--ink); }
+
+/* voice output toggle */
+.voice-toggle {
+  display:flex; align-items:center; gap:5px;
+  font-family:var(--body); font-size:11px; font-weight:600;
+  color:var(--ink4); cursor:pointer; user-select:none; white-space:nowrap;
+}
+.voice-toggle input { accent-color:var(--green); width:14px; height:14px; cursor:pointer; }
+.voice-toggle.on { color:var(--green); }
+
+/* ── CHAT ── */
+.chat-area {
+  flex:1; overflow-y:auto; padding:14px 13px 8px;
+  display:flex; flex-direction:column; gap:10px; scroll-behavior:smooth;
+}
+.chat-area::-webkit-scrollbar { width:3px; }
+.chat-area::-webkit-scrollbar-thumb { background:var(--line2); border-radius:2px; }
 
 .empty-state {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 14px; text-align: center; padding: 40px 20px;
-  color: var(--ink4);
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:12px; text-align:center; padding:40px 20px; color:var(--ink4);
 }
-.empty-icon { font-size: 48px; opacity: 0.4; }
-.empty-text { font-size: 14px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; line-height: 1.6; }
-.empty-sub  { font-family: var(--body); font-size: 13px; color: var(--ink4); line-height: 1.6; margin-top: 4px; }
+.empty-icon { font-size:44px; opacity:0.35; }
+.empty-text { font-size:14px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; line-height:1.6; }
+.empty-sub  { font-family:var(--body); font-size:13px; line-height:1.6; margin-top:4px; }
 
-/* message bubbles */
-.msg { display: flex; flex-direction: column; max-width: 88%; animation: fadeUp 0.2s ease; }
-@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
-.msg.user { align-self: flex-end; align-items: flex-end; }
-.msg.bot  { align-self: flex-start; align-items: flex-start; }
-
+.msg { display:flex; flex-direction:column; max-width:88%; animation:fadeUp 0.2s ease; }
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.msg.user { align-self:flex-end; align-items:flex-end; }
+.msg.bot  { align-self:flex-start; align-items:flex-start; }
 .bubble {
-  padding: 12px 16px;
-  font-family: var(--body);
-  font-size: 15px;
-  line-height: 1.55;
-  word-break: break-word;
+  padding:11px 15px; font-family:var(--body); font-size:15px;
+  line-height:1.55; word-break:break-word;
 }
-.msg.user .bubble {
-  background: var(--red2);
-  color: var(--ink);
-  border-radius: 2px;
+.msg.user .bubble { background:var(--red2); color:var(--ink); }
+.msg.bot  .bubble { background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--line2); color:var(--ink2); }
+.msg.bot.thinking .bubble { border-left-color:var(--amber); color:var(--ink4); font-style:italic; }
+.msg-label {
+  font-size:10px; color:var(--ink4); font-family:var(--body);
+  margin-top:4px; letter-spacing:0.04em;
 }
-.msg.bot .bubble {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--line2);
-  color: var(--ink2);
-  border-radius: 2px;
-}
-.msg.bot.thinking .bubble {
-  border-left-color: var(--amber);
-  color: var(--ink4);
-  font-style: italic;
-}
-.msg-time {
-  font-size: 10px; color: var(--ink4); font-family: var(--body);
-  margin-top: 4px; letter-spacing: 0.04em;
+/* transcript display under user bubble */
+.transcript-label {
+  font-size:10px; color:rgba(255,255,255,0.45); font-family:var(--body);
+  font-style:italic; margin-top:3px; text-align:right; max-width:100%;
 }
 
-/* ── STATUS LINE ── */
+/* ── STATUS ── */
 .status-line {
-  min-height: 22px;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink4);
-  padding: 2px 14px;
-  flex-shrink: 0;
-  transition: color 0.2s;
+  min-height:20px; text-align:center; font-size:11px; font-weight:700;
+  letter-spacing:0.14em; text-transform:uppercase; color:var(--ink4);
+  padding:1px 14px; flex-shrink:0; transition:color 0.2s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
 }
-.status-line.listening { color: var(--red); }
-.status-line.thinking  { color: var(--amber); }
-.status-line.speaking  { color: var(--green); }
+.status-line.recording { color:var(--red); }
+.status-line.transcribing { color:var(--amber); }
+.status-line.thinking { color:var(--amber); }
+.status-line.speaking { color:var(--green); }
+.timer { font-variant-numeric:tabular-nums; }
 
 /* ── INPUT AREA ── */
 .input-area {
-  background: var(--bg2);
-  border-top: 1px solid var(--line2);
-  padding: 12px 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex-shrink: 0;
+  background:var(--bg2); border-top:1px solid var(--line2);
+  padding:10px 13px 14px; display:flex; flex-direction:column; gap:9px; flex-shrink:0;
 }
-
-/* text row */
-.text-row { display: flex; gap: 8px; align-items: flex-end; }
+.text-row { display:flex; gap:7px; align-items:flex-end; }
 .text-input {
-  flex: 1;
-  background: var(--panel);
-  border: 1px solid var(--line2);
-  border-left: 3px solid var(--line2);
-  color: var(--ink);
-  font-family: var(--body);
-  font-size: 16px;
-  padding: 11px 14px;
-  resize: none;
-  max-height: 90px;
-  min-height: 44px;
-  overflow-y: auto;
-  border-radius: 0;
-  -webkit-appearance: none;
-  line-height: 1.4;
-  transition: border-color 0.15s;
+  flex:1; background:var(--panel); border:1px solid var(--line2);
+  border-left:3px solid var(--line2); color:var(--ink);
+  font-family:var(--body); font-size:15px; padding:10px 13px;
+  resize:none; max-height:80px; min-height:42px; overflow-y:auto;
+  border-radius:0; -webkit-appearance:none; line-height:1.4;
+  transition:border-color 0.15s;
 }
-.text-input:focus { outline: none; border-left-color: var(--red); background: var(--panel2); }
-.text-input::placeholder { color: var(--ink4); }
+.text-input:focus { outline:none; border-left-color:var(--red); background:var(--panel2); }
+.text-input::placeholder { color:var(--ink4); }
 
 .send-btn {
-  width: 44px; height: 44px; flex-shrink: 0;
-  background: var(--red2); border: none; color: var(--ink);
-  font-size: 20px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.15s;
+  width:42px; height:42px; flex-shrink:0;
+  background:var(--red2); border:none; color:var(--ink);
+  font-size:18px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:background 0.15s;
 }
-.send-btn:hover { background: var(--red); }
-.send-btn:disabled { background: var(--panel3); color: var(--ink4); cursor: not-allowed; }
+.send-btn:hover { background:var(--red); }
+.send-btn:disabled { background:var(--panel3); color:var(--ink4); cursor:not-allowed; }
 
-/* mic row */
-.mic-row {
-  display: flex; align-items: center; justify-content: center;
-  gap: 12px;
-}
+.mic-row { display:flex; flex-direction:column; align-items:center; gap:5px; }
 .mic-btn {
-  width: 68px; height: 68px; border-radius: 50%;
-  background: var(--panel);
-  border: 2px solid var(--line2);
-  color: var(--ink3);
-  font-size: 28px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
-  position: relative;
+  width:64px; height:64px; border-radius:50%;
+  background:var(--panel); border:2px solid var(--line2);
+  color:var(--ink3); font-size:26px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all 0.2s; flex-shrink:0;
 }
-.mic-btn:hover { background: var(--panel2); border-color: var(--ink4); }
+.mic-btn:active { transform:scale(0.94); }
 .mic-btn.recording {
-  background: rgba(222,0,0,0.12);
-  border-color: var(--red);
-  color: var(--red);
-  box-shadow: 0 0 0 4px rgba(222,0,0,0.12), 0 0 0 8px rgba(222,0,0,0.05);
-  animation: mic-pulse 1.2s ease-in-out infinite;
+  background:rgba(222,0,0,0.1); border-color:var(--red); color:var(--red);
+  animation:mic-pulse 1s ease-in-out infinite;
 }
+.mic-btn.loading {
+  background:rgba(245,158,11,0.1); border-color:var(--amber); color:var(--amber);
+}
+.mic-btn.unavailable { opacity:0.3; cursor:not-allowed; }
 @keyframes mic-pulse {
-  0%,100% { box-shadow: 0 0 0 4px rgba(222,0,0,0.12), 0 0 0 8px rgba(222,0,0,0.05); }
-  50%      { box-shadow: 0 0 0 8px rgba(222,0,0,0.18), 0 0 0 16px rgba(222,0,0,0.06); }
+  0%,100%{box-shadow:0 0 0 0 rgba(222,0,0,0.2)}
+  50%     {box-shadow:0 0 0 10px rgba(222,0,0,0)}
 }
-.mic-btn.unavailable { opacity: 0.3; cursor: not-allowed; }
-.mic-hint {
-  font-family: var(--body); font-size: 11px; color: var(--ink4);
-  text-align: center; letter-spacing: 0.08em; text-transform: uppercase;
-}
+.mic-hint { font-family:var(--body); font-size:11px; color:var(--ink4); letter-spacing:0.08em; text-transform:uppercase; }
 </style>
 </head>
 <body>
 
 <!-- TOP BAR -->
 <div class="topbar">
-  <div class="topbar-left">
-    <div class="logo">TORI <div class="logo-dot" style="display:inline-block;vertical-align:middle;margin-left:4px;"></div></div>
-    <div class="brand-label">Assistant</div>
+  <div class="topbar-brand">
+    <div class="logo">TORI <div class="logo-dot"></div></div>
+    <div class="brand-sub">Assistant</div>
   </div>
-  <label class="voice-toggle" id="voice-toggle">
-    <input type="checkbox" id="voice-cb" onchange="toggleVoice(this)"> Speak reply
-  </label>
+  <div class="topbar-controls">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn"        id="btn-tl" onclick="setLang('tl')">TL</button>
+    </div>
+    <label class="voice-toggle" id="voice-toggle-lbl">
+      <input type="checkbox" id="voice-cb" onchange="toggleVoice(this)">🔊
+    </label>
+  </div>
 </div>
 
 <!-- CHAT -->
 <div class="chat-area" id="chat">
   <div class="empty-state" id="empty-state">
-    <div class="empty-icon">🎙</div>
+    <div class="empty-icon">🎙️</div>
     <div class="empty-text">Ask how to use the app</div>
-    <div class="empty-sub">Tap the microphone and speak your question,<br>or type it in the field below.</div>
+    <div class="empty-sub">
+      Tap the mic, ask your question in English or Filipino,<br>
+      then send. You can also type below.
+    </div>
   </div>
 </div>
 
@@ -246,26 +204,27 @@ body {
 <div class="input-area">
   <div class="text-row">
     <textarea class="text-input" id="text-input" rows="1"
-      placeholder="Type a question…"
+      placeholder="Type or record a question…"
       oninput="autoResize(this); checkSend()"
       onkeydown="handleKey(event)"></textarea>
-    <button class="send-btn" id="send-btn" onclick="sendQuestion()" disabled title="Send">&#9658;</button>
+    <button class="send-btn" id="send-btn" onclick="sendQuestion()" disabled>&#9658;</button>
   </div>
   <div class="mic-row">
-    <div>
-      <button class="mic-btn" id="mic-btn" onclick="toggleMic()" title="Tap to record">🎤</button>
-      <div class="mic-hint" id="mic-hint">tap to record</div>
-    </div>
+    <button class="mic-btn" id="mic-btn" onclick="toggleMic()">🎤</button>
+    <div class="mic-hint" id="mic-hint">tap to record</div>
   </div>
 </div>
 
 <script>
-/* ═══════════════════════════════════
-   SPEECH RECOGNITION
-═══════════════════════════════════ */
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null;
-let isRecording = false;
+/* ═══════════════════════════════
+   STATE
+═══════════════════════════════ */
+let currentLang    = 'en';
+let mediaRecorder  = null;
+let audioChunks    = [];
+let isRecording    = false;
+let timerInterval  = null;
+let recordSeconds  = 0;
 
 const micBtn    = document.getElementById('mic-btn');
 const micHint   = document.getElementById('mic-hint');
@@ -275,190 +234,243 @@ const statusEl  = document.getElementById('status-line');
 const chatEl    = document.getElementById('chat');
 const emptyEl   = document.getElementById('empty-state');
 
-if (!SR) {
-  micBtn.classList.add('unavailable');
-  micHint.textContent = 'voice not supported';
+/* ═══════════════════════════════
+   LANGUAGE
+═══════════════════════════════ */
+function setLang(code) {
+  currentLang = code;
+  document.getElementById('btn-en').classList.toggle('active', code === 'en');
+  document.getElementById('btn-tl').classList.toggle('active', code === 'tl');
+  textInput.placeholder = code === 'tl'
+    ? 'I-type o i-record ang iyong tanong…'
+    : 'Type or record a question…';
 }
 
-function initRecognition() {
-  recognition = new SR();
-  recognition.lang = 'en-US';
-  recognition.continuous = false;
-  recognition.interimResults = true;
+/* ═══════════════════════════════
+   MIC / MEDIARECORDER
+═══════════════════════════════ */
+function getSupportedMime() {
+  const types = ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/mpeg','audio/ogg;codecs=opus'];
+  for (const t of types) { if (MediaRecorder.isTypeSupported(t)) return t; }
+  return '';
+}
 
-  recognition.onstart = () => {
+async function toggleMic() {
+  if (isRecording) {
+    stopRecording();
+    return;
+  }
+  if (!navigator.mediaDevices || !window.MediaRecorder) {
+    setStatus('Microphone not available on this browser', '');
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    const mime   = getSupportedMime();
+    mediaRecorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+    audioChunks   = [];
+
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) audioChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      if (audioChunks.length === 0) { setStatus('No audio captured', ''); return; }
+      const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+      await transcribeBlob(blob, mediaRecorder.mimeType || 'audio/webm');
+    };
+
+    mediaRecorder.start(250); // collect in 250ms chunks
     isRecording = true;
+    recordSeconds = 0;
     micBtn.classList.add('recording');
     micBtn.textContent = '⏹';
     micHint.textContent = 'tap to stop';
-    setStatus('Listening…', 'listening');
-  };
+    startTimer();
+    setStatus('● Recording…', 'recording');
 
-  recognition.onresult = (e) => {
-    let interim = '', final = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      (e.results[i].isFinal ? (final += e.results[i][0].transcript) : (interim += e.results[i][0].transcript));
-    }
-    textInput.value = (final || interim).trim();
-    autoResize(textInput);
-    checkSend();
-  };
-
-  recognition.onend = () => {
-    stopRecording();
-    if (textInput.value.trim()) {
-      setStatus('Ready — tap ▶ to send', '');
-      sendBtn.focus();
-    }
-  };
-
-  recognition.onerror = (e) => {
-    stopRecording();
-    if (e.error !== 'no-speech' && e.error !== 'aborted') {
-      setStatus('Mic error: ' + e.error, '');
-    } else {
-      setStatus('', '');
-    }
-  };
-}
-
-function toggleMic() {
-  if (!SR) return;
-  if (isRecording) {
-    recognition && recognition.stop();
-    return;
-  }
-  initRecognition();
-  try {
-    recognition.start();
-  } catch(err) {
-    setStatus('Could not start mic', '');
+  } catch (err) {
+    setStatus('Mic access denied', '');
   }
 }
 
 function stopRecording() {
+  if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+  mediaRecorder.stop();
   isRecording = false;
+  stopTimer();
   micBtn.classList.remove('recording');
-  micBtn.textContent = '🎤';
-  micHint.textContent = 'tap to record';
+  micBtn.classList.add('loading');
+  micBtn.textContent = '⏳';
+  micHint.textContent = 'transcribing…';
+  setStatus('Transcribing…', 'transcribing');
 }
 
-/* ═══════════════════════════════════
+function startTimer() {
+  timerInterval = setInterval(() => {
+    recordSeconds++;
+    const m = String(Math.floor(recordSeconds / 60)).padStart(2, '0');
+    const s = String(recordSeconds % 60).padStart(2, '0');
+    setStatus(`● Recording… ${m}:${s}`, 'recording');
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+/* ═══════════════════════════════
+   TRANSCRIBE via Whisper
+═══════════════════════════════ */
+async function transcribeBlob(blob, mime) {
+  const ext = mime.includes('mp4') ? 'mp4' : mime.includes('mpeg') ? 'mp3' : 'webm';
+  const formData = new FormData();
+  formData.append('audio', blob, `recording.${ext}`);
+  formData.append('language', currentLang);
+
+  try {
+    const res = await fetch('/api/transcribe', { method: 'POST', body: formData });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.detail || 'Transcription error ' + res.status);
+    }
+    const data = await res.json();
+    const transcript = (data.transcript || '').trim();
+
+    micBtn.classList.remove('loading');
+    micBtn.textContent = '🎤';
+    micHint.textContent = 'tap to record';
+    setStatus('', '');
+
+    if (transcript) {
+      textInput.value = transcript;
+      autoResize(textInput);
+      checkSend();
+      textInput.focus();
+    } else {
+      setStatus('Nothing was heard — try again', '');
+    }
+  } catch (err) {
+    micBtn.classList.remove('loading');
+    micBtn.textContent = '🎤';
+    micHint.textContent = 'tap to record';
+    setStatus('Transcription failed: ' + err.message, '');
+  }
+}
+
+/* ═══════════════════════════════
    SEND / RECEIVE
-═══════════════════════════════════ */
+═══════════════════════════════ */
 async function sendQuestion() {
   const q = textInput.value.trim();
   if (!q) return;
 
-  recognition && recognition.abort();
-  stopRecording();
   textInput.value = '';
   autoResize(textInput);
   checkSend();
-
   hideEmpty();
+
   addMessage('user', q);
-  const thinking = addMessage('bot', 'Thinking…', true);
+  const thinking = addThinking();
   setStatus('Thinking…', 'thinking');
 
   try {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: q })
+      body: JSON.stringify({ question: q }),
     });
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Server error ' + res.status);
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.detail || 'Server error ' + res.status);
     }
     const data = await res.json();
     thinking.remove();
-    const botMsg = addMessage('bot', data.answer);
+    addMessage('bot', data.answer);
     setStatus('', '');
-    if (document.getElementById('voice-cb').checked) {
-      speakText(data.answer);
-    }
-  } catch(err) {
+    if (document.getElementById('voice-cb').checked) speakText(data.answer);
+  } catch (err) {
     thinking.remove();
     addMessage('bot', 'Sorry, something went wrong: ' + err.message);
     setStatus('', '');
   }
 }
 
-/* ═══════════════════════════════════
+/* ═══════════════════════════════
    CHAT BUBBLES
-═══════════════════════════════════ */
-function addMessage(role, text, thinking = false) {
-  const wrap = document.createElement('div');
-  wrap.className = 'msg ' + role + (thinking ? ' thinking' : '');
-
+═══════════════════════════════ */
+function addMessage(role, text) {
+  hideEmpty();
+  const wrap   = document.createElement('div');
+  wrap.className = 'msg ' + role;
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
   bubble.textContent = text;
   wrap.appendChild(bubble);
+  const label  = document.createElement('div');
+  label.className = 'msg-label';
+  label.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  wrap.appendChild(label);
+  chatEl.appendChild(wrap);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return wrap;
+}
 
-  if (!thinking) {
-    const time = document.createElement('div');
-    time.className = 'msg-time';
-    time.textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-    wrap.appendChild(time);
-  }
-
+function addThinking() {
+  hideEmpty();
+  const wrap = document.createElement('div');
+  wrap.className = 'msg bot thinking';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = currentLang === 'tl' ? 'Nag-iisip…' : 'Thinking…';
+  wrap.appendChild(bubble);
   chatEl.appendChild(wrap);
   chatEl.scrollTop = chatEl.scrollHeight;
   return wrap;
 }
 
 function hideEmpty() {
-  if (emptyEl) { emptyEl.style.display = 'none'; }
+  if (emptyEl) emptyEl.style.display = 'none';
 }
 
-/* ═══════════════════════════════════
+/* ═══════════════════════════════
    SPEECH SYNTHESIS
-═══════════════════════════════════ */
-let currentUtterance = null;
-
+═══════════════════════════════ */
 function speakText(text) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US';
+  u.lang = currentLang === 'tl' ? 'fil-PH' : 'en-US';
   u.rate = 0.92;
   u.onstart = () => setStatus('Speaking…', 'speaking');
   u.onend   = () => setStatus('', '');
   u.onerror = () => setStatus('', '');
-  currentUtterance = u;
   window.speechSynthesis.speak(u);
 }
 
 function toggleVoice(cb) {
-  document.getElementById('voice-toggle').classList.toggle('on', cb.checked);
+  document.getElementById('voice-toggle-lbl').classList.toggle('on', cb.checked);
   if (!cb.checked && window.speechSynthesis) window.speechSynthesis.cancel();
-  if (cb.checked) setStatus('', '');
 }
 
-/* ═══════════════════════════════════
+/* ═══════════════════════════════
    UI HELPERS
-═══════════════════════════════════ */
+═══════════════════════════════ */
 function setStatus(text, cls) {
   statusEl.textContent = text;
   statusEl.className = 'status-line' + (cls ? ' ' + cls : '');
 }
-
 function checkSend() {
   sendBtn.disabled = !textInput.value.trim();
 }
-
 function autoResize(el) {
   el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+  el.style.height = Math.min(el.scrollHeight, 80) + 'px';
 }
-
 function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    if (!sendBtn.disabled) sendQuestion();
-  }
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendQuestion(); }
 }
 </script>
 </body>
