@@ -127,7 +127,6 @@ body { font-family: var(--body); color: var(--ink); }
 }
 .status-line.recording { color: var(--red); }
 .status-line.transcribing, .status-line.thinking { color: var(--amber); }
-.status-line.speaking { color: var(--green); }
 .status-line.warn { color: var(--amber); }
 
 /* FOOTER */
@@ -240,10 +239,6 @@ body { font-family: var(--body); color: var(--ink); }
           <button onclick="clearChat()" role="menuitem">
             <span class="ic" data-icon="trash" data-size="16"></span> Clear conversation
           </button>
-          <button onclick="toggleVoice()" role="menuitem">
-            <span class="ic" id="voice-ic" data-icon="volumeOff" data-size="16"></span>
-            <span id="voice-label">Voice output: off</span>
-          </button>
           <div class="dropdown-sep"></div>
           <button onclick="setLang('en')" role="menuitem">
             <span class="ic" data-icon="language" data-size="16"></span> English (EN)
@@ -289,8 +284,6 @@ const ICONS = {
   mic:       '<path d="M9 2m0 3a3 3 0 0 1 3 -3h0a3 3 0 0 1 3 3v5a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3z"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M8 21l8 0"/><path d="M12 17l0 4"/>',
   stop:      '<rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor" stroke="none"/>',
   loader:    '<path d="M12 3a9 9 0 1 0 9 9"/>',
-  volume:    '<path d="M15 8a5 5 0 0 1 0 8"/><path d="M17.7 5a9 9 0 0 1 0 14"/><path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"/>',
-  volumeOff: '<path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v4m0 4v4a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"/><path d="M16 10l4 4"/><path d="M16 14l4 -4"/>',
   chatbot:   '<path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12"/><path d="M9.5 9h.01"/><path d="M14.5 9h.01"/><path d="M9.5 13a3.5 3.5 0 0 0 5 0"/>',
 };
 function svgMarkup(name, size, stroke) {
@@ -313,7 +306,6 @@ renderIcons();
 
 /* ═══════════════ STATE ═══════════════ */
 let currentLang   = 'en';
-let voiceEnabled  = false;
 let autoScrollOn  = true;
 let mediaRecorder = null;
 let audioChunks   = [];
@@ -398,25 +390,6 @@ function setLang(code) {
   closeDropdown();
 }
 
-/* ═══════════════ VOICE OUTPUT ═══════════════ */
-function toggleVoice() {
-  voiceEnabled = !voiceEnabled;
-  setIcon(document.getElementById('voice-ic'), voiceEnabled ? 'volume' : 'volumeOff');
-  document.getElementById('voice-label').textContent = voiceEnabled ? 'Voice output: on' : 'Voice output: off';
-  if (!voiceEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
-  closeDropdown();
-}
-function speakText(text) {
-  if (!voiceEnabled || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = currentLang === 'tl' ? 'fil-PH' : 'en-US';
-  u.rate = 0.92;
-  u.onstart = () => setStatus('Speaking…', 'speaking');
-  u.onend = u.onerror = () => setStatus('', '');
-  window.speechSynthesis.speak(u);
-}
-
 /* ═══════════════ DROPDOWN ═══════════════ */
 function toggleDropdown() { document.getElementById('dropdown-menu').classList.toggle('open'); }
 function closeDropdown()  { document.getElementById('dropdown-menu').classList.remove('open'); }
@@ -429,7 +402,6 @@ function resetChat() {
   emptyEl.style.display = 'flex';
   autoScrollOn = true; pillEl.style.display = 'none';
   setStatus('', '');
-  if (window.speechSynthesis) window.speechSynthesis.cancel();
 }
 function clearChat() { resetChat(); closeDropdown(); }
 
@@ -477,7 +449,6 @@ async function sendQuestion() {
     thinking.remove();
     addMsg('bot', data.answer);
     setStatus('', '');
-    speakText(data.answer);
   } catch (err) {
     thinking.remove();
     addMsg('bot', 'Something went wrong: ' + err.message);
