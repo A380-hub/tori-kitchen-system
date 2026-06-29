@@ -43,30 +43,30 @@ body { font-family: var(--body); color: var(--ink); }
   border-left: 1px solid var(--line); border-right: 1px solid var(--line);
 }
 
-/* HEADER */
+/* HEADER — matches kitchen order-screen topbar */
 .card-header {
-  background: var(--bg); border-bottom: 1px solid var(--line2);
-  padding: 10px 14px; display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  background: #0F1314; border-bottom: 1px solid var(--line2);
+  height: 64px; padding: 0 12px 0 14px; display: flex; align-items: center; gap: 8px; flex-shrink: 0;
 }
-.brand { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.logo { font-family: var(--font); font-size: 21px; font-weight: 900; letter-spacing: -0.04em; display: flex; align-items: center; gap: 5px; }
-.logo-dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; animation: blink 2s ease-in-out infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-.brand-sub { font-family: var(--font); font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--line2); }
-.header-title { font-family: var(--font); font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink4); flex: 1; padding-left: 2px; }
-.header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.hdr-brand {
+  display: flex; align-items: center; gap: 10px; height: 100%;
+  padding-right: 13px; border-right: 1px solid var(--line); flex-shrink: 0;
+}
+.hdr-logo { height: 26px; width: auto; display: block; }
+.hdr-sub { font-family: var(--font); font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink4); }
+.header-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; }
 .lang-toggle { display: flex; border: 1px solid var(--line2); }
 .lang-btn {
   font-family: var(--font); font-size: 11px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;
-  padding: 5px 10px; background: var(--panel2); border: none; color: var(--ink4); cursor: pointer; transition: all 0.15s;
+  padding: 6px 10px; background: var(--panel2); border: none; color: var(--ink4); cursor: pointer; transition: all 0.15s;
 }
 .lang-btn + .lang-btn { border-left: 1px solid var(--line2); }
 .lang-btn.active { background: var(--red2); color: var(--ink); }
 .icon-btn {
-  width: 30px; height: 30px; background: var(--panel); border: 1px solid var(--line);
-  color: var(--ink3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s;
+  width: 34px; height: 34px; background: transparent; border: 1px solid var(--line2);
+  color: var(--ink4); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s;
 }
-.icon-btn:hover { background: var(--panel2); color: var(--ink); }
+.icon-btn:hover { background: var(--panel3); color: var(--ink); }
 
 /* CARD CONTENT */
 .card-content { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; }
@@ -182,11 +182,10 @@ body { font-family: var(--body); color: var(--ink); }
 
   <!-- HEADER -->
   <div class="card-header">
-    <div class="brand">
-      <div class="logo">TORI <div class="logo-dot"></div></div>
-      <div class="brand-sub">Assistant</div>
+    <div class="hdr-brand">
+      <img src="tori-logo.png" alt="TORI" class="hdr-logo">
+      <span class="hdr-sub">Assistant</span>
     </div>
-    <div class="header-title">New Chat</div>
     <div class="header-actions">
       <div class="lang-toggle">
         <button class="lang-btn active" id="btn-en" onclick="setLang('en')">EN</button>
@@ -194,6 +193,9 @@ body { font-family: var(--body); color: var(--ink); }
       </div>
       <button class="icon-btn" id="reset-btn" title="Reset conversation" onclick="resetChat()" aria-label="Reset conversation">
         <span class="ic" data-icon="refresh" data-size="18"></span>
+      </button>
+      <button class="icon-btn" id="close-btn" title="Close" onclick="closeAssistant()" aria-label="Close">
+        <span class="ic" data-icon="x" data-size="18"></span>
       </button>
     </div>
   </div>
@@ -284,6 +286,7 @@ const ICONS = {
   mic:       '<path d="M9 2m0 3a3 3 0 0 1 3 -3h0a3 3 0 0 1 3 3v5a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3z"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M8 21l8 0"/><path d="M12 17l0 4"/>',
   stop:      '<rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor" stroke="none"/>',
   loader:    '<path d="M12 3a9 9 0 1 0 9 9"/>',
+  x:         '<path d="M18 6l-12 12"/><path d="M6 6l12 12"/>',
   chatbot:   '<path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12"/><path d="M9.5 9h.01"/><path d="M14.5 9h.01"/><path d="M9.5 13a3.5 3.5 0 0 0 5 0"/>',
 };
 function svgMarkup(name, size, stroke) {
@@ -388,6 +391,18 @@ function setLang(code) {
   document.getElementById('btn-tl').classList.toggle('active', code === 'tl');
   textInput.placeholder = code === 'tl' ? 'Mag-type ng tanong…' : 'Type a question…';
   closeDropdown();
+}
+
+/* ═══════════════ CLOSE (return to the screen this was opened from) ═══════════════ */
+function closeAssistant() {
+  /* opened as a modal over a kitchen screen → just hide the overlay, order is preserved */
+  if (window.parent && window.parent !== window && typeof window.parent.closeChat === 'function') {
+    window.parent.closeChat();
+    return;
+  }
+  /* opened standalone → go back, or fall back to the order screen */
+  if (window.history.length > 1) window.history.back();
+  else window.location.href = 'tori-order-checklist.html';
 }
 
 /* ═══════════════ DROPDOWN ═══════════════ */
