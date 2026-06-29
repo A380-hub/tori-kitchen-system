@@ -6,7 +6,7 @@ Uses Supabase REST API directly via httpx (no heavy SDK)
 
 import os
 from datetime import datetime, timezone
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 
@@ -404,7 +404,9 @@ async def admin_reset(request: Request):
     return {"ok": True, "message": "All orders cleared"}
 
 
-CHAT_SYSTEM_PROMPT = """You are a help assistant for TORI KIS (Kitchen Information System), a web app used by TORI restaurant group. Answer questions based only on the verified app behaviour below. Be concise and direct — one or two short paragraphs maximum. If asked something not covered below, say you don't have that information.
+CHAT_SYSTEM_PROMPT = """You are a help assistant for TORI KIS (Kitchen Information System). If the user writes in Filipino or Tagalog, respond in Filipino/Tagalog. If the user writes in English, respond in English. Answer questions based only on the verified app behaviour below. Be concise and direct — one or two short paragraphs maximum. If asked something not covered below, say you don't have that information.
+
+TORI KIS (Kitchen Information System), a web app used by TORI restaurant group. Answer questions based only on the verified app behaviour below. Be concise and direct — one or two short paragraphs maximum. If asked something not covered below, say you don't have that information.
 
 ## LOGIN (index.html)
 - Every user logs in with a personal 3-digit PIN validated against the database.
@@ -509,6 +511,31 @@ active can also become: cancelled or superseded (when an amendment replaces it)
 
 ## REAL-TIME SYNC
 All devices update within ~1 second via Supabase Realtime WebSocket. Fallback polling every 15 seconds."""
+
+
+@app.post("/api/transcribe")
+async def transcribe_audio(
+    audio: UploadFile = File(...),
+    language: str = Form("en"),
+):
+    openai_key = os.environ.get("OPENAI_API_KEY", "")
+    if not openai_key:
+        raise HTTPException(status_code=500, detail="Transcription not configured")
+
+    audio_bytes = await audio.read()
+    filename = audio.filename or "recording.webm"
+    mime = audio.content_type or "audio/webm"
+
+    async with httpx.AsyncClient(timeout=60) as client:
+        r = await client.post(
+            "https://api.openai.com/v1/audio/transcriptions",
+            headers={"Authorization": f"Bearer {openai_key}"},
+            files={"file": (filename, audio_bytes, mime)},
+            data={"model": "whisper-1", "language": language, "response_format": "text"},
+        )
+        r.raise_for_status()
+
+    return {"transcript": r.text.strip()}
 
 
 @app.post("/api/chat")
