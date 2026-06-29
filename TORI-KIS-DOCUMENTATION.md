@@ -1034,11 +1034,15 @@ Tap the tile for the module you want to open."
 
 ---
 
-**[SCREEN: Status tab — shows "Preparing" with pulsing green dot]**
+**[SCREEN: Status tab — shows "Preparing" with pulsing green dot, Amend and Cancel buttons visible]**
 
 "After sending the order, the app moves to the Status tab automatically. This is where you track the delivery. Right now it shows Preparing — the kitchen has received the order and is packing it.
 
-You don't need to refresh. The status updates on its own."
+You don't need to refresh. The status updates on its own.
+
+While the status is Preparing, you can still make changes. Tap Amend / Add to This Order to go back to the checklist with your items pre-filled — add or change anything, then send again. You can also cancel the order entirely using the Cancel Order button.
+
+Both options disappear the moment the kitchen dispatches the order. After that point, the order is already packed and on its way — it can no longer be changed."
 
 ---
 
