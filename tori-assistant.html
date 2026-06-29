@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>TORI Assistant</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css" rel="stylesheet">
 <style>
 :root {
   --bg:    #0F1314;
@@ -30,28 +29,27 @@
 html, body { height: 100%; overflow: hidden; background: var(--bg); }
 body { font-family: var(--body); color: var(--ink); }
 
+/* inline-svg icon wrapper */
+.ic { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
+.ic svg { display: block; }
+.spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* CARD — pinned to viewport with fixed + inset, works everywhere */
 .card {
-  position: fixed;
-  inset: 0;
-  max-width: 480px;
-  margin: 0 auto;
-  display: flex; flex-direction: column;
-  overflow: hidden;
+  position: fixed; inset: 0;
+  max-width: 480px; margin: 0 auto;
+  display: flex; flex-direction: column; overflow: hidden;
   border-left: 1px solid var(--line); border-right: 1px solid var(--line);
 }
 
 /* HEADER */
 .card-header {
   background: var(--bg); border-bottom: 1px solid var(--line2);
-  padding: 10px 14px; display: flex; align-items: center;
-  gap: 8px; flex-shrink: 0;
+  padding: 10px 14px; display: flex; align-items: center; gap: 8px; flex-shrink: 0;
 }
 .brand { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.logo {
-  font-family: var(--font); font-size: 21px; font-weight: 900;
-  letter-spacing: -0.04em; display: flex; align-items: center; gap: 5px;
-}
+.logo { font-family: var(--font); font-size: 21px; font-weight: 900; letter-spacing: -0.04em; display: flex; align-items: center; gap: 5px; }
 .logo-dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; animation: blink 2s ease-in-out infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 .brand-sub { font-family: var(--font); font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--line2); }
@@ -66,11 +64,9 @@ body { font-family: var(--body); color: var(--ink); }
 .lang-btn.active { background: var(--red2); color: var(--ink); }
 .icon-btn {
   width: 30px; height: 30px; background: var(--panel); border: 1px solid var(--line);
-  color: var(--ink3); font-size: 15px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; transition: background 0.15s;
+  color: var(--ink3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s;
 }
 .icon-btn:hover { background: var(--panel2); color: var(--ink); }
-.icon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 /* CARD CONTENT */
 .card-content { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; }
@@ -78,11 +74,9 @@ body { font-family: var(--body); color: var(--ink); }
 /* EMPTY STATE */
 .empty-state {
   flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 14px; text-align: center; padding: 40px 28px;
+  align-items: center; justify-content: center; gap: 14px; text-align: center; padding: 40px 28px;
 }
-.empty-icon { font-size: 48px; color: var(--line2); line-height: 1; }
-.empty-icon i { font-size: 48px; }
+.empty-icon { color: var(--line2); line-height: 0; }
 .empty-title { font-family: var(--font); font-size: 17px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink4); }
 .empty-desc { font-size: 14px; line-height: 1.65; color: var(--line2); max-width: 255px; }
 
@@ -105,7 +99,6 @@ body { font-family: var(--body); color: var(--ink); }
 }
 @keyframes floatUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
 .scroll-pill:hover { background: var(--panel2); color: var(--ink); }
-.scroll-pill i { font-size: 14px; }
 
 /* MESSAGES */
 .msg { display: flex; flex-direction: column; max-width: 88%; animation: msgIn 0.22s ease; }
@@ -130,11 +123,12 @@ body { font-family: var(--body); color: var(--ink); }
   min-height: 18px; padding: 1px 14px; flex-shrink: 0;
   font-family: var(--font); font-size: 10px; font-weight: 700;
   letter-spacing: 0.16em; text-transform: uppercase; color: var(--line2);
-  display: flex; align-items: center; justify-content: center; transition: color 0.2s;
+  display: flex; align-items: center; justify-content: center; transition: color 0.2s; text-align: center;
 }
 .status-line.recording { color: var(--red); }
 .status-line.transcribing, .status-line.thinking { color: var(--amber); }
 .status-line.speaking { color: var(--green); }
+.status-line.warn { color: var(--amber); }
 
 /* FOOTER */
 .card-footer { padding: 9px 12px 13px; background: var(--bg2); border-top: 1px solid var(--line); flex-shrink: 0; position: relative; }
@@ -155,12 +149,10 @@ body { font-family: var(--body); color: var(--ink); }
 .text-input::placeholder { color: var(--line2); }
 .input-btn {
   width: 33px; height: 33px; flex-shrink: 0; background: var(--panel2); border: 1px solid var(--line);
-  color: var(--ink3); font-size: 16px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  color: var(--ink3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s;
 }
 .input-btn:hover { background: var(--panel3); color: var(--ink); }
 .input-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.input-btn i { font-size: 16px; }
 .send-btn:not(:disabled) { background: var(--red2); border-color: var(--red2); color: var(--ink); }
 .send-btn:not(:disabled):hover { background: var(--red); border-color: var(--red); }
 .mic-btn.recording { background: rgba(222,0,0,0.1); border-color: var(--red); color: var(--red); animation: micPulse 1s ease-in-out infinite; }
@@ -182,7 +174,6 @@ body { font-family: var(--body); color: var(--ink); }
   cursor: pointer; text-align: left; width: 100%; transition: background 0.1s;
 }
 .dropdown-menu button:hover { background: var(--panel2); color: var(--ink); }
-.dropdown-menu button i { font-size: 16px; flex-shrink: 0; }
 .dropdown-sep { height: 1px; background: var(--line); margin: 4px 0; }
 </style>
 </head>
@@ -203,7 +194,7 @@ body { font-family: var(--body); color: var(--ink); }
         <button class="lang-btn"        id="btn-tl" onclick="setLang('tl')">TL</button>
       </div>
       <button class="icon-btn" id="reset-btn" title="Reset conversation" onclick="resetChat()" aria-label="Reset conversation">
-        <i class="ti ti-refresh" aria-hidden="true"></i>
+        <span class="ic" data-icon="refresh" data-size="18"></span>
       </button>
     </div>
   </div>
@@ -213,9 +204,7 @@ body { font-family: var(--body); color: var(--ink); }
 
     <!-- Empty state -->
     <div class="empty-state" id="empty-state">
-      <div class="empty-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12"/><path d="M9.5 9h.01"/><path d="M14.5 9h.01"/><path d="M9.5 13a3.5 3.5 0 0 0 5 0"/></svg>
-      </div>
+      <div class="empty-icon" data-icon="chatbot" data-size="52" data-stroke="1"></div>
       <div class="empty-title">Ask how to use TORI KIS</div>
       <div class="empty-desc">
         Tap the mic or type your question below.<br>
@@ -230,7 +219,7 @@ body { font-family: var(--body); color: var(--ink); }
 
     <!-- Scroll to bottom -->
     <button class="scroll-pill" id="scroll-pill" style="display:none" onclick="scrollToBottom()" aria-label="Scroll to latest message">
-      <i class="ti ti-arrow-down" aria-hidden="true"></i> Latest
+      <span class="ic" data-icon="arrowDown" data-size="14"></span> Latest
     </button>
 
   </div>
@@ -245,22 +234,22 @@ body { font-family: var(--body); color: var(--ink); }
       <!-- + Dropdown -->
       <div class="dropdown" id="dropdown">
         <button class="input-btn" onclick="toggleDropdown()" aria-label="More options" aria-haspopup="true">
-          <i class="ti ti-plus" aria-hidden="true"></i>
+          <span class="ic" data-icon="plus" data-size="18"></span>
         </button>
         <div class="dropdown-menu" id="dropdown-menu" role="menu">
           <button onclick="clearChat()" role="menuitem">
-            <i class="ti ti-trash" aria-hidden="true"></i> Clear conversation
+            <span class="ic" data-icon="trash" data-size="16"></span> Clear conversation
           </button>
           <button onclick="toggleVoice()" role="menuitem">
-            <i class="ti ti-volume-off" id="voice-icon" aria-hidden="true"></i>
+            <span class="ic" id="voice-ic" data-icon="volumeOff" data-size="16"></span>
             <span id="voice-label">Voice output: off</span>
           </button>
           <div class="dropdown-sep"></div>
           <button onclick="setLang('en')" role="menuitem">
-            <i class="ti ti-language" aria-hidden="true"></i> English (EN)
+            <span class="ic" data-icon="language" data-size="16"></span> English (EN)
           </button>
           <button onclick="setLang('tl')" role="menuitem">
-            <i class="ti ti-language" aria-hidden="true"></i> Filipino (TL)
+            <span class="ic" data-icon="language" data-size="16"></span> Filipino (TL)
           </button>
         </div>
       </div>
@@ -275,12 +264,12 @@ body { font-family: var(--body); color: var(--ink); }
 
       <!-- Mic -->
       <button class="input-btn mic-btn" id="mic-btn" onclick="toggleMic()" aria-label="Record voice">
-        <i class="ti ti-microphone" id="mic-icon" aria-hidden="true"></i>
+        <span class="ic" id="mic-ic" data-icon="mic" data-size="18"></span>
       </button>
 
       <!-- Send -->
       <button class="input-btn send-btn" id="send-btn" onclick="sendQuestion()" disabled aria-label="Send">
-        <i class="ti ti-arrow-up" aria-hidden="true"></i>
+        <span class="ic" data-icon="arrowUp" data-size="18"></span>
       </button>
 
     </div>
@@ -289,7 +278,40 @@ body { font-family: var(--body); color: var(--ink); }
 </div>
 
 <script>
-/* ── STATE ── */
+/* ═══════════════ INLINE ICONS (Tabler outline paths) ═══════════════ */
+const ICONS = {
+  refresh:   '<path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>',
+  arrowDown: '<path d="M12 5l0 14"/><path d="M18 13l-6 6"/><path d="M6 13l6 6"/>',
+  arrowUp:   '<path d="M12 5l0 14"/><path d="M18 11l-6 -6"/><path d="M6 11l6 -6"/>',
+  plus:      '<path d="M12 5l0 14"/><path d="M5 12l14 0"/>',
+  trash:     '<path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>',
+  language:  '<path d="M4 5h7"/><path d="M9 3v2c0 4.418 -2.239 8 -5 8"/><path d="M5 9c0 2.144 2.952 3.908 6.7 4"/><path d="M12 20l4 -9l4 9"/><path d="M19.1 18h-6.2"/>',
+  mic:       '<path d="M9 2m0 3a3 3 0 0 1 3 -3h0a3 3 0 0 1 3 3v5a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3z"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M8 21l8 0"/><path d="M12 17l0 4"/>',
+  stop:      '<rect x="6" y="6" width="12" height="12" rx="1" fill="currentColor" stroke="none"/>',
+  loader:    '<path d="M12 3a9 9 0 1 0 9 9"/>',
+  volume:    '<path d="M15 8a5 5 0 0 1 0 8"/><path d="M17.7 5a9 9 0 0 1 0 14"/><path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"/>',
+  volumeOff: '<path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v4m0 4v4a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"/><path d="M16 10l4 4"/><path d="M16 14l4 -4"/>',
+  chatbot:   '<path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12"/><path d="M9.5 9h.01"/><path d="M14.5 9h.01"/><path d="M9.5 13a3.5 3.5 0 0 0 5 0"/>',
+};
+function svgMarkup(name, size, stroke) {
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="' + size + '" height="' + size +
+    '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (stroke || 2) +
+    '" stroke-linecap="round" stroke-linejoin="round">' + (ICONS[name] || '') + '</svg>';
+}
+function renderIcons(root) {
+  (root || document).querySelectorAll('[data-icon]').forEach(el => {
+    el.classList.add('ic');
+    el.innerHTML = svgMarkup(el.dataset.icon, parseInt(el.dataset.size) || 18, parseInt(el.dataset.stroke) || 2);
+  });
+}
+function setIcon(el, name, spin) {
+  if (!el) return;
+  el.innerHTML = svgMarkup(name, parseInt(el.dataset.size) || 18, parseInt(el.dataset.stroke) || 2);
+  el.classList.toggle('spin', !!spin);
+}
+renderIcons();
+
+/* ═══════════════ STATE ═══════════════ */
 let currentLang   = 'en';
 let voiceEnabled  = false;
 let autoScrollOn  = true;
@@ -298,8 +320,10 @@ let audioChunks   = [];
 let isRecording   = false;
 let timerInt      = null;
 let recSecs       = 0;
+/* silence detection */
+let audioCtx = null, analyser = null, levelRAF = null, maxLevel = 0, silenceCheckOn = false, recStartMs = 0;
 
-/* ── DOM ── */
+/* ═══════════════ DOM ═══════════════ */
 const viewport  = document.getElementById('msg-viewport');
 const msgList   = document.getElementById('msg-list');
 const emptyEl   = document.getElementById('empty-state');
@@ -307,35 +331,30 @@ const pillEl    = document.getElementById('scroll-pill');
 const textInput = document.getElementById('text-input');
 const sendBtn   = document.getElementById('send-btn');
 const micBtn    = document.getElementById('mic-btn');
+const micIc     = document.getElementById('mic-ic');
 const statusEl  = document.getElementById('status-line');
 const inputGrp  = document.getElementById('input-group');
 
-/* ── AUTO-SCROLL ── */
+/* ═══════════════ AUTO-SCROLL ═══════════════ */
 viewport.addEventListener('scroll', () => {
   const atBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 60;
   autoScrollOn = atBottom;
   pillEl.style.display = atBottom ? 'none' : 'flex';
 });
-
 function scrollToBottom() {
   viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
-  autoScrollOn = true;
-  pillEl.style.display = 'none';
+  autoScrollOn = true; pillEl.style.display = 'none';
 }
-
 function maybeScroll() {
   if (autoScrollOn) requestAnimationFrame(() => viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' }));
 }
 
-/* ── MESSAGES ── */
-function showChat() {
-  emptyEl.style.display = 'none';
-  viewport.style.display = 'flex';
-}
+/* ═══════════════ MESSAGES ═══════════════ */
+function showChat() { emptyEl.style.display = 'none'; viewport.style.display = 'flex'; }
 
 function addMsg(role, text) {
   showChat();
-  const wrap   = document.createElement('div');
+  const wrap = document.createElement('div');
   wrap.className = 'msg ' + role;
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
@@ -370,7 +389,7 @@ function addTyping() {
   return wrap;
 }
 
-/* ── LANGUAGE ── */
+/* ═══════════════ LANGUAGE ═══════════════ */
 function setLang(code) {
   currentLang = code;
   document.getElementById('btn-en').classList.toggle('active', code === 'en');
@@ -379,15 +398,14 @@ function setLang(code) {
   closeDropdown();
 }
 
-/* ── VOICE OUTPUT ── */
+/* ═══════════════ VOICE OUTPUT ═══════════════ */
 function toggleVoice() {
   voiceEnabled = !voiceEnabled;
-  document.getElementById('voice-icon').className = voiceEnabled ? 'ti ti-volume' : 'ti ti-volume-off';
+  setIcon(document.getElementById('voice-ic'), voiceEnabled ? 'volume' : 'volumeOff');
   document.getElementById('voice-label').textContent = voiceEnabled ? 'Voice output: on' : 'Voice output: off';
   if (!voiceEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
   closeDropdown();
 }
-
 function speakText(text) {
   if (!voiceEnabled || !window.speechSynthesis) return;
   window.speechSynthesis.cancel();
@@ -399,30 +417,29 @@ function speakText(text) {
   window.speechSynthesis.speak(u);
 }
 
-/* ── DROPDOWN ── */
+/* ═══════════════ DROPDOWN ═══════════════ */
 function toggleDropdown() { document.getElementById('dropdown-menu').classList.toggle('open'); }
 function closeDropdown()  { document.getElementById('dropdown-menu').classList.remove('open'); }
 document.addEventListener('click', (e) => { if (!e.target.closest('#dropdown')) closeDropdown(); });
 
-/* ── RESET ── */
+/* ═══════════════ RESET ═══════════════ */
 function resetChat() {
   msgList.innerHTML = '';
   viewport.style.display = 'none';
   emptyEl.style.display = 'flex';
-  autoScrollOn = true;
-  pillEl.style.display = 'none';
+  autoScrollOn = true; pillEl.style.display = 'none';
   setStatus('', '');
   if (window.speechSynthesis) window.speechSynthesis.cancel();
 }
 function clearChat() { resetChat(); closeDropdown(); }
 
-/* ── STATUS ── */
+/* ═══════════════ STATUS ═══════════════ */
 function setStatus(text, cls) {
   statusEl.textContent = text;
   statusEl.className = 'status-line' + (cls ? ' ' + cls : '');
 }
 
-/* ── INPUT HELPERS ── */
+/* ═══════════════ INPUT HELPERS ═══════════════ */
 function syncState() {
   const has = !!textInput.value.trim();
   sendBtn.disabled = !has;
@@ -436,7 +453,7 @@ function handleKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (!sendBtn.disabled) sendQuestion(); }
 }
 
-/* ── SEND ── */
+/* ═══════════════ SEND ═══════════════ */
 async function sendQuestion() {
   const q = textInput.value.trim();
   if (!q) return;
@@ -468,76 +485,140 @@ async function sendQuestion() {
   }
 }
 
-/* ── MIC / MEDIARECORDER ── */
+/* ═══════════════ MIC / MEDIARECORDER ═══════════════ */
 function getSupportedMime() {
   const types = ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/mpeg','audio/ogg;codecs=opus'];
   for (const t of types) if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) return t;
   return '';
 }
 
+function cleanupAudioMeter() {
+  if (levelRAF) { cancelAnimationFrame(levelRAF); levelRAF = null; }
+  if (audioCtx) { try { audioCtx.close(); } catch (e) {} audioCtx = null; }
+  analyser = null;
+}
+
 async function toggleMic() {
   if (isRecording) { stopRecording(); return; }
-  if (!navigator.mediaDevices?.getUserMedia) { setStatus('Microphone not available', ''); return; }
+  if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+    setStatus('Microphone not supported on this browser', 'warn'); return;
+  }
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    const mime   = getSupportedMime();
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      video: false,
+    });
+
+    const mime = getSupportedMime();
     mediaRecorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
-    audioChunks   = [];
+    audioChunks = [];
+    maxLevel = 0;
+    silenceCheckOn = false;
+
+    /* live level meter → detect a dead/muted mic so we never send silence to Whisper */
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const src = audioCtx.createMediaStreamSource(stream);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      src.connect(analyser);
+      const buf = new Uint8Array(analyser.fftSize);
+      const sample = () => {
+        analyser.getByteTimeDomainData(buf);
+        let peak = 0;
+        for (let i = 0; i < buf.length; i++) { const d = Math.abs(buf[i] - 128); if (d > peak) peak = d; }
+        if (peak > maxLevel) maxLevel = peak;
+        levelRAF = requestAnimationFrame(sample);
+      };
+      sample();
+      silenceCheckOn = true;
+    } catch (e) { silenceCheckOn = false; }
+
     mediaRecorder.ondataavailable = (e) => { if (e.data?.size > 0) audioChunks.push(e.data); };
-    mediaRecorder.onstop = async () => {
-      stream.getTracks().forEach(t => t.stop());
-      if (!audioChunks.length) { resetMicUI(); setStatus('No audio captured', ''); return; }
-      await transcribeBlob(new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' }), mediaRecorder.mimeType || 'audio/webm');
-    };
-    mediaRecorder.start(250);
-    isRecording = true; recSecs = 0;
+    mediaRecorder.onstop = onRecordingStop;
+
+    mediaRecorder.start(); /* no timeslice → one clean complete blob on stop */
+    isRecording = true; recSecs = 0; recStartMs = Date.now();
     micBtn.classList.add('recording');
-    document.getElementById('mic-icon').className = 'ti ti-player-stop';
+    setIcon(micIc, 'stop');
     timerInt = setInterval(() => {
       recSecs++;
       const m = String(Math.floor(recSecs/60)).padStart(2,'0'), s = String(recSecs%60).padStart(2,'0');
-      setStatus(`● Recording  ${m}:${s}`, 'recording');
+      setStatus('● Recording  ' + m + ':' + s, 'recording');
     }, 1000);
-    setStatus('● Recording…', 'recording');
-  } catch { setStatus('Mic access denied', ''); }
+    setStatus('● Recording…  tap mic to stop', 'recording');
+
+  } catch (err) {
+    cleanupAudioMeter();
+    setStatus(err && err.name === 'NotAllowedError' ? 'Microphone permission denied' : 'Could not start microphone', 'warn');
+  }
 }
 
 function stopRecording() {
   if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
-  mediaRecorder.stop();
+  mediaRecorder.stop(); /* fires ondataavailable then onstop */
   isRecording = false;
   clearInterval(timerInt); timerInt = null;
-  micBtn.classList.remove('recording'); micBtn.classList.add('loading');
-  document.getElementById('mic-icon').className = 'ti ti-loader-2';
+  micBtn.classList.remove('recording');
+  setStatus('Processing…', 'transcribing');
+}
+
+async function onRecordingStop() {
+  const stream = mediaRecorder.stream;
+  if (stream) stream.getTracks().forEach(t => t.stop());
+
+  const peak  = maxLevel;
+  const hadMeter = silenceCheckOn;
+  const durMs = Date.now() - recStartMs;
+  cleanupAudioMeter();
+  resetMicUI();
+
+  if (durMs < 500) {
+    setStatus(currentLang === 'tl' ? 'Masyadong maikli — hawakan nang matagal' : 'Too short — hold the mic and speak', 'warn');
+    return;
+  }
+  if (hadMeter && peak < 6) {
+    setStatus(currentLang === 'tl' ? 'Walang tunog — i-check ang mic (naka-mute?)' : 'No sound detected — check your mic isn’t muted', 'warn');
+    return;
+  }
+  if (!audioChunks.length) { setStatus('No audio captured — try again', 'warn'); return; }
+
+  const type = mediaRecorder.mimeType || 'audio/webm';
+  micBtn.classList.add('loading');
+  setIcon(micIc, 'loader', true);
   setStatus('Transcribing…', 'transcribing');
+  await transcribeBlob(new Blob(audioChunks, { type }), type);
 }
 
 function resetMicUI() {
   micBtn.classList.remove('recording', 'loading');
-  document.getElementById('mic-icon').className = 'ti ti-microphone';
+  setIcon(micIc, 'mic');
 }
 
-/* ── TRANSCRIBE (Whisper) ── */
+/* ═══════════════ TRANSCRIBE (Whisper) ═══════════════ */
 async function transcribeBlob(blob, mime) {
-  const ext = mime.includes('mp4') ? 'mp4' : mime.includes('mpeg') ? 'mp3' : 'webm';
+  const ext = mime.includes('mp4') ? 'mp4' : mime.includes('mpeg') ? 'mp3' : mime.includes('ogg') ? 'ogg' : 'webm';
   const fd  = new FormData();
-  fd.append('audio', blob, `rec.${ext}`);
+  fd.append('audio', blob, 'rec.' + ext);
   fd.append('language', currentLang);
   try {
     const res = await fetch('/api/transcribe', { method: 'POST', body: fd });
     if (!res.ok) throw new Error(((await res.json().catch(() => ({}))).detail) || 'Error ' + res.status);
     const { transcript } = await res.json();
     resetMicUI();
-    if (transcript?.trim()) {
-      textInput.value = transcript.trim();
+    const clean = (transcript || '').trim();
+    if (clean) {
+      textInput.value = clean;
       autoResize(textInput); syncState();
-      textInput.focus(); setStatus('', '');
+      inputGrp.classList.add('active');
+      textInput.focus();
+      setStatus('', '');
     } else {
-      setStatus(currentLang === 'tl' ? 'Walang narinig — subukan ulit' : 'Nothing heard — try again', '');
+      setStatus(currentLang === 'tl' ? 'Walang narinig — subukan ulit' : 'Nothing heard — try again', 'warn');
     }
   } catch (err) {
     resetMicUI();
-    setStatus('Transcription failed: ' + err.message, '');
+    setStatus('Transcription failed: ' + err.message, 'warn');
   }
 }
 </script>
