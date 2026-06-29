@@ -27,8 +27,10 @@
   --body:  'Barlow', sans-serif;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-html, body { height: 100%; overflow: hidden; background: var(--bg); }
+html { height: 100%; }
 body {
+  height: 100dvh; /* dynamic viewport — handles mobile browser chrome */
+  overflow: hidden; background: var(--bg);
   font-family: var(--body); color: var(--ink);
   display: flex; flex-direction: column;
   max-width: 480px; margin: 0 auto;
@@ -36,7 +38,8 @@ body {
 
 /* CARD */
 .card {
-  display: flex; flex-direction: column; flex: 1; overflow: hidden;
+  display: flex; flex-direction: column;
+  height: 100%; overflow: hidden;
   border-left: 1px solid var(--line); border-right: 1px solid var(--line);
 }
 
@@ -212,7 +215,9 @@ body {
 
     <!-- Empty state -->
     <div class="empty-state" id="empty-state">
-      <div class="empty-icon"><i class="ti ti-message-circle-2" aria-hidden="true"></i></div>
+      <div class="empty-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12"/><path d="M9.5 9h.01"/><path d="M14.5 9h.01"/><path d="M9.5 13a3.5 3.5 0 0 0 5 0"/></svg>
+      </div>
       <div class="empty-title">Ask how to use TORI KIS</div>
       <div class="empty-desc">
         Tap the mic or type your question below.<br>
