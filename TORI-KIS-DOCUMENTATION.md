@@ -998,73 +998,33 @@ Tap the tile for the module you want to open."
 
 ---
 
-**[SCREEN: Welcome screen with TORI logo and restaurant cards]**
+**[SCREEN: Home tab — date field, name field, Start Order button]**
 
-"This is the Order Checklist — the app used at each restaurant every morning to send that day's food order to the central kitchen.
-
-When you open it, your name is already filled in from your login. Select your restaurant by tapping the card — Tori 1 for Špansko, or Tori 2 for Trnje. The card highlights in red when selected. The date defaults to today.
-
-Tap START ORDER to open the checklist."
+"This is the order screen. The date is already set to today. Your name is filled in automatically from your login — you don't need to type it. Tap Start Order."
 
 ---
 
-**[SCREEN: Checklist with categories and items]**
+**[SCREEN: Checklist — list of items grouped by category]**
 
-"The checklist shows all food items grouped by category — Sauces, Foods, Vegetables, Drinks, Dry Items. The category header stays visible as you scroll.
-
-If you are amending a previous order, a yellow banner at the top reminds you. The items from your last order are already ticked and pre-filled so you can see what was sent before.
-
-To order an item, tap its row. The row expands and shows a quantity input — the keyboard opens automatically. Enter the amount. For items with a unit conversion, you'll see a live preview in red showing the output quantity as you type. Checked items show a green tick. Skip any items you don't need."
+"The checklist opens. Items are grouped by category — Sauces, Foods, Vegetables, Drinks, Dry Items. Tap any item you want to order. The row opens and a quantity field appears — the keyboard comes up automatically. Type the quantity and move to the next item. Repeat for everything you need."
 
 ---
 
-**[SCREEN: Bottom navigation with REVIEW button]**
+**[SCREEN: Five items checked, each with a quantity entered]**
 
-"The jump dropdown at the top lets you skip directly to any category. The search box filters items in real time if you need to find something quickly.
-
-When all items are entered, tap REVIEW."
+"When you have all your items, tap Review at the bottom."
 
 ---
 
-**[SCREEN: Review screen]**
+**[SCREEN: Review screen — items listed with quantities]**
 
-"The review screen shows your complete order — restaurant, date, staff name, and every item with its quantity. Check everything is correct.
-
-If you need to make a change, tap EDIT to go back. When ready, tap CONFIRM & SEND."
+"The review screen shows everything you've selected — the date, your name, and each item with its quantity. Check it over. If something is wrong, tap Edit to go back. When it looks correct, tap Confirm & Send."
 
 ---
 
-**[SCREEN: Success screen, then status view]**
+**[SCREEN: Success — green checkmark, ORDER SENT]**
 
-"Order sent. The green checkmark confirms it. The kitchen has your order — it appeared on their screen within about one second.
-
-The screen switches to the delivery tracker. The status shows Preparing — the kitchen is working on your order. Leave the screen on and the status updates automatically throughout the day. No refreshing needed."
-
----
-
-**[SCREEN: Status changes to "In Delivery"]**
-
-"When the driver loads the vehicle and starts the delivery, your status changes to In Delivery — you'll see the green pulsing indicator. This happened automatically the moment the driver pressed Start Delivery on their device."
-
----
-
-**[SCREEN: Status changes to "Delivered" with Accept button]**
-
-"When the driver arrives and confirms on their end, your status changes to Delivered. You'll also see the list of everything that was sent.
-
-Check through the items. If anything is missing, tap the item to mark it as not received and select a reason. When you've confirmed everything that arrived, tap ACCEPT DELIVERY."
-
----
-
-**[SCREEN: Accept Delivery modal with name field]**
-
-"A confirmation box opens. Enter the name of the person accepting the delivery, then tap CONFIRM. The order is now marked as accepted and the record is complete."
-
----
-
-**[SCREEN: Amend flow — amber AMEND ORDER button visible]**
-
-"If you need to change your order while the kitchen is still preparing it, tap AMEND ORDER. The checklist reopens with your current quantities. Make your changes, go through review, and send. The kitchen sees the updated quantities highlighted with amendment badges."
+"Order sent. The kitchen receives it immediately."
 
 ---
 
