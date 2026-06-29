@@ -27,19 +27,17 @@
   --body:  'Barlow', sans-serif;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-html { height: 100%; }
-body {
-  height: 100dvh; /* dynamic viewport — handles mobile browser chrome */
-  overflow: hidden; background: var(--bg);
-  font-family: var(--body); color: var(--ink);
-  display: flex; flex-direction: column;
-  max-width: 480px; margin: 0 auto;
-}
+html, body { height: 100%; overflow: hidden; background: var(--bg); }
+body { font-family: var(--body); color: var(--ink); }
 
-/* CARD */
+/* CARD — pinned to viewport with fixed + inset, works everywhere */
 .card {
+  position: fixed;
+  inset: 0;
+  max-width: 480px;
+  margin: 0 auto;
   display: flex; flex-direction: column;
-  height: 100%; overflow: hidden;
+  overflow: hidden;
   border-left: 1px solid var(--line); border-right: 1px solid var(--line);
 }
 
